@@ -1,2 +1,1 @@
-# relational-clones
-Closure operator on predicates, and lattice of relational clones
+# Construction of lattice of relational clones
