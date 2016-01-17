@@ -1,6 +1,10 @@
 # Backup files
 *~
 
+# Emacs-related files
+.emacs.desktop
+.emacs.desktop.lock
+
 # Object files
 *.o
 *.ko

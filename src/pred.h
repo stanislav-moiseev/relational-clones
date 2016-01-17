@@ -1,6 +1,5 @@
 /*******************************************************************************
- * (C) 2016 Stanislav Moiseev
- * All rights reserved.
+ * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
 #ifndef PREDICATE_H
