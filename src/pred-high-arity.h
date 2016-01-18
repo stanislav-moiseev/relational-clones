@@ -2,11 +2,10 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef PREDICATE_H
-#define PREDICATE_H
+#ifndef PRED_HIGH_ARITY_H
+#define PRED_HIGH_ARITY_H
 
 #include <stdint.h>
-#include <stdio.h>
 
 /**
  * Possible combinations of `k` and `arity`

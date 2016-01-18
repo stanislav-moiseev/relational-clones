@@ -1,5 +1,5 @@
 CC = gcc -O3 -g -std=c99		\
-	-Wall -Wno-unused-function	\
+	-Wall -Werror -Wno-unused-function	\
 	-Isrc
 
 SRCS =			\
@@ -23,4 +23,5 @@ tests:  $(TESTS)
 
 clean:
 	rm -f $(TESTS) $(OBJS)
+	find * -name \*~ -delete
 
