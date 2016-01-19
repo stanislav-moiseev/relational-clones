@@ -33,14 +33,25 @@ int pred_construct(uint32_t arity, const char *str, pred *pred);
  */
 int pred_consistent(const pred *pred);
 
+
+/** `pred_fingerprint_size` return the minimum buffer size for
+ *  `pred_print_fingerprint`.
+ */
+size_t pred_fingerprint_size();
+
 /** `pred_print` prints the short name of the predicate.
  * The short name contains `k`, `pred->arity` and a string representation
  * of `pred->data` (in hexadecimal format, without preceding zeros).
  */
-void pred_print(FILE *file, const pred *pred);
+void pred_print_fingerprint(char *str, const pred *pred);
+
+/** `pred_extensional_size` return the minimum buffer size for
+ *  `pred_print_extensional`.
+ */
+size_t pred_extensional_size();
 
 /** `pred_print_extensional` prints the predicate's extensional.
  */
-void pred_print_extensional(FILE *file, const pred *pred);
+void pred_print_extensional(char *str, const pred *pred);
 
 #endif

@@ -29,17 +29,17 @@ size_t clone_fingerprint_size() {
 }
 
 void clone_print_fingerprint(char *str, const clone *clone) {
-  sprintf(str, "clone%u_%x_%x_", K, clone->data0, clone->data1);
+  str += sprintf(str, "clone%u_%x_%x_", K, clone->data0, clone->data1);
 
   int flag = 1; /* 1 means not to print preceding zeros */
   for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
     if(flag) {
       if(clone->data2[offset] == 0) continue;
       flag = 0;
-      sprintf(str, "%lx", clone->data2[offset]);
+      str += sprintf(str, "%lx", clone->data2[offset]);
     } else {
       /* print `pred->data[offset]` with all preceding zeros (up to 8 zeors) */
-      sprintf(str, "%.8lx", clone->data2[offset]);
+      str += sprintf(str, "%.8lx", clone->data2[offset]);
     }
   }
 }

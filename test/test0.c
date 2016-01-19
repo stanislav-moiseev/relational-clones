@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pred.h"
 #include "utils.h"
@@ -25,12 +26,13 @@ void test_pred_construct() {
       }
       str[shift] = 0x00;
       
-      /* printf("pred_construct(%ld, \"%s\", &pred)\n", arity, str); */
       pred pred;
       assert(pred_construct(arity, str, &pred));
-      /* printf("                   "); */
-      /* pred_print_extensional(stdout, &pred); printf("\n"); */
       assert(pred_consistent(&pred));
+      
+      char str2[pred_extensional_size()];
+      pred_print_extensional(str2, &pred);
+      assert(strcmp(str, str2) == 0);
     }
       
     ++arity;
@@ -39,9 +41,8 @@ void test_pred_construct() {
 
 
 int main() {
-  
+  printf("test_pred_construct: ");
   test_pred_construct();
-
   printf("Ok.\n");
   
   return 0;

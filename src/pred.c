@@ -41,18 +41,32 @@ int pred_consistent(const pred *pred) {
   return 1;
 }
 
-void pred_print(FILE *fd, const pred *pred) {
-  fprintf(fd, "pred%u_%lu_%lx", K, pred->arity, pred->data);
+size_t pred_fingerprint_size() {
+  return (7             /* for "pred__" string */
+          + 2           /* for K */
+          + 3           /* for pred->arity */
+          + 16          /* for pred->data */
+          + 1);         /* for terminating null byte */
 }
 
-void pred_print_extensional(FILE *fd, const pred *pred) {
+void pred_print_fingerprint(char *str, const pred *pred) {
+  assert(K < 100);
+  assert(pred->arity < 1000);
+  sprintf(str, "pred%u_%lu_%lx", K, pred->arity, pred->data);
+}
+
+size_t pred_extensional_size() {
+  return 65;            /* 64 bytes + terminating null byte */
+}
+
+void pred_print_extensional(char *str, const pred *pred) {
   uint64_t shift = int_pow(K, pred->arity);
     
   for(int s = shift-1; s >= 0; --s) {
     if(pred->data & ((uint64_t)1 << s)) {
-      fprintf(fd, "1");
+      str += sprintf(str, "1");
     } else {
-      fprintf(fd, "0");
+      str += sprintf(str, "0");
     }
   }
 }
