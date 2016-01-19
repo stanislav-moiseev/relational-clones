@@ -1,9 +1,10 @@
-CC = gcc -O3 -g -std=c99		\
+CC = gcc -O3 -g -std=c99 -pedantic		\
 	-Wall -Werror -Wno-unused-function	\
 	-Isrc
 
 SRCS =			\
 	src/pred.c	\
+	src/clone.c	\
 	src/z3/gen.c
 
 OBJS =	$(SRCS:.c=.o)

@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-/** `pow` computes the integer power:
- *      pow(k, arity) == k^arity
+/** `int_pow` computes the integer power:
+ *      int_pow(k, arity) == k^arity
  */
 inline uint64_t int_pow(uint32_t k, uint32_t arity) {
   uint64_t pow = 1;
@@ -17,6 +17,19 @@ inline uint64_t int_pow(uint32_t k, uint32_t arity) {
   }
   return pow;
 }
+
+/**
+ *      int_pow2(x) == 2^x
+ */
+inline uint64_t int_pow2(uint32_t x) {
+  return (uint64_t)1 << x;
+}
+
+inline void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
+  *offset = data / 64;
+  *shift  = data % 64;
+}
+
 
 /** K-valued logic. Global constant
  */
