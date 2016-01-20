@@ -20,7 +20,7 @@ void test_gen_assert_disrc_fun() {
   assert(fd50 != NULL);
   size_t size50;
   clone *clones50;
-  assert(clone_aread_layer(fd50, &size50, &clones50));
+  assert(clone_aread_layer(fd50, &clones50, &size50));
   free(filename50);
   fclose(fd50);
   
@@ -30,7 +30,7 @@ void test_gen_assert_disrc_fun() {
   assert(fd51 != NULL);
   size_t size51;
   clone *clones51;
-  assert(clone_aread_layer(fd51, &size51, &clones51));
+  assert(clone_aread_layer(fd51, &clones51, &size51));
   free(filename51);
   fclose(fd51);
   

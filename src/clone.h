@@ -46,7 +46,7 @@ int clone_read(FILE *fd, clone *clone);
 /** `clone_aread_layer` reads from binary file a layer of clones.
  * It allocates an array to store all clone; memory must be cleaned.
  */
-int clone_aread_layer(FILE *fd, size_t *size, clone **clones);
+int clone_aread_layer(FILE *fd, clone **clones, size_t *size);
 
 
 /** `clone_insert_pred` inserts the predicate to the predicate set.

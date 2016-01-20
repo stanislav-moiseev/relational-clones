@@ -82,7 +82,7 @@ int clone_read(FILE *fd, clone *clone) {
   return 1;
 }
 
-int clone_aread_layer(FILE *fd, size_t *size, clone **clones) {
+int clone_aread_layer(FILE *fd, clone **clones, size_t *size) {
   *size = read_uint64(fd);
   /* DBG */
   /* printf("layer size: \t%lu\n", *size); */

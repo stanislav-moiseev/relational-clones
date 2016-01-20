@@ -13,13 +13,13 @@
 
 void test_clone_read_layer() {
   char *filename;
-  sprintf(&filename, "data/all_maj_cpp/%d.bin", 50);
+  asprintf(&filename, "data/all_maj_cpp/%d.bin", 50);
   FILE *fd = fopen(filename, "rb");
   assert(fd != NULL);
   
   size_t size;
   clone *clones;
-  assert(clone_aread_layer(fd, &size, &clones));
+  assert(clone_aread_layer(fd, &clones, &size));
 
   free(filename);
   free(clones);
