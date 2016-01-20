@@ -5,11 +5,14 @@
 #ifndef Z3_GEN_H
 #define Z3_GEN_H
 
+#include "pred.h"
+#include "clone.h"
+
 /** A predicate of a functional symbol,
  * given by its name and arity.
  */
 struct token {
-  const char *name;
+  char *name;
   int arity;
 };
 typedef struct token token;
@@ -37,7 +40,7 @@ void gen_header(FILE *fd, int k);
  * Note that the values of the predicate of the particular input are /not/
  * printed.
  */
-void gen_pred(FILE *fd, int k, const token *pred);
+void gen_pred(FILE *fd, int k, const token *tk, const pred *pred);
 
 /**
  * For k==3 and function f^(2) prints:
@@ -59,5 +62,13 @@ void gen_fun(FILE *fd, int k, const token *f);
  *      		(implies (and (p x0_0 x0_1)(p x1_0 x1_1)) (and (p (f x0_0 x1_0) (f x0_1 x1_1)))))))
  */
 void gen_preserve(FILE *fd, int if_not, int k, const token *pred, const token *fun);
+
+
+/** `gen_assert_discr_fun` write an assertion for Z#Solver that 
+ * there exists a function `f` of arity `fun_arity` such that
+ *   1) f preserves all the predicates from `clone`;
+ *   2) f does not preserve the predicate `pred`.
+ */
+void gen_assert_discr_fun(FILE *fd, const clone *clone, const pred *pred, int fun_arity);
 
 #endif
