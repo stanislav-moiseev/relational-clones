@@ -145,12 +145,12 @@ int64_t clone_cardinality(const clone *clone) {
   
   /* arity == 0 */
   for(int32_t shift = 1; shift >= 0; --shift) {
-    if(clone->data0 ^ ((uint32_t)1 << shift)) ++card;
+    if(clone->data0 & ((uint32_t)1 << shift)) ++card;
   }
   
   /* arity = 1 */
-  for(int64_t shift = (2+K)-1; shift >= 0; --shift) {
-    if(clone->data1 ^ ((uint32_t)1 << shift)) ++card;
+  for(int64_t shift = int_pow2(K)-1; shift >= 0; --shift) {
+    if(clone->data1 & ((uint32_t)1 << shift)) ++card;
   }
   
   /* arity == 2 */
@@ -169,7 +169,7 @@ int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint6
   
   /* arity == 0 */
   for(int64_t shift = 1; shift >= 0; --shift) {
-    if(clone->data0 ^ ((uint32_t)1 << shift)) {
+    if(clone->data0 & ((uint32_t)1 << shift)) {
       if(_card == size) return 0;
       ++_card;
       current_pred->arity = 0;
@@ -179,8 +179,8 @@ int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint6
   }
 
   /* arity == 1 */
-  for(int64_t shift = int_pow2(K); shift >= 0; --shift) {
-    if(clone->data1 ^ ((uint32_t)1 << shift)) {
+  for(int64_t shift = int_pow2(K)-1; shift >= 0; --shift) {
+    if(clone->data1 & ((uint32_t)1 << shift)) {
       if(_card == size) return 0;
       ++_card;
       current_pred->arity = 1;
@@ -229,6 +229,6 @@ void clone_diff(const clone *clone1, const clone *clone2, clone *clone) {
   clone->data0 = clone1->data0 & (~clone2->data0);
   clone->data1 = clone1->data1 & (~clone2->data1);
   for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    clone->data2[offset] = clone1->data2[offset] ^ (~clone2->data2[offset]);
+    clone->data2[offset] = clone1->data2[offset] & (~clone2->data2[offset]);
   }
 }
