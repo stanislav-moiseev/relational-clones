@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "pred.h"
 #include "clone.h"
 #include "utils.h"
 
@@ -42,6 +43,61 @@ void clone_print_fingerprint(char *str, const clone *clone) {
       str += sprintf(str, "%.8lx", clone->data2[offset]);
     }
   }
+
+  /* if the clone contains no predicates of arity 2 */
+  if(flag) {
+    sprintf(str, "0");
+  }
+}
+
+int clone_read(FILE *fd, clone *clone) {
+  /* the size of the basis */
+  uint64_t n = read_uint64(fd);
+  printf("basis size: \t%lu\n", n);
+  for(int64_t i = n; i > 0; --i) {
+    pred pred;
+    pred_read(fd, &pred);
+  }
+
+  clone->data0 = read_uint32(fd);
+  clone->data1 = read_uint32(fd);
+  assert(CLONE_DATA2_SIZE == 8);
+  for(int64_t offset = 0; offset < CLONE_DATA2_SIZE; ++offset) {
+    clone->data2[offset] = read_uint64(fd);
+  }
+
+  /* DBG */
+  /* printf("---\n"); */
+  /* uint64_t card; */
+  /* pred pred_list[600]; */
+  /* clone_get_predicates(clone, pred_list, 600, &card); */
+  /* for(int64_t i = 0; i < card; ++i) { */
+  /*   char str[pred_extensional_size()]; */
+  /*   pred_print_extensional(str, &pred_list[i]); */
+  /*   char str2[pred_fingerprint_size()]; */
+  /*   pred_print_fingerprint(str2, &pred_list[i]); */
+  /*   printf("%s: \t%s\n", str2, str); */
+  /* } */
+  return 1;
+}
+
+int clone_aread_layer(FILE *fd, size_t *size, clone **clones) {
+  *size = read_uint64(fd);
+  /* DBG */
+  /* printf("layer size: \t%lu\n", *size); */
+  
+  (*clones) = malloc(*size * sizeof(clone));
+  assert(*clones != NULL);
+  for(int64_t i = 0; i < *size; ++i) {
+    /* DBG */
+    /* printf("clone index2: \t%ld\n", i); */
+    clone_read(fd, (*clones) + i);
+  }
+
+  /* test EOF */
+  char c;
+  assert(fread(&c, 1, 1, fd) == 0);
+  return 1;
 }
 
 void clone_insert_pred(clone *clone, const pred *pred) {

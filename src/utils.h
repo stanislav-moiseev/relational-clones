@@ -35,4 +35,30 @@ inline void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
  */
 static const uint32_t K = 3;
 
+inline uint32_t read_uint32(FILE *fd) {
+  uint32_t u;
+  char c[4];
+  assert(fread(&c, 1, 4, fd) == 4);
+  
+  for (int i = 3; i >= 0; --i) {
+    ((char *)&u)[3-i] = c[i];
+  }
+
+  return u;
+
+}
+
+inline uint64_t read_uint64(FILE *fd) {
+  uint64_t u;
+  char c[8];
+  assert(fread(&c, 1, 8, fd) == 8);
+  
+  for (int i = 7; i >= 0; --i) {
+    ((char *)&u)[7-i] = c[i];
+  }
+
+  return u;
+}
+
+
 #endif
