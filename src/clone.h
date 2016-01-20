@@ -63,15 +63,17 @@ int clone_test_pred(const clone *clone, const pred *pred);
  */
 int64_t clone_cardinality(const clone *clone);
 
-/** `clone_get_predicates` stores all clone's predicates to the `pred_list`. If
- * `card != NULL`, then the number of predicates having been stored is written
- * to `*card`.
- * 
- * At maximum `size` predicates is stored. If `size` is less than the clone
- * cardinality, `clone_get_predicates` returns zero; otherwise it returns
- * non-zero.
+/** `clone_is_empty` returns non-zero if the clone is empty.
  */
-int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint64_t *card);
+int clone_is_empty(const clone *clone);
+
+/** `clone_get_predicates` stores all clone's predicates to the `pred_list`;
+ * the number of predicates having been stored is written to `*card`.
+ * The function allocates an array large enough to hold all the predicates.
+ * The pointer should be free'd to release the storage.
+ * On success, `clone_get_predicates` returns non-zero.
+ */
+int clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
 
 /** `clone_eq` returns non-zero if two clones are equal.
  */

@@ -10,7 +10,7 @@
 /** `int_pow` computes the integer power:
  *      int_pow(k, arity) == k^arity
  */
-inline uint64_t int_pow(uint32_t k, uint32_t arity) {
+static uint64_t int_pow(uint32_t k, uint32_t arity) {
   uint64_t pow = 1;
   for(uint32_t i = arity; i > 0; --i) {
     pow *= k;
@@ -21,11 +21,11 @@ inline uint64_t int_pow(uint32_t k, uint32_t arity) {
 /**
  *      int_pow2(x) == 2^x
  */
-inline uint64_t int_pow2(uint32_t x) {
+static uint64_t int_pow2(uint32_t x) {
   return (uint64_t)1 << x;
 }
 
-inline void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
+static void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
   *offset = data / 64;
   *shift  = data % 64;
 }
@@ -35,7 +35,7 @@ inline void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
  */
 static const uint32_t K = 3;
 
-inline uint32_t read_uint32(FILE *fd) {
+static uint32_t read_uint32(FILE *fd) {
   uint32_t u;
   char c[4];
   assert(fread(&c, 1, 4, fd) == 4);
@@ -48,7 +48,7 @@ inline uint32_t read_uint32(FILE *fd) {
 
 }
 
-inline uint64_t read_uint64(FILE *fd) {
+static uint64_t read_uint64(FILE *fd) {
   uint64_t u;
   char c[8];
   assert(fread(&c, 1, 8, fd) == 8);

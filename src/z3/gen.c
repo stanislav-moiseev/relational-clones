@@ -105,39 +105,46 @@ void gen_preserve(FILE *fd, int if_not, int k, const token *pred, const token *f
 void gen_assert_discr_fun(FILE *fd, const clone *clone, const pred *pred, int fun_arity) {
   gen_header(fd, K);
   
-  int num_preds = clone_cardinality(clone);
-  struct pred pred_list[num_preds];
+  struct pred *pred_list;
+  uint64_t num_preds;
+  assert(clone_get_predicates(clone, &pred_list, &num_preds));
+
+  /* write a definition for all predicates */
   token tokens[num_preds];
-  uint64_t card;
-  assert(clone_get_predicates(clone, pred_list, num_preds, &card));
-  
-  for(int i = 0; i < card; ++i) {
-    tokens[i].name = malloc(16);
-    sprintf(tokens[i].name, "p%d", i);
+  for(int i = 0; i < num_preds; ++i) {
     tokens[i].arity = pred_list[i].arity;
+    assert(asprintf(&tokens[i].name, "p%d", i) >= 0);
     gen_pred(fd, K, &tokens[i], &pred_list[i]);
   }
-
-  struct token fun =
-    { .arity = fun_arity,
-      .name  = "f"
-    };
-  gen_fun(fd, K, &fun);
-
-  for(int i = 0; i < card; ++i) {
-    gen_preserve(fd, 0, K, &tokens[i], &fun);
-  }
-
-  
   struct token tk =
     { .arity = pred->arity,
       .name = "p"
     };
   
   gen_pred(fd, K, &tk, pred);
+
+  /* declare a discriminating function */
+  struct token fun =
+    { .arity = fun_arity,
+      .name  = "f"
+    };
+  gen_fun(fd, K, &fun);
+
+  /* write assertions about function preservation */
+  for(int i = 0; i < num_preds; ++i) {
+    gen_preserve(fd, 0, K, &tokens[i], &fun);
+  }
   gen_preserve(fd, 1, K, &tk, &fun);
 
+
+  /* write final commands */
   fprintf(fd, "\n(check-sat)\n");
   /* fprintf(fd, "(get-model)\n"); */
+
+  
+  free(pred_list);
+  for(int i = 0; i < num_preds; ++i) {
+    free(tokens[i].name);
+  }
 }
 

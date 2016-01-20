@@ -53,7 +53,8 @@ void clone_print_fingerprint(char *str, const clone *clone) {
 int clone_read(FILE *fd, clone *clone) {
   /* the size of the basis */
   uint64_t n = read_uint64(fd);
-  printf("basis size: \t%lu\n", n);
+  /* DBG */
+  /* printf("basis size: \t%lu\n", n); */
   for(int64_t i = n; i > 0; --i) {
     pred pred;
     pred_read(fd, &pred);
@@ -163,15 +164,29 @@ int64_t clone_cardinality(const clone *clone) {
   return card;
 }
 
-int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint64_t *card) {
-  uint64_t _card = 0;
-  pred *current_pred = pred_list;
+
+int clone_is_empty(const clone *clone) {
+  if(clone->data0) return 0;
+  if(clone->data1) return 0;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    if(clone->data2[offset]) return 0;
+  }
+  return 1;
+}
+
+
+int clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size) {
+  /* TODO: use actual size of clone here, not the maximum possible */
+  *pred_list = malloc((2 + int_pow2(K) + int_pow2(K*K)) * sizeof(pred));
+  if(*pred_list == NULL) return 0;
+  
+  uint64_t _size = 0;
+  pred *current_pred = *pred_list;
   
   /* arity == 0 */
   for(int64_t shift = 1; shift >= 0; --shift) {
     if(clone->data0 & ((uint32_t)1 << shift)) {
-      if(_card == size) return 0;
-      ++_card;
+      ++_size;
       current_pred->arity = 0;
       current_pred->data  = shift;
       ++current_pred;
@@ -181,8 +196,7 @@ int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint6
   /* arity == 1 */
   for(int64_t shift = int_pow2(K)-1; shift >= 0; --shift) {
     if(clone->data1 & ((uint32_t)1 << shift)) {
-      if(_card == size) return 0;
-      ++_card;
+      ++_size;
       current_pred->arity = 1;
       current_pred->data  = shift;
       ++current_pred;
@@ -194,8 +208,7 @@ int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint6
   for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
     for(int64_t shift = 63; shift >= 0; --shift) {
       if(clone->data2[offset] & ((uint64_t)1 << shift)) {
-        if(_card == size) return 0;
-        ++_card;
+        ++_size;
         current_pred->arity = 2;
         current_pred->data  = (64*offset) + shift;
         ++current_pred;
@@ -203,7 +216,7 @@ int clone_get_predicates(const clone *clone, pred *pred_list, size_t size, uint6
     }
   }
   
-  if(card != NULL) *card = _card;
+  *size = _size;
   return 1;
 }
 

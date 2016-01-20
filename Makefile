@@ -1,6 +1,6 @@
-CC = gcc -O3 -g -std=c99 -pedantic		\
-	-Wall -Werror -Wno-unused-function	\
-	-Wno-error=maybe-uninitialized	\
+CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
+	-Wall -Werror -Wno-unused-function		\
+	-Wno-error=maybe-uninitialized			\
 	-Isrc
 
 SRCS =			\
