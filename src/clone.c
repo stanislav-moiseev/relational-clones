@@ -50,15 +50,25 @@ void clone_print_fingerprint(char *str, const clone *clone) {
   }
 }
 
-int clone_read(FILE *fd, clone *clone) {
+int clone_read(FILE *fd, clone *clone, pred **pred_list, uint64_t *size) {
   /* the size of the basis */
   uint64_t n = read_uint64(fd);
   /* DBG */
   /* printf("basis size: \t%lu\n", n); */
-  for(int64_t i = n; i > 0; --i) {
-    pred pred;
-    pred_read(fd, &pred);
-  }
+  if(pred_list != NULL) { /* if we need to store the basis */
+    *size = n;
+    *pred_list = malloc(n * sizeof(pred));
+    if(*pred_list == NULL) return 0;
+    for(int64_t i = 0; i < n; ++i) {
+      pred_read(fd, &(*pred_list)[i]);
+    }
+  } else { /* if there is no need to store the basis */
+    /* read the basis but do not write the predicates anywhere */
+    for(int64_t i = 0; i < n; ++i) {
+      pred pred;
+      pred_read(fd, &pred);
+    }
+  }    
 
   clone->data0 = read_uint32(fd);
   clone->data1 = read_uint32(fd);
@@ -92,7 +102,7 @@ int clone_aread_layer(FILE *fd, clone **clones, size_t *size) {
   for(int64_t i = 0; i < *size; ++i) {
     /* DBG */
     /* printf("clone index2: \t%ld\n", i); */
-    clone_read(fd, (*clones) + i);
+    clone_read(fd, (*clones) + i, NULL, NULL);
   }
 
   /* test EOF */

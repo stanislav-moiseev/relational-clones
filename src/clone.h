@@ -39,12 +39,16 @@ size_t clone_fingerprint_size();
 void clone_print_fingerprint(char *str, const clone *clone);
 
 /** `clone_read` reads the binary clone data starting from current file
- *  position.
+ * position.
+ * If `pred_list != NULL`, the function allocates an array and writes the
+ * predicate basis to `pred_list`.
+ * The pointer should be free'd to release the storage.
  */
-int clone_read(FILE *fd, clone *clone);
+int clone_read(FILE *fd, clone *clone, pred **pred_list, uint64_t *size);
 
 /** `clone_aread_layer` reads from binary file a layer of clones.
- * It allocates an array to store all clone; memory must be cleaned.
+ * It allocates an array to store all clone.
+ * The pointer should be free'd to release the storage.
  */
 int clone_aread_layer(FILE *fd, clone **clones, size_t *size);
 
@@ -90,3 +94,4 @@ void clone_union(const clone *clone1, const clone *clone2, clone *clone);
 void clone_diff(const clone *clone1, const clone *clone2, clone *clone);
 
 #endif
+
