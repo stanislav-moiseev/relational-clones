@@ -1,5 +1,6 @@
 CC = gcc -O3 -g -std=c99 -pedantic		\
 	-Wall -Werror -Wno-unused-function	\
+	-Wno-error=maybe-uninitialized	\
 	-Isrc
 
 SRCS =			\
@@ -12,15 +13,24 @@ OBJS =	$(SRCS:.c=.o)
 .c.o:
 	$(CC) -c -o $@ $^
 
+TESTS =				\
+	test/test0.out		\
+	test/test-clone-read.out	\
+	test/test-gen-assert-discr-fun.out
+
+tests:  $(TESTS)
 
 test/test0.out: test/test0.c $(OBJS)
 	$(CC) -o $@ $^
 
-TESTS =				\
-	test/test0.out		\
-	test/test-gen-z3.out
+test/test-clone-read.out: test/test-clone-read.c $(OBJS)
+	$(CC) -o $@ $^
 
-tests:  $(TESTS)
+test/test-gen-assert-discr-fun.out: test/test-gen-assert-discr-fun.c $(OBJS)
+	$(CC) -o $@ $^
+
+
+
 
 clean:
 	rm -f $(TESTS) $(OBJS)
