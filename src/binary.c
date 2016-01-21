@@ -29,7 +29,7 @@ int class_read(FILE *fd, class *class) {
   /* DBG */
   /* printf("basis size: \t%lu\n", size); */
 
-  for(int64_t i = size; i >= 0; --i) {
+  for(int64_t i = size; i > 0; --i) {
     pred pred;
     pred_read(fd, &pred);
     clone_insert_pred(&class->clone, &pred);
