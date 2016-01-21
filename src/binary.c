@@ -23,38 +23,30 @@ void pred_read(FILE *fd, pred *pred) {
   /* printf("pred: \t%s\n", str); */
 }
 
-int clone_read(FILE *fd, clone *clone, pred **pred_list, uint64_t *size) {
+int class_read(FILE *fd, class *class) {
   /* the size of the basis */
-  uint64_t n = read_uint64(fd);
+  uint64_t size = read_uint64(fd);
   /* DBG */
-  /* printf("basis size: \t%lu\n", n); */
-  if(pred_list != NULL) { /* if we need to store the basis */
-    *size = n;
-    *pred_list = malloc(n * sizeof(pred));
-    if(*pred_list == NULL) return 0;
-    for(int64_t i = 0; i < n; ++i) {
-      pred_read(fd, &(*pred_list)[i]);
-    }
-  } else { /* if there is no need to store the basis */
-    /* read the basis but do not write the predicates anywhere */
-    for(int64_t i = 0; i < n; ++i) {
-      pred pred;
-      pred_read(fd, &pred);
-    }
-  }    
+  /* printf("basis size: \t%lu\n", size); */
 
-  clone->data0 = read_uint32(fd);
-  clone->data1 = read_uint32(fd);
+  for(int64_t i = size; i >= 0; --i) {
+    pred pred;
+    pred_read(fd, &pred);
+    clone_insert_pred(&class->clone, &pred);
+  }
+  
+  class->clone.data0 = read_uint32(fd);
+  class->clone.data1 = read_uint32(fd);
   assert(CLONE_DATA2_SIZE == 8);
   for(int64_t offset = 0; offset < CLONE_DATA2_SIZE; ++offset) {
-    clone->data2[offset] = read_uint64(fd);
+    class->clone.data2[offset] = read_uint64(fd);
   }
 
   /* DBG */
   /* printf("---\n"); */
   /* uint64_t card; */
   /* pred pred_list[600]; */
-  /* clone_get_predicates(clone, pred_list, 600, &card); */
+  /* clone_get_predicates(&class->clone, pred_list, 600, &card); */
   /* for(int64_t i = 0; i < card; ++i) { */
   /*   char str[pred_extensional_size()]; */
   /*   pred_print_extensional(str, &pred_list[i]); */
@@ -65,17 +57,17 @@ int clone_read(FILE *fd, clone *clone, pred **pred_list, uint64_t *size) {
   return 1;
 }
 
-int clone_aread_layer(FILE *fd, clone **clones, size_t *size) {
+int class_aread_layer(FILE *fd, class **classes, size_t *size) {
   *size = read_uint64(fd);
   /* DBG */
   /* printf("layer size: \t%lu\n", *size); */
   
-  (*clones) = malloc(*size * sizeof(clone));
-  assert(*clones != NULL);
+  (*classes) = malloc(*size * sizeof(class));
+  assert(*classes != NULL);
   for(int64_t i = 0; i < *size; ++i) {
     /* DBG */
-    /* printf("clone index2: \t%ld\n", i); */
-    clone_read(fd, (*clones) + i, NULL, NULL);
+    /* printf("class index2: \t%ld\n", i); */
+    class_read(fd, (*classes) + i);
   }
 
   /* test EOF */

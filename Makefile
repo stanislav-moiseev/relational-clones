@@ -16,7 +16,7 @@ OBJS =	$(SRCS:.c=.o)
 
 TESTS =				\
 	test/test0.out		\
-	test/test-clone-read.out	\
+	test/test-class-read.out	\
 	test/test-gen-assert-discr-fun.out
 
 tests:  $(TESTS)
@@ -24,7 +24,7 @@ tests:  $(TESTS)
 test/test0.out: test/test0.c $(OBJS)
 	$(CC) -o $@ $^
 
-test/test-clone-read.out: test/test-clone-read.c $(OBJS)
+test/test-class-read.out: test/test-class-read.c $(OBJS)
 	$(CC) -o $@ $^
 
 test/test-gen-assert-discr-fun.out: test/test-gen-assert-discr-fun.c $(OBJS)
