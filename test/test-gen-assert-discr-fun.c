@@ -51,13 +51,13 @@ void test_gen_assert_disrc_fun() {
         pred *diff_preds;
         uint64_t card;
         clone_get_predicates(&clone_d, &diff_preds, &card);
-        assert(card > 0);       /* class are not identical */
+        assert(card > 0);       /* classes are not identical */
 
         /* select some discriminating predicate */
         const pred *pred = &diff_preds[0];
         
         char *out_name;
-        assert(asprintf(&out_name, "test/z3/%d-%d.z3", i, j) >= 0);
+        assert(asprintf(&out_name, "output/z3/%d-%d.z3", i, j) >= 0);
         FILE *out = fopen(out_name, "w");
         assert(out != NULL);
         gen_assert_discr_fun(out, class50, pred, 5);
