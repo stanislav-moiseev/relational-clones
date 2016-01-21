@@ -7,6 +7,15 @@
 
 #include <stdint.h>
 
+/** `popcount32`, and `popcount64` returns the number of 1-bits in `x`.
+ */
+static int popcount32(uint32_t x) {
+  return __builtin_popcountl(x);
+}
+static int popcount64(uint64_t x) {
+  return __builtin_popcountll(x);
+}
+
 /** `int_pow` computes the integer power:
  *      int_pow(k, arity) == k^arity
  */

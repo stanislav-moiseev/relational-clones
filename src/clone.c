@@ -152,25 +152,12 @@ int clone_test_pred(const clone *clone, const pred *pred) {
 }
 
 int64_t clone_cardinality(const clone *clone) {
-  int64_t card = 0;
-  
-  /* arity == 0 */
-  for(int32_t shift = 1; shift >= 0; --shift) {
-    if(clone->data0 & ((uint32_t)1 << shift)) ++card;
-  }
-  
-  /* arity = 1 */
-  for(int64_t shift = int_pow2(K)-1; shift >= 0; --shift) {
-    if(clone->data1 & ((uint32_t)1 << shift)) ++card;
-  }
-  
+  /* fro preds f airty 0 and 1 */
+  int64_t card = popcount32(clone->data0) + popcount32(clone->data1);
   /* arity == 2 */
   for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    for(int64_t shift = 63; shift >= 0; --shift) {
-      if(clone->data2[offset] & ((uint64_t)1 << shift)) ++card;
-    }
+    card += popcount64(clone->data2[offset]);
   }
-  
   return card;
 }
 
