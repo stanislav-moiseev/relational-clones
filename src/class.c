@@ -9,6 +9,13 @@
 
 #include "class.h"
 
+void class_free(class *class) {
+  if(class->subclasses) {
+    free(class->subclasses);
+    class->subclasses = NULL;
+  }
+}
+
 void class_print_verbosely(FILE *fd, const class *class) {
   fprintf(fd, "class\n");
   fprintf(fd, "class basis:\n");

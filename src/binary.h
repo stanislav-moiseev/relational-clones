@@ -10,7 +10,7 @@
 #include "pred.h"
 #include "clone.h"
 #include "class.h"
-
+#include "lattice.h"
 
 /** `pred_read` read one predicate from binary file.
  */
@@ -21,11 +21,12 @@ void pred_read(FILE *fd, pred *pred);
  */
 int class_read(FILE *fd, class *class);
 
-/** `class_aread_layer` reads from binary file a layer of classes.
+/** `layer_aread_classes` reads from binary file a layer of classes.
  * It allocates an array to store all classes.
  * The pointer should be free'd to release the storage.
  */
-int class_aread_layer(FILE *fd, class **classes, size_t *size);
+void layer_aread_classes(FILE *fd, int layer_id, class **classes, size_t *size);
 
+void lattice_read(const char *dir_clones, int num_layers, const char *dir_connections, lattice *lattice);
 
 #endif

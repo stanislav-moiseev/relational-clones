@@ -34,25 +34,75 @@ int class_read(FILE *fd, class *class) {
   for(int64_t offset = 0; offset < CLONE_DATA2_SIZE; ++offset) {
     class->clone.data2[offset] = read_uint64(fd);
   }
-  
+
+  class->num_subclasses = -1;
+  class->subclasses     = NULL;
+
   return 1;
 }
 
-int class_aread_layer(FILE *fd, class **classes, size_t *size) {
+void layer_aread_classes(FILE *fd, int layer_id, class **classes, size_t *size) {
   *size = read_uint64(fd);
   
   (*classes) = malloc(*size * sizeof(class));
   assert(*classes != NULL);
-  for(int64_t i = 0; i < *size; ++i) {
-    /* DBG */
-    /* printf("class index2: \t%ld\n", i); */
-    class_read(fd, (*classes) + i);
+  for(int j = 0; j < *size; ++j) {
+    class * class = *classes + j;
+    class_read(fd, class);
+    class->id.layer_id = layer_id;
+    class->id.class_id = j;
   }
 
   /* test EOF */
   char c;
   assert(fread(&c, 1, 1, fd) == 0);
-  return 1;
 }
 
+void layer_aread_connections(FILE *fd, layer *layer, int layer_id) {
+  assert(layer->num_classes == read_uint64(fd));
+  for(int class_id = 0; class_id < layer->num_classes; ++class_id) {
+    class *class = &layer->classes[class_id];
+    assert(read_uint64(fd) == class->id.layer_id);
+    assert(read_uint64(fd) == class->id.class_id);
+    
+    class->num_subclasses = read_uint64(fd);
+    class->subclasses = malloc(class->num_subclasses * sizeof(struct class_id));
+    assert(class->subclasses != NULL);
+    for(int j = 0; j < class->num_subclasses; ++j) {
+      class->subclasses[j].layer_id = read_uint64(fd);
+      class->subclasses[j].class_id = read_uint64(fd);
+    }
+  }
 
+  /* test EOF */
+  char c;
+  assert(fread(&c, 1, 1, fd) == 0);
+}
+
+void lattice_read(const char *dir_clones, int num_layers, const char *dir_connections, lattice *lattice) {
+  lattice->num_layers = num_layers;
+  lattice->layers = malloc(num_layers * sizeof(layer));
+  assert(lattice->layers != NULL);
+
+  layer *layer = lattice->layers;
+  for(int layer_id = 1; layer_id <= num_layers; ++layer_id) {
+    char *fname_classes;
+    asprintf(&fname_classes, "%s/%d.bin", dir_clones, layer_id);
+    FILE *fd_classes = fopen(fname_classes, "rb");
+    assert(fd_classes != NULL);
+
+    char *fname_connections;
+    asprintf(&fname_connections, "%s/%d.bin", dir_connections, layer_id);
+    FILE *fd_connections = fopen(fname_connections, "rb");
+    assert(fd_connections != NULL);
+
+    layer_aread_classes(fd_classes, layer_id, &layer->classes, &layer->num_classes);
+    layer_aread_connections(fd_connections, layer, layer_id);
+
+    free(fname_classes);
+    free(fname_connections);
+    fclose(fd_classes);
+    fclose(fd_connections);
+    ++layer;
+  }
+}

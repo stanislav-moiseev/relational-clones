@@ -21,7 +21,7 @@ void test_gen_assert_disrc_fun() {
   assert(fd50 != NULL);
   size_t size50;
   class *layer50;
-  assert(class_aread_layer(fd50, &layer50, &size50));
+  layer_aread_classes(fd50, 50, &layer50, &size50);
   free(filename50);
   fclose(fd50);
   
@@ -31,7 +31,7 @@ void test_gen_assert_disrc_fun() {
   assert(fd51 != NULL);
   size_t size51;
   class *layer51;
-  assert(class_aread_layer(fd51, &layer51, &size51));
+  layer_aread_classes(fd51, 51, &layer51, &size51);
   free(filename51);
   fclose(fd51);
   
