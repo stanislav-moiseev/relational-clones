@@ -38,6 +38,10 @@ size_t clone_fingerprint_size();
  */
 void clone_print_fingerprint(char *str, const clone *clone);
 
+/** `clone_print_verbosely` writes a list of all predicates from the clone
+ * `clone`.
+ */
+void clone_print_verbosely(FILE *fd, const clone *clone);
 
 /** `clone_insert_pred` inserts the predicate to the predicate set.
  */

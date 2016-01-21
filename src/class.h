@@ -14,4 +14,12 @@ struct class {
 };
 
 typedef struct class class;
+
+
+/** `class_print_verbosely` writes
+ *   1) a list of all basis predicates of the class `class`.
+ *   2) a list of all predicates from the `class->clone`.
+ */
+void class_print_verbosely(FILE *fd, const class *class);
+
 #endif

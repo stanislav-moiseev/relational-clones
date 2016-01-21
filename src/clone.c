@@ -50,6 +50,20 @@ void clone_print_fingerprint(char *str, const clone *clone) {
   }
 }
 
+void clone_print_verbosely(FILE *fd, const clone *clone) {
+  uint64_t size;
+  pred *pred_list;
+  clone_get_predicates(clone, &pred_list, &size);
+  for(int64_t i = 0; i < size; ++i) {
+    char str[pred_fingerprint_size()];
+    char str2[pred_extensional_size()];
+    pred_print_fingerprint(str2, &pred_list[i]);
+    pred_print_extensional(str, &pred_list[i]);
+    fprintf(fd, "%s: \t%s\n", str, str2);
+  }
+  free(pred_list);
+}
+
 void clone_insert_pred(clone *clone, const pred *pred) {
   assert(pred->arity <= 2);
   switch(pred->arity) {
