@@ -54,8 +54,4 @@ size_t pred_extensional_size();
  */
 void pred_print_extensional(char *str, const pred *pred);
 
-/** `pred_read` read one predicate from binary file.
- */
-void pred_read(FILE *fd, pred *pred);
-
 #endif

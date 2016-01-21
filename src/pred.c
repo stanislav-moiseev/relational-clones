@@ -71,16 +71,3 @@ void pred_print_extensional(char *str, const pred *pred) {
   }
 }
 
-void pred_read(FILE *fd, pred *pred) {
-  uint64_t k = read_uint64(fd);
-  assert(k == K);
-  
-  pred->arity = read_uint64(fd);
-  pred->data = read_uint64(fd);
-
-  /* DBG */
-  /* char str[pred_extensional_size()]; */
-  /* pred_print_extensional(str, pred); */
-  /* printf("pred: \t%s\n", str); */
-}
-

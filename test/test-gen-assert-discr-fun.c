@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "clone.h"
 #include "z3/gen.h"
+#include "binary.h"
 
 
 void test_gen_assert_disrc_fun() {

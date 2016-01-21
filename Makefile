@@ -6,6 +6,7 @@ CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
 SRCS =			\
 	src/pred.c	\
 	src/clone.c	\
+	src/binary.c	\
 	src/z3/gen.c
 
 OBJS =	$(SRCS:.c=.o)

@@ -10,6 +10,7 @@
 #include "pred.h"
 #include "utils.h"
 #include "clone.h"
+#include "binary.h"
 
 void test_clone_read_layer() {
   char *filename;
