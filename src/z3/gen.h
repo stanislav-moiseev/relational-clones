@@ -6,7 +6,7 @@
 #define Z3_GEN_H
 
 #include "pred.h"
-#include "clone.h"
+#include "class.h"
 
 /** A predicate of a functional symbol,
  * given by its name and arity.
@@ -66,9 +66,9 @@ void gen_preserve(FILE *fd, int if_not, int k, const token *pred, const token *f
 
 /** `gen_assert_discr_fun` write an assertion for Z#Solver that 
  * there exists a function `f` of arity `fun_arity` such that
- *   1) f preserves all the predicates from `clone`;
+ *   1) f preserves all the basis predicates from `class`;
  *   2) f does not preserve the predicate `pred`.
  */
-void gen_assert_discr_fun(FILE *fd, const clone *clone, const pred *pred, int fun_arity);
+void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fun_arity);
 
 #endif

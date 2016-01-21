@@ -9,7 +9,7 @@
 
 #include "pred.h"
 #include "utils.h"
-#include "clone.h"
+#include "class.h"
 #include "z3/gen.h"
 #include "binary.h"
 
@@ -20,8 +20,8 @@ void test_gen_assert_disrc_fun() {
   FILE *fd50 = fopen(filename50, "rb");
   assert(fd50 != NULL);
   size_t size50;
-  clone *clones50;
-  assert(clone_aread_layer(fd50, &clones50, &size50));
+  class *layer50;
+  assert(class_aread_layer(fd50, &layer50, &size50));
   free(filename50);
   fclose(fd50);
   
@@ -30,28 +30,28 @@ void test_gen_assert_disrc_fun() {
   FILE *fd51 = fopen(filename51, "rb");
   assert(fd51 != NULL);
   size_t size51;
-  clone *clones51;
-  assert(clone_aread_layer(fd51, &clones51, &size51));
+  class *layer51;
+  assert(class_aread_layer(fd51, &layer51, &size51));
   free(filename51);
   fclose(fd51);
   
 
   for(int i = 0; i < size50; ++i) {
     for(int j = 0; j < size51; ++j) {
-      const clone *clone50 = &clones50[i];
-      const clone *clone51 = &clones51[j];
+      const class *class50 = &layer50[i];
+      const class *class51 = &layer51[j];
       clone clone_d;
-      clone_diff(clone51, clone50, &clone_d);
+      clone_diff(&class51->clone, &class50->clone, &clone_d);
 
       clone clone_d2;
-      clone_diff(clone50, clone51, &clone_d2);
+      clone_diff(&class50->clone, &class51->clone, &clone_d2);
 
       /* if one set is a subset of the other set */
       if(clone_is_empty(&clone_d2)) {
         pred *diff_preds;
         uint64_t card;
         clone_get_predicates(&clone_d, &diff_preds, &card);
-        assert(card > 0);       /* clone are not identical */
+        assert(card > 0);       /* class are not identical */
 
         /* select some discriminating predicate */
         const pred *pred = &diff_preds[0];
@@ -60,7 +60,7 @@ void test_gen_assert_disrc_fun() {
         assert(asprintf(&out_name, "test/z3/%d-%d.z3", i, j) >= 0);
         FILE *out = fopen(out_name, "w");
         assert(out != NULL);
-        gen_assert_discr_fun(out, clone50, pred, 2);
+        gen_assert_discr_fun(out, class50, pred, 5);
 
         free(diff_preds);
         free(out_name);
@@ -69,8 +69,8 @@ void test_gen_assert_disrc_fun() {
     }
   }
 
-  free(clones50);
-  free(clones51);
+  free(layer50);
+  free(layer51);
 }
 
 int main() {

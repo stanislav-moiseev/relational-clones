@@ -102,12 +102,13 @@ void gen_preserve(FILE *fd, int if_not, int k, const token *pred, const token *f
   }
 }
 
-void gen_assert_discr_fun(FILE *fd, const clone *clone, const pred *pred, int fun_arity) {
+void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fun_arity) {
   gen_header(fd, K);
-  
+
+  /* the basis of the clone */
   struct pred *pred_list;
   uint64_t num_preds;
-  assert(clone_get_predicates(clone, &pred_list, &num_preds));
+  assert(clone_get_predicates(&class->basis, &pred_list, &num_preds));
 
   /* write a definition for all predicates */
   token tokens[num_preds];
