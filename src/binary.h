@@ -25,7 +25,9 @@ int class_read(FILE *fd, class *class);
  * It allocates an array to store all classes.
  * The pointer should be free'd to release the storage.
  */
-void layer_aread_classes(FILE *fd, int layer_id, class **classes, size_t *size);
+void layer_aread_classes(FILE *fd, layer *layer);
+
+void layer_aread_connections(FILE *fd, layer *layer);
 
 /**
  * `dir_clones` - directory where to look for binary files with clones

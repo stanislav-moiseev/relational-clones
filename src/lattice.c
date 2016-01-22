@@ -10,12 +10,16 @@
 #include "utils.h"
 #include "lattice.h"
 
+void layer_free(layer *layer) {
+  for(class *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
+    class_free(class);
+  }
+  free(layer->classes);
+}
+
 void lattice_free(lattice *lattice) {
-  for(layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {   
-    for(class *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
-      class_free(class);
-    }
-    free(layer->classes);
+  for(layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
+    layer_free(layer);
   }
   free(lattice->layers);
   lattice->layers = NULL;

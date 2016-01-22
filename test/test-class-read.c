@@ -19,12 +19,11 @@ void test_layer_read_classes() {
   FILE *fd = fopen(filename, "rb");
   assert(fd != NULL);
   
-  size_t size;
-  class *classes;
-  layer_aread_classes(fd, 50, &classes, &size);
+  layer layer;
+  layer_aread_classes(fd, &layer);
 
   free(filename);
-  free(classes);
+  layer_free(&layer);
   fclose(fd);
 }
 

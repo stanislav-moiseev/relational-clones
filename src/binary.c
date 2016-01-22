@@ -41,16 +41,14 @@ int class_read(FILE *fd, class *class) {
   return 1;
 }
 
-void layer_aread_classes(FILE *fd, int layer_id, class **classes, size_t *size) {
-  *size = read_uint64(fd);
+void layer_aread_classes(FILE *fd, layer *layer) {
+  layer->num_classes = read_uint64(fd);
   
-  (*classes) = malloc(*size * sizeof(class));
-  assert(*classes != NULL);
-  for(int j = 0; j < *size; ++j) {
-    class * class = *classes + j;
+  layer->classes = malloc(layer->num_classes * sizeof(struct class));
+  assert(layer->classes != NULL);
+  for(int j = 0; j < layer->num_classes; ++j) {
+    class * class = layer->classes + j;
     class_read(fd, class);
-    class->id.layer_id = layer_id;
-    class->id.class_id = j;
   }
 
   /* test EOF */
@@ -58,12 +56,12 @@ void layer_aread_classes(FILE *fd, int layer_id, class **classes, size_t *size) 
   assert(fread(&c, 1, 1, fd) == 0);
 }
 
-void layer_aread_connections(FILE *fd, layer *layer, int layer_id) {
+void layer_aread_connections(FILE *fd, layer *layer) {
   assert(layer->num_classes == read_uint64(fd));
   for(int class_id = 0; class_id < layer->num_classes; ++class_id) {
     class *class = &layer->classes[class_id];
-    assert(read_uint64(fd) == class->id.layer_id);
-    assert(read_uint64(fd) == class->id.class_id);
+    class->id.layer_id = read_uint64(fd);
+    class->id.class_id = read_uint64(fd);
     
     class->num_subclasses = read_uint64(fd);
     class->subclasses = malloc(class->num_subclasses * sizeof(struct class_id));
@@ -96,8 +94,8 @@ void lattice_read(int num_layers, const char *dir_clones, const char *dir_connec
     FILE *fd_connections = fopen(fname_connections, "rb");
     assert(fd_connections != NULL);
 
-    layer_aread_classes(fd_classes, layer_id, &layer->classes, &layer->num_classes);
-    layer_aread_connections(fd_connections, layer, layer_id);
+    layer_aread_classes(fd_classes, layer);
+    layer_aread_connections(fd_connections, layer);
 
     free(fname_classes);
     free(fname_connections);

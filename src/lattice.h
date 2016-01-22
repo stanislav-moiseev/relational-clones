@@ -22,6 +22,8 @@ struct lattice {
 
 typedef struct lattice lattice;
 
+void layer_free(layer *layer);
+
 /** `lattice_free` releases the memory allocated to store the layers.
  * The function also calls `class_free` on all classes.
  */
