@@ -20,31 +20,37 @@ OBJS =	$(SRCS:.c=.o)
 
 TESTS =						\
 	test/test0.out				\
-	test/test-class-read.out		\
 	test/test-gen-assert-discr-fun-two-layers.out	\
-	test/test-find-classes-with-one-subclass.out
+	test/test-find-classes-with-one-subclass.out	\
+	#test/test-high-arity.c
 
-all:  $(TESTS)
+TESTS-2013 =					\
+	test/binary/test-class-read-2013.out	\
+	test/binary/test-recode-binary.out
 
-test: all
+all:  $(TESTS) $(TESTS-2013)
+
+test: $(TESTS)
 	@./test/test0.out
-	@./test/test-class-read.out
 	@mkdir -p output/disrc-fun-two-layers/z3
 	@./test/test-gen-assert-discr-fun-two-layers.out
 	@mkdir -p output/classes-with-one-subclass/z3
 	@./test/test-find-classes-with-one-subclass.out
 
-
 test/test0.out: test/test0.c $(OBJS)
-	$(CC) -o $@ $^
-
-test/test-class-read.out: test/test-class-read.c $(OBJS)
 	$(CC) -o $@ $^
 
 test/test-gen-assert-discr-fun-two-layers.out: test/test-gen-assert-discr-fun-two-layers.c $(OBJS)
 	$(CC) -o $@ $^
 
 test/test-find-classes-with-one-subclass.out: test/test-find-classes-with-one-subclass.c $(OBJS)
+	$(CC) -o $@ $^
+
+
+test2013:
+	@./test/binary/test-class-read-2013.out
+
+test/binary/test-class-read-2013.out: test/binary/test-class-read-2013.c $(OBJS)
 	$(CC) -o $@ $^
 
 test/binary/test-recode-binary.out: test/binary/test-recode-binary.c $(OBJS)

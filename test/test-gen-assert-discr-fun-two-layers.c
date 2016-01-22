@@ -11,9 +11,9 @@
 #include "utils.h"
 #include "class.h"
 #include "gen/z3.h"
-#include "binary-2013.h"
+#include "binary-2016.h"
 
-void get_assert_two_layers(layer *layer1, layer *layer2) {
+void get_assert_two_layers(const layer *layer1, const layer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {
     for(int j = 0; j < layer2->num_classes; ++j) {
       const class *class1 = layer1->classes + i;
@@ -35,32 +35,26 @@ void get_assert_two_layers(layer *layer1, layer *layer2) {
   }
 }
 
-void test_gen_assert_disrc_fun_two_layers(int layer1_id, int layer2_id) {
-  char *fname[2];
-  FILE *fd[2];
-  layer layer[2];
-  for(int i = 0; i < 2; ++i) {
-    if(i == 0) asprintf(&fname[i], "data/all_maj_cpp/%d.bin", layer1_id);
-    else asprintf(&fname[i], "data/all_maj_cpp/%d.bin", layer2_id);
-    
-    fd[i] = fopen(fname[i], "rb");
-    assert(fd[i] != NULL);
-    
-    layer_aread_classes_2013(fd[i], &layer[i]);
-    
-    free(fname[i]);
-    fclose(fd[i]);
-  }
+void test_gen_assert_disrc_fun_two_layers(const char *fname, layer_id id1, layer_id id2) {
+  FILE *fd = fopen(fname, "rb");
+  assert(fd != NULL);
 
-  get_assert_two_layers(&layer[0], &layer[1]);
+  lattice lattice;
+  lattice_read(fd, &lattice);
+
+  const layer *layer1 = lattice_get_layer(&lattice, id1);
+  assert(layer1 != NULL);
+  const layer *layer2 = lattice_get_layer(&lattice, id2);
+  assert(layer2 != NULL);
+  get_assert_two_layers(layer1, layer2);
   
-  layer_free(&layer[0]);
-  layer_free(&layer[1]);
+  lattice_free(&lattice);
+  fclose(fd);
 }
 
 int main() {
   printf("test-gen-assert-disrc-fun-two-layers: "); fflush(stdout);
-  test_gen_assert_disrc_fun_two_layers(50, 51);
+  test_gen_assert_disrc_fun_two_layers("data/all-maj.2016", 49, 50);
   printf("Ok.\n");
 }
 

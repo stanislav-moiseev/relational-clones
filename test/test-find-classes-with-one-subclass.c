@@ -7,17 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
-#include "pred.h"
-#include "clone.h"
-#include "class.h"
-#include "lattice.h"
-#include "binary-2013.h"
+#include "binary-2016.h"
 #include "gen/z3.h"
 
-void test_find_classes_with_one_subclass() {
+void test_find_classes_with_one_subclass(const char *fname) {
+  FILE *fd = fopen(fname, "rb");
+  assert(fd != NULL);
+  
   lattice lattice;
-  lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
+  lattice_read(fd, &lattice);
   
   class **classes;
   uint64_t num_classes;
@@ -32,7 +30,7 @@ void test_find_classes_with_one_subclass() {
     class *class = *pclass;
     assert(class->num_subclasses == 1);
     struct class *subclass = lattice_get_class(&lattice, class->subclasses[0]);
-    fprintf(flog, "%d:\t class %.2d:%-6d ~~>  subclass %.2d:%-6d\n",
+    fprintf(flog, "%d:\t class %2d:%-6d ~~>  subclass %2d:%-6d\n",
            idx,
            class->id.layer_id, class->id.class_id,
            subclass->id.layer_id, subclass->id.class_id);
@@ -53,10 +51,11 @@ void test_find_classes_with_one_subclass() {
   fclose(flog);
   free(classes);
   lattice_free(&lattice);
+  fclose(fd);
 }
 
 int main() {
   printf("test-find-classes-with-one-subclass: "); fflush(stdout);
-  test_find_classes_with_one_subclass();
+  test_find_classes_with_one_subclass("data/all-maj.2016");
   printf("Ok.\n");
 }
