@@ -22,7 +22,7 @@ void get_assert_two_layers(layer *layer1, layer *layer2) {
       /* if one set is a subset of the other set */
       if(clone_subset(&class1->clone, &class2->clone)) {
         char *out_name;
-        assert(asprintf(&out_name, "output/z3/%d-%d.z3", i, j) >= 0);
+        assert(asprintf(&out_name, "output/disrc-fun-two-layers/z3/%d-%d.z3", i, j) >= 0);
         FILE *out = fopen(out_name, "w");
         assert(out != NULL);
         
@@ -35,7 +35,7 @@ void get_assert_two_layers(layer *layer1, layer *layer2) {
   }
 }
 
-void test_gen_assert_disrc_fun(int layer1_id, int layer2_id) {
+void test_gen_assert_disrc_fun_two_layers(int layer1_id, int layer2_id) {
   char *fname[2];
   FILE *fd[2];
   layer layer[2];
@@ -59,8 +59,8 @@ void test_gen_assert_disrc_fun(int layer1_id, int layer2_id) {
 }
 
 int main() {
-  printf("test-gen-assert-disrc-fun: "); fflush(stdout);
-  test_gen_assert_disrc_fun(50, 51);
+  printf("test-gen-assert-disrc-fun-two-layers: "); fflush(stdout);
+  test_gen_assert_disrc_fun_two_layers(50, 51);
   printf("Ok.\n");
 }
 

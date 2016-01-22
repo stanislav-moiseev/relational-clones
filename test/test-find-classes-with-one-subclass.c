@@ -46,7 +46,7 @@ void test_find_classes_with_one_subclass() {
              class->id.layer_id, class->id.class_id);
     FILE *fout = fopen(foutname, "w");
     assert(fout != NULL);
-    gen_assert_discr_fun_two_classes(fout, class, subclass, 3);
+    gen_assert_discr_fun_two_classes(fout, class, subclass, 4);
     
     free(foutname);
     fclose(fout);

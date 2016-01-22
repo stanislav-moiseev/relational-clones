@@ -24,21 +24,25 @@ typedef struct token token;
  */ 
 void gen_header(FILE *fd, int k);
 
-/**
- * For k==3 and predicate p1^(2) prints:
- *      (declare-fun p1 (E3 E3 ) Bool)
- *      (assert (= (p1 V0 V0) ))
- *      (assert (= (p1 V1 V0) ))
- *      (assert (= (p1 V2 V0) ))
- *      (assert (= (p1 V0 V1) ))
- *      (assert (= (p1 V1 V1) ))
- *      (assert (= (p1 V2 V1) ))
- *      (assert (= (p1 V0 V2) ))
- *      (assert (= (p1 V1 V2) ))
- *      (assert (= (p1 V2 V2) ))
+/** `gen_pred` prints the declaration of the predicate including the values of
+ * the predicate on all inputs.
+ * Output examples for k==3 and predicates p5^(1) and p6^(2):
  *
- * Note that the values of the predicate of the particular input are /not/
- * printed.
+ * (declare-fun p5 (E3) Bool)
+ * (assert (= (p5 V0) false))
+ * (assert (= (p5 V1) true))
+ * (assert (= (p5 V2) true))
+ * 
+ * (declare-fun p6 (E3 E3) Bool)
+ * (assert (= (p6 V0 V0) true))
+ * (assert (= (p6 V0 V1) true))
+ * (assert (= (p6 V0 V2) false))
+ * (assert (= (p6 V1 V0) true))
+ * (assert (= (p6 V1 V1) false))
+ * (assert (= (p6 V1 V2) false))
+ * (assert (= (p6 V2 V0) false))
+ * (assert (= (p6 V2 V1) false))
+ * (assert (= (p6 V2 V2) false))
  */
 void gen_pred(FILE *fd, int k, const token *tk, const pred *pred);
 

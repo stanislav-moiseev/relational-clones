@@ -17,23 +17,18 @@ void gen_header(FILE *fd, int k) {
   for(int i = 0; i < k; ++i) {
     fprintf(fd, "V%d ", i);
   }
-  fprintf(fd, ")))\n");
+  fprintf(fd, ")))\n\n");
 }
 
-void gen_pred(FILE *fd, int k, const token *tk, const pred *pred) {
+void gen_pred1(FILE *fd, int k, const token *tk, const pred *pred) {
   fprintf(fd, "(declare-fun %s (", tk->name);
   for(int i = 0; i < tk->arity; ++i) {
-    fprintf(fd, "E%d ", k);
+    fprintf(fd, " E%d", k);
   }
   fprintf(fd, ") Bool)\n");
 
-
-  int max = 1;
-  for(int i = 0; i < tk->arity; ++i) {
-    max *= k;
-  }
-  /* max == k^arity */
-
+  int max = int_pow(k, pred->arity);
+  
   for(int i = 0; i < max; ++i) {
     fprintf(fd, "(assert (= (%s", tk->name);
     /* represent `i` in the ternary form,
@@ -54,6 +49,12 @@ void gen_pred(FILE *fd, int k, const token *tk, const pred *pred) {
     }
     fprintf(fd, ")\n");
   }
+  fprintf(fd, "\n");
+}
+
+
+void gen_pred(FILE *fd, int k, const token *tk, const pred *pred) {
+  gen_pred1(fd, k, tk, pred);
 }
 
 void gen_fun(FILE *fd, int k, const token *f) {
@@ -61,7 +62,7 @@ void gen_fun(FILE *fd, int k, const token *f) {
   for(int i = 0; i < f->arity; ++i) {
     fprintf(fd, "E%d ", k);
   }
-  fprintf(fd, ") E%d)\n", k);
+  fprintf(fd, ") E%d)\n\n", k);
 }
 
 
@@ -97,9 +98,9 @@ void gen_preserve(FILE *fd, int if_not, int k, const token *pred, const token *f
   }
 
   if(if_not) {
-    fprintf(fd, ")))))\n");
+    fprintf(fd, ")))))\n\n");
   } else {
-    fprintf(fd, "))))\n");
+    fprintf(fd, "))))\n\n");
   }
 }
 
@@ -141,7 +142,7 @@ void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fu
 
   /* write final commands */
   fprintf(fd, "\n(check-sat)\n");
-  /* fprintf(fd, "(get-model)\n"); */
+  fprintf(fd, "(get-model)\n");
   
   free(pred_list);
   for(int i = 0; i < num_preds; ++i) {
