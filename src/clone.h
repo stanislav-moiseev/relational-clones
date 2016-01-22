@@ -67,11 +67,16 @@ int clone_is_empty(const clone *clone);
  * The pointer should be free'd to release the storage.
  * On success, `clone_get_predicates` returns non-zero.
  */
-int clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
+void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
+
 
 /** `clone_eq` returns non-zero if two clones are equal.
  */
 int clone_eq(const clone *clone1, const clone *clone2);
+
+/** `clone_subset` returns non-zero if `clone1` is a subset of `clone2`.
+ */
+int clone_subset(const clone *clone1, const clone *clone2);
 
 /** `clone_union` computes the union of two clones and write the result to the
  * third clone.

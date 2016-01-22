@@ -7,9 +7,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "utils.h"
 #include "pred.h"
 #include "clone.h"
-#include "utils.h"
+#include "clone-iterator.h"
 
 int clone_consistent(const clone *clone) {
   /* arity == 0 */
@@ -124,58 +125,36 @@ int clone_is_empty(const clone *clone) {
   return 1;
 }
 
-
-int clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size) {
+void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size) {
   /* TODO: use actual size of clone here, not the maximum possible */
   *pred_list = malloc((2 + int_pow2(K) + int_pow2(K*K)) * sizeof(pred));
-  if(*pred_list == NULL) return 0;
+  assert(*pred_list != NULL);
   
   uint64_t _size = 0;
   pred *current_pred = *pred_list;
-  
-  /* arity == 0 */
-  for(int64_t shift = 1; shift >= 0; --shift) {
-    if(clone->data0 & ((uint32_t)1 << shift)) {
-      ++_size;
-      current_pred->arity = 0;
-      current_pred->data  = shift;
-      ++current_pred;
-    }
-  }
 
-  /* arity == 1 */
-  for(int64_t shift = int_pow2(K)-1; shift >= 0; --shift) {
-    if(clone->data1 & ((uint32_t)1 << shift)) {
-      ++_size;
-      current_pred->arity = 1;
-      current_pred->data  = shift;
-      ++current_pred;
-    }
+  for(clone_iterator it = clone_iterator_begin(clone); !clone_iterator_end(clone, &it); clone_iterator_next(&it)) {
+    *current_pred = clone_iterator_deref(&it);
+    ++_size;
+    ++current_pred;
   }
-  
-  /* arity == 2 */
-  /* max_offset = int_pow2(K*K) / 64; */
-  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    for(int64_t shift = 63; shift >= 0; --shift) {
-      if(clone->data2[offset] & ((uint64_t)1 << shift)) {
-        ++_size;
-        current_pred->arity = 2;
-        current_pred->data  = (64*offset) + shift;
-        ++current_pred;
-      }
-    }
-  }
-  
   *size = _size;
-  return 1;
 }
-
 
 int clone_eq(const clone *clone1, const clone *clone2) {
   if(clone1->data0 != clone2->data0) return 0;
   if(clone1->data1 != clone2->data1) return 0;
   for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
     if(clone1->data2[offset] != clone2->data2[offset]) return 0;
+  }
+  return 1;
+}
+
+int clone_subset(const clone *clone1, const clone *clone2) {
+  if((clone1->data0 | clone2->data0) != clone2->data0) return 0;
+  if((clone1->data1 | clone2->data1) != clone2->data1) return 0;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    if((clone1->data2[offset] | clone2->data2[offset]) != clone2->data2[offset]) return 0;
   }
   return 1;
 }

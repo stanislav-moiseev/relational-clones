@@ -3,12 +3,13 @@ CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
 	-Wno-error=maybe-uninitialized			\
 	-Isrc
 
-SRCS =			\
-	src/pred.c	\
-	src/clone.c	\
-	src/class.c	\
-	src/lattice.c	\
-	src/binary.c	\
+SRCS =				\
+	src/pred.c		\
+	src/clone.c		\
+	src/clone-iterator.c	\
+	src/class.c		\
+	src/lattice.c		\
+	src/binary.c		\
 	src/z3/gen.c
 
 OBJS =	$(SRCS:.c=.o)
