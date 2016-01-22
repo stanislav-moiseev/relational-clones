@@ -20,7 +20,7 @@ OBJS =	$(SRCS:.c=.o)
 TESTS =						\
 	test/test0.out				\
 	test/test-class-read.out		\
-	test/test-gen-assert-discr-fun.out	\
+	test/test-gen-assert-discr-fun-two-layers.out	\
 	test/test-find-classes-with-one-subclass.out
 
 all:  $(TESTS)
@@ -28,7 +28,9 @@ all:  $(TESTS)
 test: all
 	@./test/test0.out
 	@./test/test-class-read.out
-	@./test/test-gen-assert-discr-fun.out
+	@mkdir -p output/disrc-fun-two-layers/z3
+	@./test/test-gen-assert-discr-fun-two-layers.out
+	@mkdir -p output/classes-with-one-subclass/z3
 	@./test/test-find-classes-with-one-subclass.out
 
 
@@ -38,7 +40,7 @@ test/test0.out: test/test0.c $(OBJS)
 test/test-class-read.out: test/test-class-read.c $(OBJS)
 	$(CC) -o $@ $^
 
-test/test-gen-assert-discr-fun.out: test/test-gen-assert-discr-fun.c $(OBJS)
+test/test-gen-assert-discr-fun-two-layers.out: test/test-gen-assert-discr-fun-two-layers.c $(OBJS)
 	$(CC) -o $@ $^
 
 test/test-find-classes-with-one-subclass.out: test/test-find-classes-with-one-subclass.c $(OBJS)

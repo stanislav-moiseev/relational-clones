@@ -23,8 +23,6 @@ void test_find_classes_with_one_subclass() {
   uint64_t num_classes;
   lattice_find_classes_with_one_subclass(&lattice, &classes, &num_classes);
 
-  printf("\n");
-
   const char *flogname = "output/classes-with-one-subclass/result.txt";
   FILE *flog = fopen(flogname, "w");
   assert(flog != NULL);
