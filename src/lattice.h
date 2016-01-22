@@ -7,6 +7,7 @@
 
 #include "class.h"
 
+
 struct layer {
   uint64_t num_classes;
   class *classes;
@@ -30,5 +31,7 @@ void lattice_free(lattice *lattice);
  * the given class id.
  */
 class *lattice_get_class(const lattice *lattice, class_id id);
+
+void lattice_find_classes_with_one_subclass(const lattice *lattice, class ***classes, uint64_t *num_classes);
 
 #endif

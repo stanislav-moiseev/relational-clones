@@ -27,6 +27,12 @@ int class_read(FILE *fd, class *class);
  */
 void layer_aread_classes(FILE *fd, int layer_id, class **classes, size_t *size);
 
-void lattice_read(const char *dir_clones, int num_layers, const char *dir_connections, lattice *lattice);
+/**
+ * `dir_clones` - directory where to look for binary files with clones
+ * `dir_connectoins` - directory where to look for binary files with connections
+ * between clones (clones' subclasses)
+ * The function allocates memory to store `lattice`.
+ */
+void lattice_read(int num_layers, const char *dir_clones, const char *dir_connections, lattice *lattice);
 
 #endif

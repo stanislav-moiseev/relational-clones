@@ -79,7 +79,7 @@ void layer_aread_connections(FILE *fd, layer *layer, int layer_id) {
   assert(fread(&c, 1, 1, fd) == 0);
 }
 
-void lattice_read(const char *dir_clones, int num_layers, const char *dir_connections, lattice *lattice) {
+void lattice_read(int num_layers, const char *dir_clones, const char *dir_connections, lattice *lattice) {
   lattice->num_layers = num_layers;
   lattice->layers = malloc(num_layers * sizeof(layer));
   assert(lattice->layers != NULL);

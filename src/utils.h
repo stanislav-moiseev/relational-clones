@@ -6,6 +6,7 @@
 #define UTILS_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 /** `popcount32`, and `popcount64` returns the number of 1-bits in `x`.
  */

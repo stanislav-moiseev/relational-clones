@@ -74,7 +74,7 @@ void test_gen_assert_disrc_fun() {
 }
 
 int main() {
-  printf("test_gen_assert_disrc_fun: ");
+  printf("test-gen-assert-disrc-fun: "); fflush(stdout);
   test_gen_assert_disrc_fun();
   printf("Ok.\n");
 }
