@@ -142,7 +142,6 @@ void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fu
   /* write final commands */
   fprintf(fd, "\n(check-sat)\n");
   /* fprintf(fd, "(get-model)\n"); */
-
   
   free(pred_list);
   for(int i = 0; i < num_preds; ++i) {
@@ -157,8 +156,10 @@ void gen_assert_discr_fun_two_classes(FILE *fd, const class *class1, const class
 
   clone_iterator it = clone_iterator_begin(&diff);
   assert(!clone_iterator_end(&diff, &it));
+  
   pred pred = clone_iterator_deref(&it);
 
+  
   gen_assert_discr_fun(fd, class1, &pred, fun_arity);
 }
 

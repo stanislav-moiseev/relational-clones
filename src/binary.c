@@ -25,7 +25,7 @@ int class_read(FILE *fd, class *class) {
   for(int64_t i = size; i > 0; --i) {
     pred pred;
     pred_read(fd, &pred);
-    clone_insert_pred(&class->clone, &pred);
+    clone_insert_pred(&class->basis, &pred);
   }
   
   class->clone.data0 = read_uint32(fd);

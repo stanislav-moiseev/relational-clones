@@ -13,7 +13,6 @@
 #include "gen/z3.h"
 #include "binary.h"
 
-
 void get_assert_two_layers(layer *layer1, layer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {
     for(int j = 0; j < layer2->num_classes; ++j) {
@@ -27,7 +26,7 @@ void get_assert_two_layers(layer *layer1, layer *layer2) {
         FILE *out = fopen(out_name, "w");
         assert(out != NULL);
         
-        gen_assert_discr_fun_two_classes(out, class1, class2, 5);
+        gen_assert_discr_fun_two_classes(out, class1, class2, 3);
 
         free(out_name);
         fclose(out);
@@ -58,7 +57,6 @@ void test_gen_assert_disrc_fun(int layer1_id, int layer2_id) {
   layer_free(&layer[0]);
   layer_free(&layer[1]);
 }
-
 
 int main() {
   printf("test-gen-assert-disrc-fun: "); fflush(stdout);
