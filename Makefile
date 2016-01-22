@@ -10,7 +10,7 @@ SRCS =				\
 	src/class.c		\
 	src/lattice.c		\
 	src/binary.c		\
-	src/z3/gen.c
+	src/gen/z3.c
 
 OBJS =	$(SRCS:.c=.o)
 
@@ -23,7 +23,9 @@ TESTS =						\
 	test/test-gen-assert-discr-fun.out	\
 	test/test-find-classes-with-one-subclass.out
 
-tests:  $(TESTS)
+all:  $(TESTS)
+
+test: all
 	@./test/test0.out
 	@./test/test-class-read.out
 	@./test/test-gen-assert-discr-fun.out

@@ -6,10 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "z3/gen.h"
+#include "gen/z3.h"
 #include "utils.h"
 #include "pred.h"
 #include "clone.h"
+#include "clone-iterator.h"
 
 void gen_header(FILE *fd, int k) {
   fprintf(fd, "(declare-datatypes () ((E%d ", k);
@@ -108,7 +109,7 @@ void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fu
   /* the basis of the clone */
   struct pred *pred_list;
   uint64_t num_preds;
-  assert(clone_get_predicates(&class->basis, &pred_list, &num_preds));
+  clone_get_predicates(&class->basis, &pred_list, &num_preds);
 
   /* write a definition for all predicates */
   token tokens[num_preds];
@@ -147,5 +148,17 @@ void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fu
   for(int i = 0; i < num_preds; ++i) {
     free(tokens[i].name);
   }
+}
+
+void gen_assert_discr_fun_two_classes(FILE *fd, const class *class1, const class *class2, int fun_arity) {
+  /* select any predicate discriminating two clones */
+  clone diff;
+  clone_diff(&class2->clone, &class1->clone, &diff);
+
+  clone_iterator it = clone_iterator_begin(&diff);
+  assert(!clone_iterator_end(&diff, &it));
+  pred pred = clone_iterator_deref(&it);
+
+  gen_assert_discr_fun(fd, class1, &pred, fun_arity);
 }
 

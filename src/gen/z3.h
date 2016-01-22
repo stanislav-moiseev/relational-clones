@@ -2,8 +2,8 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef Z3_GEN_H
-#define Z3_GEN_H
+#ifndef GEN_Z3_H
+#define GEN_Z3_H
 
 #include "pred.h"
 #include "class.h"
@@ -70,5 +70,8 @@ void gen_preserve(FILE *fd, int if_not, int k, const token *pred, const token *f
  *   2) f does not preserve the predicate `pred`.
  */
 void gen_assert_discr_fun(FILE *fd, const class *class, const pred *pred, int fun_arity);
+
+void gen_assert_discr_fun_two_classes(FILE *fd, const class *class1, const class *class2, int fun_arity);
+
 
 #endif
