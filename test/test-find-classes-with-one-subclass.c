@@ -12,12 +12,12 @@
 #include "clone.h"
 #include "class.h"
 #include "lattice.h"
-#include "binary.h"
+#include "binary-2013.h"
 #include "gen/z3.h"
 
 void test_find_classes_with_one_subclass() {
   lattice lattice;
-  lattice_read(51, "data/all_maj_cpp", "data/lattice2", &lattice);
+  lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
   
   class **classes;
   uint64_t num_classes;
@@ -44,7 +44,7 @@ void test_find_classes_with_one_subclass() {
              class->id.layer_id, class->id.class_id);
     FILE *fout = fopen(foutname, "w");
     assert(fout != NULL);
-    gen_assert_discr_fun_two_classes(fout, class, subclass, 4);
+    gen_assert_discr_fun_two_classes(fout, class, subclass, 2);
     
     free(foutname);
     fclose(fout);

@@ -11,7 +11,7 @@
 #include "utils.h"
 #include "class.h"
 #include "gen/z3.h"
-#include "binary.h"
+#include "binary-2013.h"
 
 void get_assert_two_layers(layer *layer1, layer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {
@@ -46,7 +46,7 @@ void test_gen_assert_disrc_fun_two_layers(int layer1_id, int layer2_id) {
     fd[i] = fopen(fname[i], "rb");
     assert(fd[i] != NULL);
     
-    layer_aread_classes(fd[i], &layer[i]);
+    layer_aread_classes_2013(fd[i], &layer[i]);
     
     free(fname[i]);
     fclose(fd[i]);

@@ -9,7 +9,8 @@ SRCS =				\
 	src/clone-iterator.c	\
 	src/class.c		\
 	src/lattice.c		\
-	src/binary.c		\
+	src/binary-2013.c	\
+	src/binary-2016.c	\
 	src/gen/z3.c
 
 OBJS =	$(SRCS:.c=.o)
@@ -44,6 +45,9 @@ test/test-gen-assert-discr-fun-two-layers.out: test/test-gen-assert-discr-fun-tw
 	$(CC) -o $@ $^
 
 test/test-find-classes-with-one-subclass.out: test/test-find-classes-with-one-subclass.c $(OBJS)
+	$(CC) -o $@ $^
+
+test/binary/test-recode-binary.out: test/binary/test-recode-binary.c $(OBJS)
 	$(CC) -o $@ $^
 
 

@@ -7,11 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pred.h"
-#include "utils.h"
-#include "clone.h"
-#include "binary.h"
-#include "lattice.h"
+#include "binary-2013.h"
 
 void test_layer_read_classes() {
   char *filename;
@@ -20,7 +16,7 @@ void test_layer_read_classes() {
   assert(fd != NULL);
   
   layer layer;
-  layer_aread_classes(fd, &layer);
+  layer_aread_classes_2013(fd, &layer);
 
   free(filename);
   layer_free(&layer);
@@ -29,7 +25,7 @@ void test_layer_read_classes() {
 
 void test_lattice_read() {
   lattice lattice;
-  lattice_read(51, "data/all_maj_cpp", "data/lattice2", &lattice);
+  lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
   lattice_free(&lattice);
 }
 

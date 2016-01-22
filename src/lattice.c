@@ -26,11 +26,25 @@ void lattice_free(lattice *lattice) {
 }
 
 class *lattice_get_class(const lattice *lattice, class_id id) {
-  assert(id.layer_id <= lattice->num_layers);
-  assert(id.class_id < lattice->layers[id.layer_id-1].num_classes);
-  /* NB. id.layer_id - 1, because layer numbering starts from 1 */
-  return &lattice->layers[id.layer_id-1].classes[id.class_id];
+  if(id.layer_id < lattice->num_layers) {
+    if(id.class_id < lattice->layers[id.layer_id].num_classes) {
+      class *class = &lattice->layers[id.layer_id].classes[id.class_id];
+      assert(class->id.layer_id == id.layer_id && class->id.class_id == id.class_id);
+      return class;
+    }
+  }
+  return NULL;
 }
+
+layer *lattice_get_layer(const lattice *lattice, layer_id id) {
+  if(id < lattice->num_layers) {
+    layer *layer = lattice->layers + id;
+    assert(layer->id = id);
+    return layer;
+  }
+  return NULL;
+}
+
 
 void lattice_find_classes_with_one_subclass(const lattice *lattice, class ***classes, uint64_t *num_classes) {
   size_t capacity = 128;
