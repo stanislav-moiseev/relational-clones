@@ -16,8 +16,7 @@ struct z3_wrapper {
 };
 typedef struct z3_wrapper z3_wrapper;
 
-/**
-   \brief Simpler error handler.
+/** Simpler error handler.
  */
 static void z3_error_handler(Z3_context c, Z3_error_code e)
 {
@@ -28,6 +27,9 @@ void z3_wrapper_init(z3_wrapper *z3);
 
 void z3_wrapper_free(z3_wrapper *z3);
 
+/** `z3_wrapper_check` checks whether the current logical context is
+ * satisfiable.
+ */
 void z3_wrapper_check(z3_wrapper *z3);
 
 #endif
