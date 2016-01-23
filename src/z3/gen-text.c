@@ -20,7 +20,7 @@ void gen_header(FILE *fd, int k) {
   fprintf(fd, ")))\n\n");
 }
 
-void gen_pred1(FILE *fd, int k, const token *tk, const pred *pred) {
+void gen_pred(FILE *fd, int k, const token *tk, const pred *pred) {
   fprintf(fd, "(declare-fun %s (", tk->name);
   for(int i = 0; i < tk->arity; ++i) {
     fprintf(fd, " E%d", k);
@@ -50,11 +50,6 @@ void gen_pred1(FILE *fd, int k, const token *tk, const pred *pred) {
     fprintf(fd, ")\n");
   }
   fprintf(fd, "\n");
-}
-
-
-void gen_pred(FILE *fd, int k, const token *tk, const pred *pred) {
-  gen_pred1(fd, k, tk, pred);
 }
 
 void gen_fun(FILE *fd, int k, const token *f) {
