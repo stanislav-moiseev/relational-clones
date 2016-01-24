@@ -11,6 +11,7 @@ SRCS =				\
 	src/clone-iterator.c	\
 	src/class.c		\
 	src/lattice.c		\
+	src/algorithms.c	\
 	src/binary-2013.c	\
 	src/binary-2016.c	\
 	src/z3/wrapper.c	\
@@ -36,10 +37,10 @@ all:  $(TESTS) $(TESTS-2013)
 
 test: $(TESTS)
 	@./test/test0.out
-	@mkdir -p output/disrc-fun-two-layers/z3
+#	@mkdir -p output/disrc-fun-two-layers/z3
 	@./test/test-discr-fun-two-layers.out
-	@mkdir -p output/classes-with-one-subclass/z3
-	@./test/test-classes-with-one-subclass.out
+#	@mkdir -p output/classes-with-one-subclass/z3
+#	@./test/test-classes-with-one-subclass.out
 
 test/test0.out: test/test0.c $(OBJS)
 	$(CC) -o $@ $^

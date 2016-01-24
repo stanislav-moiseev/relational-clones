@@ -223,11 +223,11 @@ void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct f
 }
 
 
-Z3_lbool z3_find_discr_function(const class *class, const struct class *subclass, uint32_t fun_arity, fun *fun) {
+Z3_lbool z3_find_discr_function(const class *class1, const class *class2, uint32_t fun_arity, fun *fun) {
   z3_wrapper z3;
   z3_wrapper_init(&z3);
   
-  gen_assert_discr_fun_two_classes(&z3, class, subclass, fun_arity);
+  gen_assert_discr_fun_two_classes(&z3, class1, class2, fun_arity);
 
   Z3_lbool rc = Z3_solver_check(z3.ctx, z3.solver);
   if(rc == Z3_L_TRUE) {

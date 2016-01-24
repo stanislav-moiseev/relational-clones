@@ -11,7 +11,7 @@
 #define FUN_DATA_SIZE 8
 
 struct fun {
-  uint64_t arity;
+  int64_t arity;
   uint64_t data[FUN_DATA_SIZE];
 };
 

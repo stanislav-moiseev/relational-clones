@@ -2,12 +2,12 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 
-#include "pred.h"
 #include "utils.h"
+#include "pred.h"
 
 int pred_construct(uint32_t arity, const char *str, pred *pred) {
   pred->arity      = arity;

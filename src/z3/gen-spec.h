@@ -18,10 +18,11 @@ void gen_assert_discr_fun_two_classes(z3_wrapper *z3, const class *class1, const
 
 
 /** `z3_find_function` invokes Z3 solver to search for a function of arity
- * `fun_arity` discriminating two classes, one of them being the subclass of
- * another.
+ * `fun_arity` discriminating two classes in the following sense:
+ * `fun` preserves `class1`, but does not preserve `class2`.
+ *
  * On success, it writes the result to `fun`.
  */
-Z3_lbool z3_find_discr_function(const class *class, const struct class *subclass, uint32_t fun_arity, fun *fun);
+Z3_lbool z3_find_discr_function(const class *class1, const class *class2, uint32_t fun_arity, fun *fun);
 
 #endif

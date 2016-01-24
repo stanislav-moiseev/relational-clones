@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "z3/wrapper.h"
-#include "z3/gen-spec.h"
+#include "algorithms.h"
 #include "binary-2016.h"
 
 void get_assert_two_layers(const layer *layer1, const layer *layer2) {
@@ -20,12 +19,26 @@ void get_assert_two_layers(const layer *layer1, const layer *layer2) {
 
       /* if one set is a subset of the other set */
       if(clone_subset(&class1->clone, &class2->clone)) {
-        printf("%d-%d: ", i, j); fflush(stdout);
-        z3_wrapper z3;
-        z3_wrapper_init(&z3);
-        gen_assert_discr_fun_two_classes(&z3, class1, class2, 2);
-        z3_wrapper_check(&z3);
-        z3_wrapper_free(&z3);
+        printf("class %2d:%-6d\t subclass %2d:%-6d\t ",
+            class2->id.layer_id, class2->id.class_id,
+            class1->id.layer_id, class1->id.class_id);
+
+        fun fun;
+        Z3_lbool rc = find_discr_function(class1, class2, 5, &fun);
+        switch(rc) {
+        case Z3_L_FALSE:
+          printf("unsat\n");
+          break;
+        case Z3_L_UNDEF:
+          printf("unknown\n");
+          break;
+        case Z3_L_TRUE: {
+          char *str = fun_print(&fun);
+          printf("%s\n", str);
+          free(str);
+          break;
+        }
+        }
       }
     }
   }

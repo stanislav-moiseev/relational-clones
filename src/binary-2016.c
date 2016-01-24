@@ -85,7 +85,6 @@ void lattice_write(FILE *fd, const lattice *lattice) {
   }
 }
 
-
 /******************************************************************************/
 /** READ part */
 

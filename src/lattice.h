@@ -38,6 +38,4 @@ class *lattice_get_class(const lattice *lattice, class_id id);
 
 layer *lattice_get_layer(const lattice *lattice, layer_id id);
 
-void lattice_find_classes_with_one_subclass(const lattice *lattice, class ***classes, uint64_t *num_classes);
-
 #endif
