@@ -32,13 +32,20 @@ static uint64_t read_uint64(FILE *fd) {
 /******************************************************************************/
 /** WRITE part*/
 
-/* void pred_write(FILE *fd, const pred *pred) { */
-/*   write_uint32(fd, K); */
-/*   write_uint32(fd, pred->arity); */
-/*   write_uint64(fd, pred->data); */
-/* } */
+void fun_write(FILE *fd, const fun *fun) {
+  write_uint32(fd, fun->arity);
+  for(size_t offset = 0; offset < FUN_DATA_SIZE; ++offset) {
+    write_uint64(fd, fun->data[offset]);
+  }
+}
 
-void class_id_write(FILE *fd, const class_id *id) {
+void pred_write(FILE *fd, const pred *pred) {
+  write_uint32(fd, K);
+  write_uint32(fd, pred->arity);
+  write_uint64(fd, pred->data);
+}
+
+static void class_id_write(FILE *fd, const class_id *id) {
   write_uint32(fd, id->layer_id);
   write_uint32(fd, id->class_id);
 }
@@ -80,13 +87,20 @@ void lattice_write(FILE *fd, const lattice *lattice) {
 /******************************************************************************/
 /** READ part*/
 
-/* void pred_read(FILE *fd, pred *pred) { */
-/*   assert(read_uint32(fd) == K); */
-/*   pred->arity = read_uint32(fd); */
-/*   pred->data = read_uint64(fd); */
-/* } */
+void fun_read(FILE *fd, fun *fun) {
+  fun->arity = read_uint32(fd);
+  for(size_t offset = 0; offset < FUN_DATA_SIZE; ++offset) {
+    fun->data[offset] = read_uint64(fd);
+  }
+}
 
-void class_id_read(FILE *fd, class_id *id) {
+void pred_read(FILE *fd, pred *pred) {
+  assert(read_uint32(fd) == K);
+  pred->arity = read_uint32(fd);
+  pred->data = read_uint64(fd);
+}
+
+static void class_id_read(FILE *fd, class_id *id) {
   id->layer_id = read_uint32(fd);
   id->class_id = read_uint32(fd);
 }

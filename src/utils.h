@@ -17,6 +17,18 @@ static int popcount64(uint64_t x) {
   return __builtin_popcountll(x);
 }
 
+/** `int_log` computes the integer logarithm (rounded to ceiling).
+ */
+static uint64_t int_log(uint64_t base, uint64_t x) {
+  uint64_t log = 0;
+  uint64_t y = 1;
+  while(y < x) {
+    ++log;
+    y *= base;;
+  }
+  return log;
+}
+
 /** `int_pow` computes the integer power:
  *      int_pow(k, arity) == k^arity
  */
@@ -44,5 +56,18 @@ static void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
 /** K-valued logic. Global constant
  */
 static const uint32_t K = 3;
+
+/** log2(K) rounded to ceiling */
+static const uint32_t INT_LOG2K = 2;
+
+
+/** `get_digits` represents `x` in the K-ary form, with digits[0] being the
+ * highest digit. */
+static void get_K_digits(uint32_t digits[], uint32_t arity, size_t x) {
+  for(int j = arity - 1; j >= 0; --j) {
+    digits[j] = x % K;
+    x /= K;
+  }
+}
 
 #endif
