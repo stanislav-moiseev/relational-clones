@@ -55,19 +55,38 @@ void pred_print_fingerprint(char *str, const pred *pred) {
   sprintf(str, "pred%u_%lu_%lx", K, pred->arity, pred->data);
 }
 
-size_t pred_extensional_size() {
+size_t pred_print_extensional_size() {
   return 65;            /* 64 bytes + terminating null byte */
 }
 
 void pred_print_extensional(char *str, const pred *pred) {
-  uint64_t shift = int_pow(K, pred->arity);
-    
-  for(int s = shift-1; s >= 0; --s) {
-    if(pred->data & ((uint64_t)1 << s)) {
+  for(int64_t shift = int_pow(K, pred->arity) - 1; shift >= 0; --shift) {
+    if(pred_compute(pred, shift)) {
       str += sprintf(str, "1");
     } else {
       str += sprintf(str, "0");
     }
+  }
+}
+
+void pred_extensional(const pred *pred, uint32_t **ext, size_t *size) {
+  *ext = malloc(int_pow(K, pred->arity) * sizeof(uint32_t));
+  assert(*ext != NULL);
+  size_t _size = 0;
+  for(uint64_t shift = int_pow(K, pred->arity) - 1; shift >= 0; --shift) {
+    if(pred_compute(pred, shift)) {
+      (*ext)[_size] = shift;
+      ++_size;
+    }
+  }
+  *size = _size;
+}
+
+int pred_compute(const pred *pred, uint64_t tuple) {
+  if(pred->data & ((uint64_t)1 << tuple)) {
+    return 1;
+  } else {
+    return 0;
   }
 }
 

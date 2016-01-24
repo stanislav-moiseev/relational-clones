@@ -23,16 +23,19 @@ typedef struct fun fun;
  */
 int fun_consistent(const fun *fun);
 
+
 /** `fun_compute` computes the value of the function on the given
  * list of arguments.
  * `args` should have size == `fun->arity`.
  */
-uint32_t fun_compute(const fun *fun, uint32_t args[]);
+uint32_t fun_compute(const fun *fun, uint64_t tuple);
 
 void fun_set_zero(fun *fun, uint32_t arity);
 
 void fun_set_val(fun *fun, uint64_t xs, uint64_t y);
 
 char *fun_print(const fun *fun);
+
+int fun_preserves_pred(const fun *fun, const pred *pred);
 
 #endif

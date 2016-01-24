@@ -40,7 +40,7 @@ test: $(TESTS)
 #	@mkdir -p output/disrc-fun-two-layers/z3
 	@./test/test-discr-fun-two-layers.out
 #	@mkdir -p output/classes-with-one-subclass/z3
-#	@./test/test-classes-with-one-subclass.out
+	@./test/test-classes-with-one-subclass.out
 
 test/test0.out: test/test0.c $(OBJS)
 	$(CC) -o $@ $^

@@ -32,14 +32,14 @@ void test_pred_construct() {
   do {
   int shift = int_pow(K, arity);
     for(int j = 0; j < 2*shift; ++j) {
-      char str[pred_extensional_size()];
+      char str[pred_print_extensional_size()];
       random_pred_extensional(arity, str);
       
       pred pred;
       assert(pred_construct(arity, str, &pred));
       assert(pred_consistent(&pred));
       
-      char str2[pred_extensional_size()];
+      char str2[pred_print_extensional_size()];
       pred_print_extensional(str2, &pred);
       assert(strcmp(str, str2) == 0);
     }

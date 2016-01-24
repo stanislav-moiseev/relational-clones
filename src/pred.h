@@ -33,7 +33,6 @@ int pred_construct(uint32_t arity, const char *str, pred *pred);
  */
 int pred_consistent(const pred *pred);
 
-
 /** `pred_fingerprint_size` return the minimum buffer size for
  *  `pred_print_fingerprint`.
  */
@@ -48,10 +47,18 @@ void pred_print_fingerprint(char *str, const pred *pred);
 /** `pred_extensional_size` return the minimum buffer size for
  *  `pred_print_extensional`.
  */
-size_t pred_extensional_size();
+size_t pred_print_extensional_size();
 
 /** `pred_print_extensional` prints the predicate's extensional.
  */
 void pred_print_extensional(char *str, const pred *pred);
+
+
+/** `pred_extensional` return the set of all tuples satisfying the predicate.
+ * The tuples are returned in an unspecified order.
+ */
+void pred_extensional(const pred *pred, uint32_t **ext, size_t *size);
+
+int pred_compute(const pred *pred, uint64_t tuple);
 
 #endif

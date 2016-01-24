@@ -55,15 +55,30 @@ Z3_lbool find_discr_function(const class *class, const struct class *subclass, i
 /******************************************************************************/
 /* Binary file-related part */
 
-void write_classes_with_one_subclass_discr_fun(FILE *fd, const lattice *lattice, class **classes, size_t num_classes, const fun *fun) {
+void write_classes_with_one_subclass_discr_fun(FILE *fd, const lattice *lattice, class * const *classes, size_t num_classes, const fun *funs) {
   uint64_write(fd, num_classes);
-  for(class **pclass = classes; pclass < classes + num_classes; ++pclass) {
+  for(class * const *pclass = classes; pclass < classes + num_classes; ++pclass) {
     class *class = *pclass;
     assert(class->num_subclasses == 1);
     struct class *subclass = lattice_get_class(lattice, class->subclasses[0]);
     class_id_write(fd, &class->id);
     class_id_write(fd, &subclass->id);
-    fun_write(fd, fun);
-    ++fun;
+    fun_write(fd, funs);
+    ++funs;
+  }  
+}
+
+void read_classes_with_one_subclass_discr_fun(FILE *fd, const lattice *lattice, class ***classes, size_t *num_classes, fun **funs) {
+  *num_classes = uint64_read(fd);
+  *classes = malloc(*num_classes * sizeof(class *));
+  assert(*classes != NULL);
+  *funs = malloc(*num_classes * sizeof(fun));
+  assert(*funs != NULL);
+  for(size_t i = 0; i < *num_classes; ++i) {
+    class_id class_id, subclass_id;
+    class_id_read(fd, &class_id);
+    class_id_read(fd, &subclass_id);
+    fun_read(fd, *funs + i);
+    (*classes)[i] = lattice_get_class(lattice, class_id);
   }  
 }

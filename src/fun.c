@@ -21,13 +21,9 @@ int fun_consistent(const fun *fun) {
   return 1;
 }
 
-uint32_t fun_compute(const fun *fun, uint32_t args[]) {
-  uint64_t xs = 0;
-  for(size_t i = 0; i < fun->arity; ++i) {
-    xs = K*xs + args[i];
-  }
+uint32_t fun_compute(const fun *fun, uint64_t tuple) {
   uint64_t offset, shift, mask;
-  fun_offset_shift_mask(xs, &offset, &shift, &mask);
+  fun_offset_shift_mask(tuple, &offset, &shift, &mask);
 
   return (fun->data[offset] & mask) >> shift;
 }
@@ -66,3 +62,61 @@ char *fun_print(const fun *fun) {
   return _str;
 }
 
+
+int fun_preserves_pred(const fun *fun, const pred *pred) {
+  uint32_t *pred_ext;
+  size_t size;
+  pred_extensional(pred, &pred_ext, &size);
+  if(size == 0) { free(pred_ext); return 1; }
+
+  /* take fun->arity tuples from the predicate;
+   * the tuples are encoded as uint64 */
+  uint64_t pred_tuples[fun->arity];
+  for(int i = 0; i < fun->arity; ++i) {
+    pred_tuples[i] = 0;
+  }
+  for(;;) {
+    /* extract digits from uint64_t encoding of tuples */
+    uint32_t digits[fun->arity][pred->arity];
+    for(int i = 0; i < fun->arity; ++i) {
+      get_K_digits(digits[i], pred->arity, pred_ext[pred_tuples[i]]);
+    }
+    
+    /* transpose the matrix and form `pre->arity` tuples for further function
+     * application */
+    uint32_t fun_tuples[pred->arity];
+    for(int j = 0; j < pred->arity; ++j) {
+      fun_tuples[j] = 0;
+      for(int i = 0; i < fun->arity; ++i) {
+        fun_tuples[j] *= K;
+        fun_tuples[j] += digits[i][j];
+      }
+    }
+    
+    /* calculate the function on that tuples */
+    uint32_t fun_result[pred->arity];
+    for(int j = 0; j < pred->arity; ++j) {
+      fun_result[j] = fun_compute(fun, fun_tuples[j]);
+    }
+    
+    /* calculate the predicate value on the result of function application,
+     * and check that the resultant tuple is from the predicate's extensional */
+    if(pred_compute(pred, get_K_tuple(fun_result, pred->arity)) == 0) { free(pred_ext); return 0; }
+    
+    /* get next tuples */
+    int i;
+    for(i = fun->arity - 1; i >= 0; --i) {
+      pred_tuples[i]++;
+      if(pred_tuples[i] == size) {
+        pred_tuples[i] = 0;
+        continue;
+      } else {
+        break;
+      }
+    }
+    if(i == -1) break;
+  }
+
+  free(pred_ext);
+  return 1;
+}
