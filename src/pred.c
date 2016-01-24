@@ -82,6 +82,10 @@ void pred_extensional(const pred *pred, uint32_t **ext, size_t *size) {
   *size = _size;
 }
 
+int64_t pred_cardinality(const pred *pred) {
+  return popcount64(pred->data);
+}
+
 int pred_compute(const pred *pred, uint64_t tuple) {
   if(pred->data & ((uint64_t)1 << tuple)) {
     return 1;

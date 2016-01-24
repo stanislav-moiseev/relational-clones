@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "fun.h"
+#include "clone-iterator.h"
 #include "gen-spec.h"
 
 void gen_header(z3_wrapper *z3) {
@@ -182,13 +183,22 @@ void gen_assert_discr_fun_two_classes(z3_wrapper *z3, const class *class1, const
   /* select any predicate discriminating two clones */
   clone diff;
   clone_diff(&class2->clone, &class1->clone, &diff);
+  assert(!clone_is_empty(&diff));
 
-  clone_iterator it = clone_iterator_begin(&diff);
-  assert(!clone_iterator_end(&diff, &it));
+  /* heuristically, find a predicate from `diff` with the smallest extensional
+   * size */
+  uint64_t min_card = -1;
+  pred min_pred;
+  for(clone_iterator it = clone_iterator_begin(&diff); !clone_iterator_end(&diff, &it); clone_iterator_next(&it)) {
+    pred pred = clone_iterator_deref(&it);
+    int64_t card = pred_cardinality(&pred);
+    if(card < min_card) {
+      min_card = card;
+      min_pred = pred;
+    }
+  }
   
-  pred pred = clone_iterator_deref(&it);
-
-  gen_assert_discr_fun(z3, class1, &pred, fun_arity);
+  gen_assert_discr_fun(z3, class1, &min_pred, fun_arity);
 }
 
 void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct fun *kfun) {

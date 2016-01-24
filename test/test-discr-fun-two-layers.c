@@ -20,8 +20,9 @@ void get_assert_two_layers(const layer *layer1, const layer *layer2) {
       /* if one set is a subset of the other set */
       if(clone_subset(&class1->clone, &class2->clone)) {
         printf("class %2d:%-6d\t subclass %2d:%-6d\t ",
-            class2->id.layer_id, class2->id.class_id,
-            class1->id.layer_id, class1->id.class_id);
+            class1->id.layer_id, class1->id.class_id,
+            class2->id.layer_id, class2->id.class_id);
+        fflush(stdout);
 
         fun fun;
         Z3_lbool rc = find_discr_function(class1, class2, 5, &fun);

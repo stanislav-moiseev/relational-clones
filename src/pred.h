@@ -59,6 +59,9 @@ void pred_print_extensional(char *str, const pred *pred);
  */
 void pred_extensional(const pred *pred, uint32_t **ext, size_t *size);
 
+int64_t pred_cardinality(const pred *pred);
+
+
 int pred_compute(const pred *pred, uint64_t tuple);
 
 #endif
