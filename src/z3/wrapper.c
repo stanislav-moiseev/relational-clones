@@ -34,26 +34,3 @@ void z3_wrapper_free(z3_wrapper *z3) {
   free(z3->Ek_consts);
 }
 
-void z3_wrapper_check(z3_wrapper *z3) {
-  Z3_model m      = 0;
-  Z3_lbool result = Z3_solver_check(z3->ctx, z3->solver);
-  switch (result) {
-  case Z3_L_FALSE:
-    printf("unsat\n");
-    break;
-  case Z3_L_UNDEF:
-    printf("unknown\n");
-    /* m = Z3_solver_get_model(z3->ctx, z3->solver); */
-    /* if (m) Z3_model_inc_ref(z3->ctx, m); */
-    /* printf("potential model:\n%s\n", Z3_model_to_string(z3->ctx, m)); */
-    break;
-  case Z3_L_TRUE:
-    printf("sat\n");
-    /* m = Z3_solver_get_model(z3->ctx, z3->solver); */
-    /* if (m) Z3_model_inc_ref(z3->ctx, m); */
-    /* printf("sat\n%s\n", Z3_model_to_string(z3->ctx, m)); */
-    break;
-  }
-  if (m) Z3_model_dec_ref(z3->ctx, m);
-}
-

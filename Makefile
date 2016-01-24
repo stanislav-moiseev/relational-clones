@@ -1,17 +1,21 @@
 CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
 	-Wall -Werror -Wno-unused-function		\
 	-Wno-error=maybe-uninitialized			\
-	-Isrc
+	-Isrc -I/usr/local/inlcude			\
+	-lz3
 
 SRCS =				\
 	src/pred.c		\
+	src/fun.c		\
 	src/clone.c		\
 	src/clone-iterator.c	\
 	src/class.c		\
 	src/lattice.c		\
 	src/binary-2013.c	\
 	src/binary-2016.c	\
-	src/gen/z3.c
+	src/z3/wrapper.c	\
+	src/z3/gen-spec.c	\
+#	src/z3/gen-text.c	\
 
 OBJS =	$(SRCS:.c=.o)
 
@@ -20,8 +24,8 @@ OBJS =	$(SRCS:.c=.o)
 
 TESTS =						\
 	test/test0.out				\
-	test/test-gen-assert-discr-fun-two-layers.out	\
-	test/test-find-classes-with-one-subclass.out	\
+	test/test-discr-fun-two-layers.out	\
+	test/test-classes-with-one-subclass.out	\
 	#test/test-high-arity.c
 
 TESTS-2013 =					\
@@ -33,17 +37,20 @@ all:  $(TESTS) $(TESTS-2013)
 test: $(TESTS)
 	@./test/test0.out
 	@mkdir -p output/disrc-fun-two-layers/z3
-	@./test/test-gen-assert-discr-fun-two-layers.out
+	@./test/test-discr-fun-two-layers.out
 	@mkdir -p output/classes-with-one-subclass/z3
-	@./test/test-find-classes-with-one-subclass.out
+	@./test/test-classes-with-one-subclass.out
 
 test/test0.out: test/test0.c $(OBJS)
 	$(CC) -o $@ $^
 
-test/test-gen-assert-discr-fun-two-layers.out: test/test-gen-assert-discr-fun-two-layers.c $(OBJS)
+test/z3/test-z3.out: test/z3/test-z3.c $(OBJS)
 	$(CC) -o $@ $^
 
-test/test-find-classes-with-one-subclass.out: test/test-find-classes-with-one-subclass.c $(OBJS)
+test/test-discr-fun-two-layers.out: test/test-discr-fun-two-layers.c $(OBJS)
+	$(CC) -o $@ $^
+
+test/test-classes-with-one-subclass.out: test/test-classes-with-one-subclass.c $(OBJS)
 	$(CC) -o $@ $^
 
 

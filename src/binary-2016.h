@@ -15,13 +15,27 @@
 #include "lattice.h"
 
 /******************************************************************************/
-/** WRITE part*/
+/** Common part */
+
+void uint32_write(FILE *fd, uint32_t x);
+
+void uint64_write(FILE *fd, uint64_t x);
+
+uint32_t uint32_read(FILE *fd);
+
+uint64_t uint64_read(FILE *fd);
+
+
+/******************************************************************************/
+/** WRITE part */
 
 void fun_write(FILE *fd, const fun *fun);
 
 void pred_write(FILE *fd, const pred *pred);
 
 void clone_write(FILE *fd, const clone *clone);
+
+void class_id_write(FILE *fd, const class_id *id);
 
 void class_write(FILE *fd, const class *class);
 
@@ -33,13 +47,15 @@ void lattice_write(FILE *fd, const lattice *lattice);
 
 
 /******************************************************************************/
-/** READ part*/
+/** READ part */
 
 void fun_read(FILE *fd, fun *fun);
 
 void pred_read(FILE *fd, pred *pred);
 
 void clone_read(FILE *fd, clone *clone);
+
+void class_id_read(FILE *fd, class_id *id);
 
 void class_read(FILE *fd, class *class);
 

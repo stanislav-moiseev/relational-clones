@@ -13,6 +13,8 @@ struct z3_wrapper {
   
   Z3_sort Ek_sort;
   Z3_ast *Ek_consts;
+
+  Z3_func_decl fun;
 };
 typedef struct z3_wrapper z3_wrapper;
 

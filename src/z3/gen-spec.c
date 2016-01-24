@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "fun.h"
 #include "gen-spec.h"
 
 void gen_header(z3_wrapper *z3) {
@@ -55,7 +56,7 @@ Z3_func_decl gen_pred(z3_wrapper *z3, const char *name, const pred *pred) {
   
   /* create assertions */
   for(size_t xs = 0; xs < int_pow(K, pred->arity); ++xs) {
-    /* represent `xs` in the ternary form,
+    /* represent `xs` in the K-ary form,
      * with digits[0] being the highest digit. */
     uint32_t digits[pred->arity];
     get_K_digits(digits, pred->arity, xs);
@@ -166,6 +167,7 @@ void gen_assert_discr_fun(z3_wrapper *z3, const class *class, const pred *pred, 
 
   /* declare a discriminating function */
   Z3_func_decl f = gen_fun(z3, "f", fun_arity);
+  z3->fun = f;
 
   /* write assertions about function preservation */
   for(int i = 0; i < num_preds; ++i) {
@@ -189,3 +191,50 @@ void gen_assert_discr_fun_two_classes(z3_wrapper *z3, const class *class1, const
   gen_assert_discr_fun(z3, class1, &pred, fun_arity);
 }
 
+void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct fun *kfun) {
+  Z3_model m = Z3_solver_get_model(z3->ctx, z3->solver);
+  assert(m);
+  Z3_model_inc_ref(z3->ctx, m);
+  
+  fun_set_zero(kfun, fun_arity);
+  for(size_t xs = 0; xs < int_pow(K, fun_arity); ++xs) {
+    /* represent `xs` in the K-ary form,
+     * with digits[0] being the highest digit. */
+    uint32_t digits[fun_arity];
+    get_K_digits(digits, fun_arity, xs);
+    Z3_ast args[fun_arity];
+    for(size_t i = 0; i < fun_arity; ++i) {
+      args[i] = z3->Ek_consts[digits[i]];
+    }
+    
+    /* eval func on given args */
+    Z3_ast t = Z3_mk_app(z3->ctx, fun, fun_arity, args);
+    Z3_ast res;
+ 
+    assert(Z3_model_eval(z3->ctx, m, t, 1, &res) == Z3_TRUE);
+    
+    /* interpret the result of function application */
+    uint64_t y;
+    sscanf(Z3_ast_to_string(z3->ctx, res), "V%lu", &y);
+    fun_set_val(kfun, xs, y);
+  }
+  
+  Z3_model_dec_ref(z3->ctx, m);
+}
+
+
+Z3_lbool z3_find_discr_function(const class *class, const struct class *subclass, uint32_t fun_arity, fun *fun) {
+  z3_wrapper z3;
+  z3_wrapper_init(&z3);
+  
+  gen_assert_discr_fun_two_classes(&z3, class, subclass, fun_arity);
+
+  Z3_lbool rc = Z3_solver_check(z3.ctx, z3.solver);
+  if(rc == Z3_L_TRUE) {
+    get_function(&z3, z3.fun, fun_arity, fun);
+  }
+  
+  z3_wrapper_free(&z3);
+  
+  return rc;
+}
