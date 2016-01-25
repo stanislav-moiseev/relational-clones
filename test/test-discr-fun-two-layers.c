@@ -34,6 +34,8 @@ void get_assert_two_layers(const layer *layer1, const layer *layer2) {
           printf("unknown\n");
           break;
         case Z3_L_TRUE: {
+          /* verify the result */
+          assert(test_discr_function(class1, class2, &fun));
           char *str = fun_print(&fun);
           printf("%s\n", str);
           free(str);

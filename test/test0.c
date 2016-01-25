@@ -53,6 +53,5 @@ int main() {
   printf("test_pred_construct: ");
   test_pred_construct();
   printf("Ok.\n");
-  
   return 0;
 }

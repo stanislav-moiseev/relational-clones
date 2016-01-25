@@ -73,7 +73,7 @@ void pred_extensional(const pred *pred, uint32_t **ext, size_t *size) {
   *ext = malloc(int_pow(K, pred->arity) * sizeof(uint32_t));
   assert(*ext != NULL);
   size_t _size = 0;
-  for(uint64_t shift = int_pow(K, pred->arity) - 1; shift >= 0; --shift) {
+  for(int64_t shift = int_pow(K, pred->arity) - 1; shift >= 0; --shift) {
     if(pred_compute(pred, shift)) {
       (*ext)[_size] = shift;
       ++_size;

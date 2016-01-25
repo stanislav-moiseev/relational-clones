@@ -8,6 +8,7 @@
 #include "fun.h"
 #include "pred.h"
 #include "clone.h"
+#include "clone-iterator.h"
 #include "class.h"
 #include "lattice.h"
 #include <z3.h>
@@ -21,6 +22,8 @@ void find_classes_with_one_subclass(const lattice *lattice, class ***classes, ui
  * will be stored to `fun`.
  */
 Z3_lbool find_discr_function(const class *class1, const class *class2, int max_fun_arity, fun *fun);
+
+int test_discr_function(const class *class1, const class *class2, const fun *fun);
 
 void write_classes_with_one_subclass_discr_fun(FILE *fd, const lattice *lattice, class * const *classes, size_t num_classes, const fun *fun);
 

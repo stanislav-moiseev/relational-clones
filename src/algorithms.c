@@ -52,6 +52,25 @@ Z3_lbool find_discr_function(const class *class, const struct class *subclass, i
 }
 
 
+int test_discr_function(const class *class1, const class *class2, const fun *fun) {
+  /* check that the function preserves all predicates in the upper clone */
+  for(clone_iterator it = clone_iterator_begin(&class1->clone); !clone_iterator_end(&class1->clone, &it); clone_iterator_next(&it)) {
+    pred pred = clone_iterator_deref(&it);
+    if(!fun_preserves_pred(fun, &pred)) return 0;
+  }
+  
+  /* check that there exists a predicate in the lower class basis such that
+   * the function does not preserve that predicate */
+  int flag = 0;
+  for(clone_iterator it = clone_iterator_begin(&class2->basis); !clone_iterator_end(&class2->basis, &it); clone_iterator_next(&it)) {
+    pred pred = clone_iterator_deref(&it);
+    if(!fun_preserves_pred(fun, &pred)) { flag = 1; break; }
+  }
+  if(!flag) return 0;
+  
+  return 1;
+}
+
 /******************************************************************************/
 /* Binary file-related part */
 

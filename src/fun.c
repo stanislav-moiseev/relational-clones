@@ -36,6 +36,7 @@ void fun_set_zero(fun *fun, uint32_t arity) {
 }
 
 void fun_set_val(fun *fun, uint64_t xs, uint64_t y) {
+  assert(y < K);
   uint64_t offset, shift, mask;
   fun_offset_shift_mask(xs, &offset, &shift, &mask);
 
@@ -70,7 +71,8 @@ int fun_preserves_pred(const fun *fun, const pred *pred) {
   if(size == 0) { free(pred_ext); return 1; }
 
   /* take fun->arity tuples from the predicate;
-   * the tuples are encoded as uint64 */
+   * the tuples are encoded as uint64.
+   * the value of `pred_tuple[i]` is a position in `pred_ext` */
   uint64_t pred_tuples[fun->arity];
   for(int i = 0; i < fun->arity; ++i) {
     pred_tuples[i] = 0;

@@ -58,8 +58,8 @@ void clone_print_verbosely(FILE *fd, const clone *clone) {
   for(int64_t i = 0; i < size; ++i) {
     char str[pred_fingerprint_size()];
     char str2[pred_print_extensional_size()];
-    pred_print_fingerprint(str2, &pred_list[i]);
-    pred_print_extensional(str, &pred_list[i]);
+    pred_print_fingerprint(str, &pred_list[i]);
+    pred_print_extensional(str2, &pred_list[i]);
     fprintf(fd, "%s: \t%s\n", str, str2);
   }
   free(pred_list);

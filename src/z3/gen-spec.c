@@ -30,11 +30,13 @@ void gen_header(z3_wrapper *z3) {
   }
 
   z3->Ek_consts = malloc(K * sizeof(Z3_ast));
-    
+
   z3->Ek_sort = Z3_mk_datatype(z3->ctx, Ek_sym, K, Ek_constructors);
   
   for(size_t i = 0; i < K; ++i) {
-    z3->Ek_consts[i] = Z3_mk_const(z3->ctx, Ek_syms[i], z3->Ek_sort);
+    Z3_func_decl decl;
+    Z3_query_constructor(z3->ctx, Ek_constructors[i], 0, &decl, NULL, 0);
+    z3->Ek_consts[i] = Z3_mk_app(z3->ctx, decl, 0, 0);
   }
 
   /* TODO: experiment more with finite domain sort. */
@@ -69,9 +71,11 @@ Z3_func_decl gen_pred(z3_wrapper *z3, const char *name, const pred *pred) {
     Z3_ast phi = Z3_mk_app(z3->ctx, p, pred->arity, args);
 
     /* if the predicate equals to false on `xs` */
-    if(!(pred->data & ((uint64_t)1 << xs))) {
+    if(!pred_compute(pred, xs)) {
       phi = Z3_mk_not(z3->ctx, phi);
     }
+
+    /* printf("\n%s\n", Z3_ast_to_string(z3->ctx, phi)); */
     Z3_solver_assert(z3->ctx, z3->solver, phi);
   }
 
@@ -101,15 +105,20 @@ void gen_preserve(z3_wrapper *z3, int not_preserve, Z3_func_decl fun, uint32_t f
   }
 
   /* create left-hand side of implication */
-  Z3_ast and_args[fun_arity];
-  for(int i = 0; i < fun_arity; ++i) {
-    Z3_ast pred_args[pred_arity];
-    for(int j = 0; j < pred_arity; ++j) {
-      pred_args[j] = bound_vars[i][j];
+  Z3_ast t1;
+  if(fun_arity == 0) {
+    t1 = Z3_mk_true(z3->ctx);
+  } else { /* fun_arity >= 1*/
+    Z3_ast and_args[fun_arity];
+    for(int i = 0; i < fun_arity; ++i) {
+      Z3_ast pred_args[pred_arity];
+      for(int j = 0; j < pred_arity; ++j) {
+        pred_args[j] = bound_vars[i][j];
+      }
+      and_args[i] = Z3_mk_app(z3->ctx, pred, pred_arity, pred_args);
     }
-    and_args[i] = Z3_mk_app(z3->ctx, pred, pred_arity, pred_args);
+    t1 = Z3_mk_and(z3->ctx, fun_arity, and_args);
   }
-  Z3_ast t1 = Z3_mk_and(z3->ctx, fun_arity, and_args);
   
   /* create right-hand side of implication */
   Z3_ast pred_args[pred_arity];
@@ -132,11 +141,13 @@ void gen_preserve(z3_wrapper *z3, int not_preserve, Z3_func_decl fun, uint32_t f
     sorts[i] = z3->Ek_sort;
   }
   Z3_symbol decl_names[num_decls];
+  idx = fun_arity * pred_arity - 1;
   for(int i = 0; i < fun_arity; ++i) {
     for(int j = 0; j < pred_arity; ++j) {
       char s[16];
       sprintf(s, "x%d_%d ", i, j);
       decl_names[idx] = Z3_mk_string_symbol(z3->ctx, s);
+      --idx;
     }
   }
   Z3_ast phi = Z3_mk_forall(z3->ctx, 0, 0, NULL, num_decls, sorts, decl_names, body);
@@ -144,7 +155,8 @@ void gen_preserve(z3_wrapper *z3, int not_preserve, Z3_func_decl fun, uint32_t f
   if(not_preserve) {
     phi = Z3_mk_not(z3->ctx, phi);
   }
-  
+
+  /* printf("\n%s\n", Z3_ast_to_string(z3->ctx, phi)); */
   Z3_solver_assert(z3->ctx, z3->solver, phi);
 }
 
@@ -197,13 +209,15 @@ void gen_assert_discr_fun_two_classes(z3_wrapper *z3, const class *class1, const
       min_pred = pred;
     }
   }
-  
   gen_assert_discr_fun(z3, class1, &min_pred, fun_arity);
 }
 
 void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct fun *kfun) {
   Z3_model m = Z3_solver_get_model(z3->ctx, z3->solver);
   assert(m);
+  
+  /* printf("------\n%s\n------\n", Z3_model_to_string(z3->ctx, m)); */
+  
   Z3_model_inc_ref(z3->ctx, m);
   
   fun_set_zero(kfun, fun_arity);
@@ -222,6 +236,9 @@ void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct f
     Z3_ast res;
  
     assert(Z3_model_eval(z3->ctx, m, t, 1, &res) == Z3_TRUE);
+
+
+    /* printf("%s == %s\n", Z3_ast_to_string(z3->ctx, t), Z3_ast_to_string(z3->ctx, res)); */
     
     /* interpret the result of function application */
     uint64_t y;
@@ -240,6 +257,7 @@ Z3_lbool z3_find_discr_function(const class *class1, const class *class2, uint32
   gen_assert_discr_fun_two_classes(&z3, class1, class2, fun_arity);
 
   Z3_lbool rc = Z3_solver_check(z3.ctx, z3.solver);
+  
   if(rc == Z3_L_TRUE) {
     get_function(&z3, z3.fun, fun_arity, fun);
   }

@@ -1,5 +1,5 @@
 CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
-	-Wall -Werror -Wno-unused-function		\
+	-Wall  -Wno-unused-function		\
 	-Wno-error=maybe-uninitialized			\
 	-Isrc -I/usr/local/inlcude			\
 	-lz3
