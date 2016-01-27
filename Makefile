@@ -1,15 +1,16 @@
 CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
-	-Wall  -Wno-unused-function		\
+	-Wall -Werror -Wno-unused-function		\
 	-Wno-error=maybe-uninitialized			\
 	-Isrc -I/usr/local/inlcude			\
 	-lz3
 
 SRCS =				\
-	src/pred.c		\
 	src/fun.c		\
+	src/pred.c		\
 	src/clone.c		\
 	src/clone-iterator.c	\
 	src/class.c		\
+	src/closure.c		\
 	src/lattice.c		\
 	src/algorithms.c	\
 	src/binary-2013.c	\
@@ -25,6 +26,7 @@ OBJS =	$(SRCS:.c=.o)
 
 TESTS =						\
 	test/test0.out				\
+	test/test-closure.out			\
 	test/test-discr-fun-two-layers.out	\
 	test/test-classes-with-one-subclass.out	\
 	#test/test-high-arity.c
@@ -37,12 +39,16 @@ all:  $(TESTS) $(TESTS-2013)
 
 test: $(TESTS)
 	@./test/test0.out
+	@./test/test-closure.out
 #	@mkdir -p output/disrc-fun-two-layers/z3
 	@./test/test-discr-fun-two-layers.out
 #	@mkdir -p output/classes-with-one-subclass/z3
 	@./test/test-classes-with-one-subclass.out
 
 test/test0.out: test/test0.c $(OBJS)
+	$(CC) -o $@ $^
+
+test/test-closure.out: test/test-closure.c $(OBJS)
 	$(CC) -o $@ $^
 
 test/z3/test-z3.out: test/z3/test-z3.c $(OBJS)
