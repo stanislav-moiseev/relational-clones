@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fun.h"
 #include "pred.h"
 #include "utils.h"
 
@@ -48,10 +49,24 @@ void test_pred_construct() {
   } while (int_pow(K, arity) <= 64);
 }
 
+void test_fun_scan() {
+  const char str[] = "fun3_5_200000000000000000000000000000011011010000000010000000000000000010000000010000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+  fun fun;
+  fun_scan(str, &fun);
+
+  char *str2 = fun_print(&fun);
+  assert(strcmp(str, str2) == 0);
+  free(str2);
+}
 
 int main() {
-  printf("test_pred_construct: ");
+  printf("test_pred_construct: "); fflush(stdout);
   test_pred_construct();
   printf("Ok.\n");
+
+  printf("test_fun_scan: "); fflush(stdout);
+  test_fun_scan();
+  printf("Ok.\n");
+  
   return 0;
 }

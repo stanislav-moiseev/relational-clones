@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "utils.h"
 #include "pred.h"
@@ -86,11 +87,48 @@ int64_t pred_cardinality(const pred *pred) {
   return popcount64(pred->data);
 }
 
+void pred_init(pred *pred, uint64_t arity) {
+  pred->arity = arity;
+  pred->data  = 0;
+}
+
+void pred_set(pred *pred, uint64_t tuple) {
+  pred->data |= ((uint64_t)1 << tuple);
+}
+
 int pred_compute(const pred *pred, uint64_t tuple) {
   if(pred->data & ((uint64_t)1 << tuple)) {
     return 1;
   } else {
     return 0;
   }
+}
+
+int pred_is_essential(const pred *pred) {
+  if(pred->arity == 0) return 1;
+  
+  for(uint64_t tuple = 0; tuple < int_pow(K, pred->arity); ++tuple) {
+    if(!pred_compute(pred, tuple)) {
+      uint32_t digits[pred->arity];
+      get_K_digits(digits, pred->arity, tuple);
+      /* test that for each `i` we can modify the i-th position of `tuple`
+       * to make the predicate true */
+      int flag0 = 1;
+      for(uint32_t i = 0; i < pred->arity; ++i) {
+        int flag = 0;
+        for(uint32_t t = 0; t < K; ++t) {
+          uint32_t digits2[pred->arity];
+          memcpy(digits2, digits, sizeof(pred->arity * sizeof(uint32_t)));
+          digits2[i] = t;
+
+          uint64_t tuple2 = get_K_tuple(digits2, pred->arity);
+          if(pred_compute(pred, tuple2)) { flag = 1; break; }
+        }
+        if(!flag) { flag0 = 0; break; }
+      }
+      if(flag0) { return 1; }
+    }
+  }
+  return 0;
 }
 

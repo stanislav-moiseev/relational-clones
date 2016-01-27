@@ -28,7 +28,7 @@ uint32_t fun_compute(const fun *fun, uint64_t tuple) {
   return (fun->data[offset] & mask) >> shift;
 }
 
-void fun_set_zero(fun *fun, uint32_t arity) {
+void fun_init(fun *fun, uint32_t arity) {
   fun->arity = arity;
   for(size_t i = 0; i < FUN_DATA_SIZE; ++i) {
     fun->data[i] = 0;
@@ -63,6 +63,31 @@ char *fun_print(const fun *fun) {
   return _str;
 }
 
+void fun_print_verbosely(FILE *fd, const fun *fun) {
+  for(int64_t tuple = int_pow(K, fun->arity) - 1; tuple >= 0; --tuple) {
+    uint32_t val = fun_compute(fun, tuple);
+    if(val) {
+      uint32_t digits[fun->arity];
+      get_K_digits(digits, fun->arity, tuple);
+      for(int i = 0; i < fun->arity; ++i) {
+        fprintf(fd, "%d", digits[i]);
+      }
+      fprintf(fd, " :-> %d\n", val);
+    }
+  }
+}
+
+void fun_scan(const char *str, fun *fun) {
+  unsigned k, ar;
+  sscanf(str, "fun%u_%u_", &k, &ar);
+  str += 7;
+  assert(k == K);
+  fun_init(fun, ar);
+  for(int64_t tuple = int_pow(K, fun->arity) - 1; tuple >= 0; --tuple) {
+    fun_set_val(fun, tuple, *str-'0');
+    ++str;
+  }
+}
 
 int fun_preserves_pred(const fun *fun, const pred *pred) {
   uint32_t *pred_ext;

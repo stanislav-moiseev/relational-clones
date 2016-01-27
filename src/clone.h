@@ -57,6 +57,8 @@ int clone_test_pred(const clone *clone, const pred *pred);
  */
 int64_t clone_cardinality(const clone *clone);
 
+void clone_init(clone *clone);
+
 /** `clone_is_empty` returns non-zero if the clone is empty.
  */
 int clone_is_empty(const clone *clone);
@@ -69,10 +71,13 @@ int clone_is_empty(const clone *clone);
  */
 void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
 
-
 /** `clone_eq` returns non-zero if two clones are equal.
  */
 int clone_eq(const clone *clone1, const clone *clone2);
+
+/** `clone_copy` copies `clone` to `copy`.
+ */
+void clone_copy(const clone *clone, struct clone *copy);
 
 /** `clone_subset` returns non-zero if `clone1` is a subset of `clone2`.
  */

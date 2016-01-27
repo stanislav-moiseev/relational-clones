@@ -115,6 +115,13 @@ int64_t clone_cardinality(const clone *clone) {
   return card;
 }
 
+void clone_init(clone *clone) {
+  clone->data0 = 0;
+  clone->data1 = 0;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    clone->data2[offset] = 0;
+  }
+}
 
 int clone_is_empty(const clone *clone) {
   if(clone->data0) return 0;
@@ -148,6 +155,14 @@ int clone_eq(const clone *clone1, const clone *clone2) {
     if(clone1->data2[offset] != clone2->data2[offset]) return 0;
   }
   return 1;
+}
+
+void clone_copy(const clone *clone, struct clone *copy) {
+  copy->data0 = clone->data0;
+  copy->data1 = clone->data1;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    copy->data2[offset] = clone->data2[offset];
+  }  
 }
 
 int clone_subset(const clone *clone1, const clone *clone2) {

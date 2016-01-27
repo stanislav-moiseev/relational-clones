@@ -53,15 +53,31 @@ size_t pred_print_extensional_size();
  */
 void pred_print_extensional(char *str, const pred *pred);
 
-
 /** `pred_extensional` return the set of all tuples satisfying the predicate.
  * The tuples are returned in an unspecified order.
  */
 void pred_extensional(const pred *pred, uint32_t **ext, size_t *size);
 
+/** `pred_cardinality` returns the number of tuples satisfying the predicate.
+ */
 int64_t pred_cardinality(const pred *pred);
 
 
+/** `pred_init` initializes the predicate to be equal to zero.
+ */
+void pred_init(pred *pred, uint64_t arity);
+
+/** `pred_set` sets the value of predicate on the tuple to be true.
+ */
+void pred_set(pred *pred, uint64_t tuple);
+
+/** `pre_compute` returns the value of the predicate on the given tuple.
+ */
 int pred_compute(const pred *pred, uint64_t tuple);
+
+/** `pred_is_essential` returns non-zero if the predicate is an essential Zhuk
+ *  predicate.
+ */
+int pred_is_essential(const pred *pred);
 
 #endif

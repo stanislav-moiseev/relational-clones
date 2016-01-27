@@ -220,7 +220,7 @@ void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct f
   
   Z3_model_inc_ref(z3->ctx, m);
   
-  fun_set_zero(kfun, fun_arity);
+  fun_init(kfun, fun_arity);
   for(size_t xs = 0; xs < int_pow(K, fun_arity); ++xs) {
     /* represent `xs` in the K-ary form,
      * with digits[0] being the highest digit. */

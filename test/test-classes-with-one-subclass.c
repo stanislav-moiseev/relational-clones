@@ -41,7 +41,7 @@ void test_find_classes_with_one_subclass(const char *fname, const char *flogname
             idx,
             class->id.layer_id, class->id.class_id,
             subclass->id.layer_id, subclass->id.class_id);
-    /* fflush(flog); */
+    fflush(flog);
 
     Z3_lbool rc = find_discr_function(class, subclass, 5, funs+idx);
 
@@ -87,6 +87,7 @@ int verify_classes_with_one_subclass(const char *fname, const char *fclasses_nam
 
   FILE *fclasses = fopen(fclasses_name, "rb");
   assert(fclasses != NULL);
+  
   class **classes;
   uint64_t num_classes;
   fun *funs;
@@ -110,18 +111,17 @@ int verify_classes_with_one_subclass(const char *fname, const char *fclasses_nam
 
 
 int main() {
-  printf("test-classes-with-one-subclass: "); fflush(stdout);
-  test_find_classes_with_one_subclass("data/all-maj.2016",
-                                      "output/classes-with-one-subclass.txt",
-                                      "output/classes-with-one-subclass.2016");
-  printf("Ok.\n");
+  /* printf("test-classes-with-one-subclass: "); fflush(stdout); */
+  /* test_find_classes_with_one_subclass("data/all-maj.2016", */
+  /*                                     "output/classes-with-one-subclass.txt", */
+  /*                                     "output/classes-with-one-subclass.2016"); */
+  /* printf("Ok.\n"); */
 
-  /* printf("verify-classes-with-one-subclass: "); fflush(stdout); */
-  /* if(verify_classes_with_one_subclass("data/all-maj.2016", */
-  /*                                     "output/classes-with-one-subclass.2016")) { */
-  /*   printf("Ok.\n"); */
-  /* } else { */
-  /*   printf("Error.\n"); */
-  /* } */
-
+  printf("verify-classes-with-one-subclass: "); fflush(stdout);
+  if(verify_classes_with_one_subclass("data/all-maj.2016",
+                                      "output/classes-with-one-subclass.2016")) {
+    printf("Ok.\n");
+  } else {
+    printf("Error.\n");
+  }
 }

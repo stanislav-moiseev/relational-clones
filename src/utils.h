@@ -52,7 +52,6 @@ static void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
   *shift  = data % 64;
 }
 
-
 /** K-valued logic. Global constant
  */
 static const uint32_t K = 3;
@@ -73,7 +72,7 @@ static void get_K_digits(uint32_t digits[], uint32_t arity, size_t x) {
 static uint64_t get_K_tuple(uint32_t digits[], uint32_t arity) {
   uint64_t tuple = 0;
   for(size_t i = 0; i < arity; ++i) {
-    tuple = K*tuple+ digits[i];
+    tuple = K*tuple + digits[i];
   }
   return tuple;
 }
