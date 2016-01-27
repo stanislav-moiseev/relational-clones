@@ -104,7 +104,7 @@ int pred_compute(const pred *pred, uint64_t tuple) {
   }
 }
 
-int pred_is_essential(const pred *pred) {
+static int pred_test_essential(const pred *pred) {
   if(pred->arity == 0) return 1;
   
   for(uint64_t tuple = 0; tuple < int_pow(K, pred->arity); ++tuple) {
@@ -129,6 +129,49 @@ int pred_is_essential(const pred *pred) {
       if(flag0) { return 1; }
     }
   }
+  
   return 0;
+}
+
+static void pred_is_essential_construct_tables(int **table1, int **table2) {
+  (*table1) = malloc(int_pow2(K) * sizeof(int));
+  assert((*table1) != NULL);
+  for(uint64_t data1 = 0; data1 < int_pow2(K); ++data1) {
+    struct pred p = { .arity = 1, .data = data1 };
+    if(pred_test_essential(&p)) {
+      (*table1)[data1] = 1;
+    } else {
+      (*table1)[data1] = 0;
+    }
+  }
+    
+  (*table2) = malloc(int_pow2(K*K) * sizeof(int));
+  assert((*table2) != NULL);
+  for(uint64_t data2 = 0; data2 < int_pow2(K*K); ++data2) {
+    struct pred p = { .arity = 2, .data = data2 };
+    if(pred_test_essential(&p)) {
+      (*table2)[data2] = 1;
+    } else {
+      (*table2)[data2] = 0;
+    }
+  }
+}
+
+int pred_is_essential(const pred *pred) {
+  /* membership tables for predicates of arity 1 and 2 */
+  static int tables_ready = 0;
+  static int *table1, *table2;
+  if(!tables_ready) {
+    tables_ready = 1;
+    pred_is_essential_construct_tables(&table1, &table2);
+  }
+
+  /* check membership to precomputed tables of essential predicates */
+  switch(pred->arity) {
+  case 0:  return 1;
+  case 1:  return table1[pred->data];
+  case 2:  return table2[pred->data];
+  default: return pred_test_essential(pred);
+  }
 }
 
