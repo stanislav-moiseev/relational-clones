@@ -224,6 +224,7 @@ static void clone_closure_ex(const clone *base, const clone *suppl, clone *closu
 
   clone diff;
   clone_diff(&recruit, &new_base, &diff);
+  
   if(!clone_is_empty(&diff)) {
     /* if we've found new predicates, recursively continue computation */
     clone_closure_ex(&new_base, &diff, closure);
@@ -234,9 +235,8 @@ static void clone_closure_ex(const clone *base, const clone *suppl, clone *closu
 }
 
 void clone_closure(const clone *clone, struct clone *closure) {
-  clone_copy(clone, closure);
-  
   struct clone empty;
   clone_init(&empty);
   clone_closure_ex(&empty, clone, closure);
 }
+
