@@ -10,8 +10,7 @@
 #include "algorithms/alg-maj.h"
 #include "binary/binary-2016.h"
 
-void get_assert_two_layers(const maj_layer *layer1, const maj_layer *layer2) {
-  printf("\n");
+void worker(const maj_layer *layer1, const maj_layer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {
     for(int j = 0; j < layer2->num_classes; ++j) {
       const maj_class *class1 = layer1->classes + i;
@@ -47,7 +46,7 @@ void get_assert_two_layers(const maj_layer *layer1, const maj_layer *layer2) {
   }
 }
 
-void test_gen_assert_disrc_fun_two_layers(const char *fname, maj_layer_id id1, maj_layer_id id2) {
+void script_maj_disrc_fun_two_layers(const char *fname, maj_layer_id id1, maj_layer_id id2) {
   FILE *fd = fopen(fname, "rb");
   assert(fd != NULL);
 
@@ -59,15 +58,15 @@ void test_gen_assert_disrc_fun_two_layers(const char *fname, maj_layer_id id1, m
   const maj_layer *layer2 = maj_lattice_get_layer(&lattice, id2);
   assert(layer2 != NULL);
   
-  get_assert_two_layers(layer1, layer2);
+  worker(layer1, layer2);
   
   maj_lattice_free(&lattice);
   fclose(fd);
 }
 
 int main() {
-  printf("test-disrc-fun-two-layers: "); fflush(stdout);
-  test_gen_assert_disrc_fun_two_layers("data/all-maj.2016", 49, 50);
+  printf("script-maj-disrc-fun-two-layers:\n"); fflush(stdout);
+  script_maj_disrc_fun_two_layers("data/all-maj.2016", 49, 50);
   printf("Ok.\n");
 }
 

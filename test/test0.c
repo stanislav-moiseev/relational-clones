@@ -60,11 +60,11 @@ void test_fun_scan() {
 }
 
 int main() {
-  printf("test_pred_construct: "); fflush(stdout);
+  printf("test_pred_construct:\t"); fflush(stdout);
   test_pred_construct();
   printf("Ok.\n");
 
-  printf("test_fun_scan: "); fflush(stdout);
+  printf("test_fun_scan:\t\t"); fflush(stdout);
   test_fun_scan();
   printf("Ok.\n");
   

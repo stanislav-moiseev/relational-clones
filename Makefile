@@ -23,57 +23,33 @@ SRCS =					\
 
 OBJS =	$(SRCS:.c=.o)
 
-.c.o:
-	$(CC) -c -o $@ $^
+%.o: %.c %.h
+	$(CC) -c -o $@ $<
+
+%.out: %.c $(OBJS)
+	$(CC) -o $@ $^
+
+.PRECIOUS: $(OBJS)
 
 TESTS =						\
 	test/test0.out				\
 	test/test-closure.out			\
-	test/test-discr-fun-two-layers.out	\
-	test/test-classes-with-one-subclass.out	\
 	#test/test-high-arity.c
 
-TESTS-2013 =					\
-	test/binary/test-class-read-2013.out	\
-	test/binary/test-recode-binary.out
+SCRIPTS =								\
+	script/binary/script-recode-binary.out				\
+	script/script-maj-discr-fun-two-layers.out			\
+	script/script-maj-classes-with-one-subclass.out			\
+	script/script-maj-classes-with-one-subclass-discr-fun.out	\
+	script/script-construct-closure-two-preds.out			\
 
-all:  $(TESTS) $(TESTS-2013)
+all:  $(TESTS) $(SCRIPTS)
 
 test: $(TESTS)
 	@./test/test0.out
 	@./test/test-closure.out
-#	@mkdir -p output/disrc-fun-two-layers/z3
-	@./test/test-discr-fun-two-layers.out
-#	@mkdir -p output/classes-with-one-subclass/z3
-	@./test/test-classes-with-one-subclass.out
-
-test/test0.out: test/test0.c $(OBJS)
-	$(CC) -o $@ $^
-
-test/test-closure.out: test/test-closure.c $(OBJS)
-	$(CC) -o $@ $^
-
-test/z3/test-z3.out: test/z3/test-z3.c $(OBJS)
-	$(CC) -o $@ $^
-
-test/test-discr-fun-two-layers.out: test/test-discr-fun-two-layers.c $(OBJS)
-	$(CC) -o $@ $^
-
-test/test-classes-with-one-subclass.out: test/test-classes-with-one-subclass.c $(OBJS)
-	$(CC) -o $@ $^
-
-
-test2013:
-	@./test/binary/test-class-read-2013.out
-
-test/binary/test-class-read-2013.out: test/binary/test-class-read-2013.c $(OBJS)
-	$(CC) -o $@ $^
-
-test/binary/test-recode-binary.out: test/binary/test-recode-binary.c $(OBJS)
-	$(CC) -o $@ $^
-
 
 clean:
-	rm -f $(TESTS) $(OBJS)
+	rm -f $(OBJS) $(TESTS) $(SCRIPTS)
 	find * -name \*~ -delete
 

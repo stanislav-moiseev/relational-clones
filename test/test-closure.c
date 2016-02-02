@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "binary/binary-2016.h"
-#include "algorithms/alg-closure.h"
 #include "closure.h"
 
 void test_pred_is_essential() {
@@ -65,25 +64,12 @@ void test_clone_closure() {
   }
 }
 
-void construct_closure_two_preds(const char *fout_name) {
-  pred p_eq;
-  assert(pred_construct(2, "100010001", &p_eq));
-  
-  clone closure;
-  clone_closure_two_preds(&p_eq, &p_eq, &closure);
-}
-
-
 int main() {
-  printf("test-pred-is-essential: "); fflush(stdout);
+  printf("test-pred-is-essential:\t"); fflush(stdout);
   test_pred_is_essential();
   printf("Ok.\n");
   
-  printf("test-clone-closure: "); fflush(stdout);
+  printf("test-clone-closure:\t"); fflush(stdout);
   test_clone_closure();
-  printf("Ok.\n");
-
-  printf("construct-closure-two-preds: "); fflush(stdout);
-  construct_closure_two_preds("output/closure-two-preds.2016");
   printf("Ok.\n");
 }

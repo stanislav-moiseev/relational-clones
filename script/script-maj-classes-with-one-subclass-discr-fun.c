@@ -10,7 +10,7 @@
 #include "binary/binary-2016.h"
 #include "algorithms/alg-maj.h"
 
-void test_find_classes_with_one_subclass(const char *fname, const char *flogname, const char *foutname) {
+void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {
   FILE *fd = fopen(fname, "rb");
   assert(fd != NULL);
   
@@ -69,14 +69,15 @@ void test_find_classes_with_one_subclass(const char *fname, const char *flogname
   FILE *fout = fopen(foutname, "wb");
   assert(fout != NULL);
   write_classes_with_one_subclass_discr_fun(fout, &lattice, classes, num_classes, funs);
-  
-  free(funs);
+
   fclose(flog);
+  fclose(fout);
+  free(funs);
   free(classes);
   maj_lattice_free(&lattice);
 }
 
-int verify_classes_with_one_subclass(const char *fname, const char *fclasses_name) {
+int verify(const char *fname, const char *fclasses_name) {
   FILE *fd = fopen(fname, "rb");
   assert(fd != NULL);
   
@@ -108,17 +109,16 @@ int verify_classes_with_one_subclass(const char *fname, const char *fclasses_nam
   return rc;
 }
 
-
 int main() {
-  /* printf("test-classes-with-one-subclass: "); fflush(stdout); */
-  /* test_find_classes_with_one_subclass("data/all-maj.2016", */
-  /*                                     "output/classes-with-one-subclass.txt", */
-  /*                                     "output/classes-with-one-subclass.2016"); */
-  /* printf("Ok.\n"); */
+  printf("script-maj-classes-with-one-subclass-discr-fun:\n"); fflush(stdout);
+  test_maj_classes_with_one_subclass_discr_fun("data/all-maj.2016",
+                                          "output/classes-with-one-subclass.txt",
+                                          "output/classes-with-one-subclass.2016");
+  printf("Ok.\n");
 
-  printf("verify-classes-with-one-subclass: "); fflush(stdout);
-  if(verify_classes_with_one_subclass("data/all-maj.2016",
-                                      "output/classes-with-one-subclass.2016")) {
+  printf("verify-maj-classes-with-one-subclass-discr-fun: "); fflush(stdout);
+  if(verify("data/all-maj.2016",
+            "output/classes-with-one-subclass.2016")) {
     printf("Ok.\n");
   } else {
     printf("Error.\n");
