@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "algorithms/alg-maj.h"
-#include "binary/binary-2016.h"
+#include "binary/common.h"
 
 void worker(const maj_layer *layer1, const maj_layer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {

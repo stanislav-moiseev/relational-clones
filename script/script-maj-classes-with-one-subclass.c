@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary/binary-2016.h"
+#include "binary/common.h"
 #include "algorithms/alg-maj.h"
 
 void test_find_classes_with_one_subclass(const char *fname) {

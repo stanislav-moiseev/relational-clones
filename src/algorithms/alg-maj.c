@@ -9,7 +9,7 @@
 
 #include "algorithms/alg-maj.h"
 #include "z3/z3-search.h"
-#include "binary/binary-2016.h"
+#include "binary/common.h"
 
 void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***classes, uint64_t *num_classes) {
   size_t capacity = 128;

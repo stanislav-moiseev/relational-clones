@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary/binary-2016.h"
+#include "binary/common.h"
 #include "algorithms/alg-closure.h"
 
 void construct_closure_two_preds(const char *fout_name) {

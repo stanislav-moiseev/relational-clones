@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary/binary-2016.h"
+#include "binary/common.h"
 #include "closure.h"
 
 void test_pred_is_essential() {

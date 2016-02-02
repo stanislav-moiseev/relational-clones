@@ -13,8 +13,8 @@ SRCS =					\
 	src/algorithms/alg-maj.c	\
 	src/algorithms/alg-closure.c	\
 					\
-	src/binary/binary-2013.c	\
-	src/binary/binary-2016.c	\
+	src/binary/maj-lattice-2013.c	\
+	src/binary/common.c		\
 	src/binary/maj-lattice.c	\
 	src/binary/maj-classes-with-one-subclass-discr-fun.c	\
 					\

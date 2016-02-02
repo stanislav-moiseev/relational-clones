@@ -8,8 +8,7 @@
 #include <stdint.h>
 
 #include "utils.h"
-#include "binary-2013.h"
-
+#include "binary/maj-lattice-2013.h"
 
 static uint32_t read_uint32(FILE *fd) {
   uint32_t u;

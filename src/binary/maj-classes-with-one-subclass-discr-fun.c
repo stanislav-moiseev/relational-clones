@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "binary/common.h"
 #include "binary/maj-classes-with-one-subclass-discr-fun.h"
-#include "binary/binary-2016.h"
 
 void write_classes_with_one_subclass_discr_fun(FILE *fd, const maj_lattice *lattice, maj_class * const *classes, size_t num_classes, const fun *funs) {
   uint64_write(fd, num_classes);

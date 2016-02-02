@@ -68,4 +68,20 @@ maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id);
 
 maj_layer *maj_lattice_get_layer(const maj_lattice *lattice, maj_layer_id id);
 
+
+/******************************************************************************/
+/** binary file related functionality */
+
+void maj_class_id_write(FILE *fd, const maj_class_id *id);
+
+/** `maj_lattice_write` writes the lattice to binary file.
+ */
+void maj_lattice_write(FILE *fd, const maj_lattice *lattice);
+
+void maj_class_id_read(FILE *fd, maj_class_id *id);
+
+/** `maj_lattice_read` reads the lattice from binary file.
+ */
+void maj_lattice_read(FILE *fd, maj_lattice *lattice);
+
 #endif
