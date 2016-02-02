@@ -147,3 +147,22 @@ int fun_preserves_pred(const fun *fun, const pred *pred) {
   free(pred_ext);
   return 1;
 }
+
+int test_discr_function(const clone *clone1, const clone *clone2, const fun *fun) {
+  /* check that the function preserves all predicates in the upper clone */
+  for(clone_iterator it = clone_iterator_begin(clone1); !clone_iterator_end(clone1, &it); clone_iterator_next(&it)) {
+    pred pred = clone_iterator_deref(&it);
+    if(!fun_preserves_pred(fun, &pred)) return 0;
+  }
+  
+  /* check that there exists a predicate in the lower clone basis such that
+   * the function does not preserve that predicate */
+  int flag = 0;
+  for(clone_iterator it = clone_iterator_begin(clone2); !clone_iterator_end(clone2, &it); clone_iterator_next(&it)) {
+    pred pred = clone_iterator_deref(&it);
+    if(!fun_preserves_pred(fun, &pred)) { flag = 1; break; }
+  }
+  if(!flag) return 0;
+  
+  return 1;
+}

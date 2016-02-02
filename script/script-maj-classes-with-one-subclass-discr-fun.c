@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "binary/binary-2016.h"
+#include "binary/maj-classes-with-one-subclass-discr-fun.h"
 #include "algorithms/alg-maj.h"
 
 void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {

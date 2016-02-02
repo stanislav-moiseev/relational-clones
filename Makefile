@@ -16,10 +16,10 @@ SRCS =					\
 	src/binary/binary-2013.c	\
 	src/binary/binary-2016.c	\
 	src/binary/maj-lattice.c	\
+	src/binary/maj-classes-with-one-subclass-discr-fun.c	\
 					\
-	src/z3/wrapper.c		\
-	src/z3/gen-spec.c		\
-#	src/z3/gen-text.c		\
+	src/z3/z3-search.c		\
+#	src/z3/gen-spec.c		\
 
 OBJS =	$(SRCS:.c=.o)
 

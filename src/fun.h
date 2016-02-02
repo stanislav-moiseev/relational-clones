@@ -7,6 +7,7 @@
 
 #include "utils.h"
 #include "pred.h"
+#include "clone.h"
 
 #define FUN_DATA_SIZE 8
 
@@ -54,5 +55,10 @@ void fun_scan(const char *str, fun *fun);
  * predicate.
  */
 int fun_preserves_pred(const fun *fun, const pred *pred);
+
+/** `test_discr_function` returns non-zero if the function preserves all predicates
+ * from `clone1` and does not preserve at least one predicate from `clone2`.
+ */
+int test_discr_function(const clone *clone1, const clone *clone2, const fun *fun);
 
 #endif
