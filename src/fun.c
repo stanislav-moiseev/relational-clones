@@ -109,7 +109,7 @@ int fun_preserves_pred(const fun *fun, const pred *pred) {
       get_K_digits(digits[i], pred->arity, pred_ext[pred_tuples[i]]);
     }
     
-    /* transpose the matrix and form `pre->arity` tuples for further function
+    /* transpose the matrix and form `pred->arity` tuples for further function
      * application */
     uint32_t fun_tuples[pred->arity];
     for(int j = 0; j < pred->arity; ++j) {

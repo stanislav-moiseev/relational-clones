@@ -13,7 +13,6 @@
 #include "utils.h"
 #include "pred.h"
 #include "clone.h"
-#include "clone-iterator.h"
 
 /** Permutation of variables:
  *      resp(x1,x0) = pred(x0,x1)

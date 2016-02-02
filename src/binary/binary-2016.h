@@ -11,8 +11,7 @@
 #include "fun.h"
 #include "pred.h"
 #include "clone.h"
-#include "class.h"
-#include "lattice.h"
+#include "binary/maj-lattice.h"
 
 /******************************************************************************/
 /** Common part */
@@ -35,15 +34,15 @@ void pred_write(FILE *fd, const pred *pred);
 
 void clone_write(FILE *fd, const clone *clone);
 
-void class_id_write(FILE *fd, const class_id *id);
+void maj_class_id_write(FILE *fd, const maj_class_id *id);
 
-void class_write(FILE *fd, const class *class);
+void maj_class_write(FILE *fd, const maj_class *class);
 
-void layer_write(FILE *fd, const layer *layer);
+void maj_layer_write(FILE *fd, const maj_layer *layer);
 
-/** `lattic_write` writes the lattice to binary file.
+/** `maj_lattice_write` writes the lattice to binary file.
  */
-void lattice_write(FILE *fd, const lattice *lattice);
+void maj_lattice_write(FILE *fd, const maj_lattice *lattice);
 
 
 /******************************************************************************/
@@ -55,14 +54,14 @@ void pred_read(FILE *fd, pred *pred);
 
 void clone_read(FILE *fd, clone *clone);
 
-void class_id_read(FILE *fd, class_id *id);
+void maj_class_id_read(FILE *fd, maj_class_id *id);
 
-void class_read(FILE *fd, class *class);
+void maj_class_read(FILE *fd, maj_class *class);
 
-void layer_read(FILE *fd, layer *layer);
+void maj_layer_read(FILE *fd, maj_layer *layer);
 
-/** `lattic_read` reads the lattice from binary file.
+/** `maj_lattice_read` reads the lattice from binary file.
  */
-void lattice_read(FILE *fd, lattice *lattice);
+void maj_lattice_read(FILE *fd, maj_lattice *lattice);
 
 #endif

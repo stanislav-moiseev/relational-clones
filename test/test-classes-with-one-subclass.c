@@ -7,19 +7,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary-2016.h"
-#include "clone-iterator.h"
-#include "algorithms.h"
+#include "binary/binary-2016.h"
+#include "algorithms/alg-maj.h"
 
 void test_find_classes_with_one_subclass(const char *fname, const char *flogname, const char *foutname) {
   FILE *fd = fopen(fname, "rb");
   assert(fd != NULL);
   
-  lattice lattice;
-  lattice_read(fd, &lattice);
+  maj_lattice lattice;
+  maj_lattice_read(fd, &lattice);
   fclose(fd);
   
-  class **classes;
+  maj_class **classes;
   uint64_t num_classes;
   find_classes_with_one_subclass(&lattice, &classes, &num_classes);
 
@@ -32,10 +31,10 @@ void test_find_classes_with_one_subclass(const char *fname, const char *flogname
   /** For each pair of class—subclass, we search for a discriminating function
    * of arity from 0 up to 5. */
   size_t idx = 0;
-  for(class **pclass = classes; pclass < classes + num_classes; ++pclass) {
-    class *class = *pclass;
+  for(maj_class **pclass = classes; pclass < classes + num_classes; ++pclass) {
+    maj_class *class = *pclass;
     assert(class->num_subclasses == 1);
-    struct class *subclass = lattice_get_class(&lattice, class->subclasses[0]);
+    struct maj_class *subclass = maj_lattice_get_class(&lattice, class->subclasses[0]);
 
     fprintf(flog, "%lu:\t class %2d:%-6d\t subclass %2d:%-6d\t ",
             idx,
@@ -56,7 +55,7 @@ void test_find_classes_with_one_subclass(const char *fname, const char *flogname
       break;
     case Z3_L_TRUE: {
       /* verify the result */
-      assert(test_discr_function(class, subclass, funs+idx));
+      assert(test_discr_function(&class->clone, &subclass->basis, funs+idx));
       char *str = fun_print(funs+idx);
       fprintf(flog, "%s\n", str);
       free(str);
@@ -74,21 +73,21 @@ void test_find_classes_with_one_subclass(const char *fname, const char *flogname
   free(funs);
   fclose(flog);
   free(classes);
-  lattice_free(&lattice);
+  maj_lattice_free(&lattice);
 }
 
 int verify_classes_with_one_subclass(const char *fname, const char *fclasses_name) {
   FILE *fd = fopen(fname, "rb");
   assert(fd != NULL);
   
-  lattice lattice;
-  lattice_read(fd, &lattice);
+  maj_lattice lattice;
+  maj_lattice_read(fd, &lattice);
   fclose(fd);
 
   FILE *fclasses = fopen(fclasses_name, "rb");
   assert(fclasses != NULL);
   
-  class **classes;
+  maj_class **classes;
   uint64_t num_classes;
   fun *funs;
   read_classes_with_one_subclass_discr_fun(fclasses, &lattice, &classes, &num_classes, &funs);
@@ -96,12 +95,12 @@ int verify_classes_with_one_subclass(const char *fname, const char *fclasses_nam
 
   int rc = 1;
   for(size_t i = 0; i < num_classes; ++i) {
-    class *class = classes[i];
+    maj_class *class = classes[i];
     fun *fun = funs + i;
     if(class->num_subclasses != 1) { rc = 0; break; }
-    struct class *subclass = lattice_get_class(&lattice, class->subclasses[0]);
+    struct maj_class *subclass = maj_lattice_get_class(&lattice, class->subclasses[0]);
 
-    if(!test_discr_function(class, subclass, fun)) { rc = 0; break; }
+    if(!test_discr_function(&class->clone, &subclass->basis, fun)) { rc = 0; break; }
   }
   
   free(classes);

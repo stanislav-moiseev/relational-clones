@@ -7,7 +7,6 @@
 #include <stdio.h>
 
 #include "fun.h"
-#include "clone-iterator.h"
 #include "gen-spec.h"
 
 void gen_header(z3_wrapper *z3) {
@@ -160,13 +159,13 @@ void gen_preserve(z3_wrapper *z3, int not_preserve, Z3_func_decl fun, uint32_t f
   Z3_solver_assert(z3->ctx, z3->solver, phi);
 }
 
-void gen_assert_discr_fun(z3_wrapper *z3, const class *class, const pred *pred, int fun_arity) {
+void gen_assert_discr_fun(z3_wrapper *z3, const clone *clone, const pred *pred, int fun_arity) {
   gen_header(z3);
 
   /* the basis of the clone */
   struct pred *pred_list;
   uint64_t num_preds;
-  clone_get_predicates(&class->basis, &pred_list, &num_preds);
+  clone_get_predicates(clone, &pred_list, &num_preds);
 
   /* write a definition for all predicates */
   Z3_func_decl preds[num_preds];
@@ -191,10 +190,10 @@ void gen_assert_discr_fun(z3_wrapper *z3, const class *class, const pred *pred, 
   free(pred_list);
 }
 
-void gen_assert_discr_fun_two_classes(z3_wrapper *z3, const class *class1, const class *class2, int fun_arity) {
+void gen_assert_discr_fun_two_clones(z3_wrapper *z3, const clone *clone1_basis, const clone *clone1, const clone *clone2, int fun_arity) {
   /* select any predicate discriminating two clones */
   clone diff;
-  clone_diff(&class2->clone, &class1->clone, &diff);
+  clone_diff(clone2, clone1, &diff);
   assert(!clone_is_empty(&diff));
 
   /* heuristically, find a predicate from `diff` with the smallest extensional
@@ -209,7 +208,7 @@ void gen_assert_discr_fun_two_classes(z3_wrapper *z3, const class *class1, const
       min_pred = pred;
     }
   }
-  gen_assert_discr_fun(z3, class1, &min_pred, fun_arity);
+  gen_assert_discr_fun(z3, clone1_basis, &min_pred, fun_arity);
 }
 
 void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct fun *kfun) {
@@ -250,11 +249,11 @@ void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct f
 }
 
 
-Z3_lbool z3_find_discr_function(const class *class1, const class *class2, uint32_t fun_arity, fun *fun) {
+Z3_lbool z3_find_discr_function(const clone *clone1_basis, const clone *clone1, const clone *clone2, uint32_t fun_arity, fun *fun) {
   z3_wrapper z3;
   z3_wrapper_init(&z3);
   
-  gen_assert_discr_fun_two_classes(&z3, class1, class2, fun_arity);
+  gen_assert_discr_fun_two_clones(&z3, clone1_basis, clone1, clone2, fun_arity);
 
   Z3_lbool rc = Z3_solver_check(z3.ctx, z3.solver);
   

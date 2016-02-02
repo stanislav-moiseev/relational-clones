@@ -4,20 +4,22 @@ CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE	\
 	-Isrc -I/usr/local/inlcude			\
 	-lz3
 
-SRCS =				\
-	src/fun.c		\
-	src/pred.c		\
-	src/clone.c		\
-	src/clone-iterator.c	\
-	src/class.c		\
-	src/closure.c		\
-	src/lattice.c		\
-	src/algorithms.c	\
-	src/binary-2013.c	\
-	src/binary-2016.c	\
-	src/z3/wrapper.c	\
-	src/z3/gen-spec.c	\
-#	src/z3/gen-text.c	\
+SRCS =					\
+	src/fun.c			\
+	src/pred.c			\
+	src/clone.c			\
+	src/closure.c			\
+					\
+	src/algorithms/alg-maj.c	\
+	src/algorithms/alg-closure.c	\
+					\
+	src/binary/binary-2013.c	\
+	src/binary/binary-2016.c	\
+	src/binary/maj-lattice.c	\
+					\
+	src/z3/wrapper.c		\
+	src/z3/gen-spec.c		\
+#	src/z3/gen-text.c		\
 
 OBJS =	$(SRCS:.c=.o)
 

@@ -9,8 +9,7 @@
 
 #include "pred.h"
 #include "clone.h"
-#include "class.h"
-#include "lattice.h"
+#include "binary/maj-lattice.h"
 
 /** `pred_read` read one predicate from binary file.
  */
@@ -19,17 +18,17 @@ void pred_read_2013(FILE *fd, pred *pred);
 /** `class_read` reads the binary class data starting from current file
  * position.
  */
-int class_read_2013(FILE *fd, class *class);
+int maj_class_read_2013(FILE *fd, maj_class *class);
 
 /** `layer_aread_classes` reads from binary file a layer of classes.
  * It allocates an array to store all classes.
  * The pointer should be free'd to release the storage.
  */
-void layer_aread_classes_2013(FILE *fd, layer *layer);
+void maj_layer_aread_classes_2013(FILE *fd, maj_layer *layer);
 
 /** `layer_aread_connections` reads the list of subclasses from file.
  */
-void layer_aread_connections_2013(FILE *fd, layer *layer);
+void maj_layer_aread_connections_2013(FILE *fd, maj_layer *layer);
 
 /**
  * `dir_clones` - directory where to look for binary files with clones
@@ -37,6 +36,6 @@ void layer_aread_connections_2013(FILE *fd, layer *layer);
  * between clones (clones' subclasses)
  * The function allocates memory to store `lattice`.
  */
-void lattice_read_2013(int num_layers, const char *dir_clones, const char *dir_connections, lattice *lattice);
+void maj_lattice_read_2013(int num_layers, const char *dir_clones, const char *dir_connections, maj_lattice *lattice);
 
 #endif

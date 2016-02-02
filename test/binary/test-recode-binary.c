@@ -10,21 +10,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary-2013.h"
-#include "binary-2016.h"
+#include "binary/binary-2013.h"
+#include "binary/binary-2016.h"
 
 /** `test_recode_binary` reads lattice in 2013 file format
  * and writes to 2016 format.
  */
 void test_recode_binary()  {
-  lattice lattice;
-  lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
+  maj_lattice lattice;
+  maj_lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
   FILE *fout = fopen("data/all-maj.2016", "wb");
   assert(fout != NULL);
   
-  lattice_write(fout, &lattice);
+  maj_lattice_write(fout, &lattice);
   
-  lattice_free(&lattice);
+  maj_lattice_free(&lattice);
   fclose(fout);
 }
 
@@ -32,10 +32,10 @@ void test_read_binary_2016() {
   FILE *fin = fopen("data/all-maj.2016", "rb");
   assert(fin != NULL);
   
-  lattice lattice;
-  lattice_read(fin, &lattice);
+  maj_lattice lattice;
+  maj_lattice_read(fin, &lattice);
   
-  lattice_free(&lattice);
+  maj_lattice_free(&lattice);
   fclose(fin);
 }
 

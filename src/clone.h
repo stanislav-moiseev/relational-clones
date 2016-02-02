@@ -71,6 +71,30 @@ int clone_is_empty(const clone *clone);
  */
 void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
 
+
+/******************************************************************************/
+/** clone iterators */
+
+struct clone_iterator {
+  const clone *clone;
+  int64_t offset;
+  int64_t shift;
+};
+
+typedef struct clone_iterator clone_iterator;
+
+clone_iterator clone_iterator_begin(const clone *clone);
+
+int clone_iterator_end(const clone *clone, clone_iterator *it);
+
+void clone_iterator_next(clone_iterator *it);
+
+pred clone_iterator_deref(const clone_iterator *it);
+
+
+/******************************************************************************/
+/** operations over clones */
+
 /** `clone_eq` returns non-zero if two clones are equal.
  */
 int clone_eq(const clone *clone1, const clone *clone2);
@@ -92,6 +116,7 @@ void clone_union(const clone *clone1, const clone *clone2, clone *clone);
  * the third clone.
  */
 void clone_diff(const clone *clone1, const clone *clone2, clone *clone);
+
 
 #endif
 
