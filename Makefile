@@ -12,6 +12,7 @@ SRCS =					\
 					\
 	src/algorithms/alg-maj.c	\
 	src/algorithms/alg-closure.c	\
+	src/algorithms/alg-lattice.c	\
 					\
 	src/binary/maj-lattice-2013.c	\
 	src/binary/common.c		\
@@ -43,6 +44,7 @@ SCRIPTS =								\
 	script/script-maj-classes-with-one-subclass.out			\
 	script/script-maj-classes-with-one-subclass-discr-fun.out	\
 	script/script-closure-two-preds.out				\
+	script/script-construct-lattice.out				\
 
 all:  $(TESTS) $(SCRIPTS)
 

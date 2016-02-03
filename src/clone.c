@@ -144,7 +144,8 @@ void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size) 
     ++_size;
     ++current_pred;
   }
-  *size = _size;
+
+  if(size != NULL) *size = _size;
 }
 
 

@@ -235,23 +235,9 @@ static void clone_closure_ex(const clone *base, const clone *suppl, clone *closu
 }
 
 void clone_closure(const clone *clone, struct clone *closure) {
+  clone_init(closure);
+  
   struct clone empty;
   clone_init(&empty);
   clone_closure_ex(&empty, clone, closure);
 }
-
-
-/* void clone_closure_two_preds(const pred *p1, const pred *p2, clone *closure) { */
-/*   assert(p1->arity <= 2 && "predicate operations have been implemented for pred->arity <= 2 only"); */
-/*   assert(p2->arity <= 2 && "predicate operations have been implemented for pred->arity <= 2 only"); */
-
-/*   static int table_ready = 0; */
-/*   static closure_two_preds_table table; */
-/*   if(!table_ready) { */
-/*     table_ready = 1; */
-/*     clone_closure_two_preds_construct_table(&table); */
-/*   } */
-
-/*   /\* add new predicates to `closure` *\/ */
-/*   clone_union(table.data[p1->arity][p2->arity], closure, closure); */
-/* } */

@@ -64,7 +64,7 @@ void clone_init(clone *clone);
 int clone_is_empty(const clone *clone);
 
 /** `clone_get_predicates` stores all clone's predicates to the `pred_list`;
- * the number of predicates having been stored is written to `*card`.
+ * the number of predicates having been stored is written to `*size`.
  * The function allocates an array large enough to hold all the predicates.
  * The pointer should be free'd to release the storage.
  * On success, `clone_get_predicates` returns non-zero.
