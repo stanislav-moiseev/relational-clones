@@ -10,10 +10,25 @@
 #include "clone.h"
 #include "closure.h"
 
-/** `clone_closure_two_preds` computes the closure of
+struct closure_two_preds_table {
+  clone *data[3][3];
+};
+
+typedef struct closure_two_preds_table closure_two_preds_table;
+
+void closure_two_preds_table_free(closure_two_preds_table *table);
+
+/** `clone_closure_two_preds_construct_table` computes the closure of
  *      { false(0), true(0), eq(2), p1, p2 }
- * and inserts the predicates obtained to `closure`.
+ * for all pairs of essential predicates (p1, p2)
+ * and writes the result to the table.
+ *
+ * If either p1 or p2 is not essential, the functions writes the empty clone.
+ *
+ * The function allocates memory to store the table.
+ * Memory should be freed by calling closure_two_preds_table_free.
  */
-void clone_closure_two_preds(const pred *p1, const pred *p2, clone *closure);
+void clone_closure_two_preds_construct_table(closure_two_preds_table *table);
+
 
 #endif
