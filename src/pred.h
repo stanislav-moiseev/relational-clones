@@ -65,15 +65,24 @@ int64_t pred_cardinality(const pred *pred);
 
 /** `pred_init` initializes the predicate to be equal to zero.
  */
-void pred_init(pred *pred, uint64_t arity);
+static inline void pred_init(pred *pred, uint64_t arity) {
+  pred->arity = arity;
+  pred->data  = 0;
+}
 
 /** `pred_set` sets the value of predicate on the tuple to be true.
  */
-void pred_set(pred *pred, uint64_t tuple);
+static inline void pred_set(pred *pred, uint64_t tuple) {
+  pred->data |= ((uint64_t)1 << tuple);
+}
 
-/** `pre_compute` returns the value of the predicate on the given tuple.
+/** `pre_compute` returns non-zero if the predicate return true on the given
+ *  tuple.
  */
-int pred_compute(const pred *pred, uint64_t tuple);
+
+static inline int pred_compute(const pred *pred, uint64_t tuple) {
+  return pred->data & ((uint64_t)1 << tuple);
+}
 
 /** `pred_is_essential` returns non-zero if the predicate is an essential Zhuk
  *  predicate.

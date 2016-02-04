@@ -87,23 +87,6 @@ int64_t pred_cardinality(const pred *pred) {
   return popcount64(pred->data);
 }
 
-void pred_init(pred *pred, uint64_t arity) {
-  pred->arity = arity;
-  pred->data  = 0;
-}
-
-void pred_set(pred *pred, uint64_t tuple) {
-  pred->data |= ((uint64_t)1 << tuple);
-}
-
-int pred_compute(const pred *pred, uint64_t tuple) {
-  if(pred->data & ((uint64_t)1 << tuple)) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 static int pred_test_essential(const pred *pred) {
   if(pred->arity == 0) return 1;
   
