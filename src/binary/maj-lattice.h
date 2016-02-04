@@ -68,6 +68,9 @@ maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id);
 
 maj_layer *maj_lattice_get_layer(const maj_lattice *lattice, maj_layer_id id);
 
+/** `maj_lattice_member` returns true if the lattice contains the clone.
+ */
+int maj_lattice_member(const maj_lattice *lt, const clone *cl);
 
 /******************************************************************************/
 /** binary file related functionality */

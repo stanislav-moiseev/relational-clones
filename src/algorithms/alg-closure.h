@@ -2,8 +2,8 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef ALGORITHMS_ALG_MAJ_H
-#define ALGORITHMS_ALG_MAJ_H
+#ifndef ALGORITHMS_ALG_CLOSURE_H
+#define ALGORITHMS_ALG_CLOSURE_H
 
 #include "fun.h"
 #include "pred.h"
@@ -14,6 +14,11 @@
  * essential predicates of arity <= max_arity.
  */
 void all_essential_predicates(clone *cl, uint32_t max_arity);
+
+/** `clone_insert_dummy_preds` inserts predicates false(0), true(0), eq(2)
+ * to the clone.
+ */
+void clone_insert_dummy_preds(clone *cl);
 
 /** `closure_zero_preds` computes the closure of
  *      { false(0), true(0), eq(2) }

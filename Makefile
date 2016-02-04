@@ -36,6 +36,7 @@ OBJS =	$(SRCS:.c=.o)
 TESTS =						\
 	test/test0.out				\
 	test/test-closure.out			\
+	test/test-maj-lattice.out		\
 	#test/test-high-arity.c
 
 SCRIPTS =								\

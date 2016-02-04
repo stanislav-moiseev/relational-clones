@@ -21,4 +21,10 @@ void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***cla
  */
 Z3_lbool find_discr_function(const maj_class *class1, const maj_class *class2, int max_fun_arity, fun *fun);
 
+/** `clone_contains_majority` returns true if there is at least one minimal
+ * majority operation `maj` such that `maj` preserves all the predicates from
+ * `clone`.
+ */
+int clone_contains_majority(const clone *cl);
+
 #endif

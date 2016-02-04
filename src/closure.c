@@ -59,7 +59,7 @@ void op_ident(const pred *pred, clone *clone) {
 
   /* resp(x0) = pred(x0,x0) */
   struct pred resp;
-  pred_init(&resp, 2);        /* set to zero */
+  pred_init(&resp, 1);        /* set to zero */
   for(uint32_t x0 = 0; x0 < K; ++x0) {
     uint64_t resp_tuple = x0;
     uint64_t pred_tuple = x0*K + x0;

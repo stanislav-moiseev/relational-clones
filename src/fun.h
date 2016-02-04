@@ -61,4 +61,10 @@ int fun_preserves_pred(const fun *fun, const pred *pred);
  */
 int test_discr_function(const clone *clone1, const clone *clone2, const fun *fun);
 
+/** `min_majorities` returns the list of all 7 minimal majority functions
+ * in P3.
+ * The pointer should be freed to release the memory.
+ */
+void min_majorities(fun **majs, size_t *size);
+
 #endif

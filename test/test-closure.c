@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "algorithms/alg-closure.h"
 #include "binary/common.h"
 #include "closure.h"
 
@@ -33,7 +34,7 @@ void test_pred_is_essential() {
   assert(pred_is_essential(&p_12));
 }
 
-void test_clone_closure() {
+void test_clone_closure1() {
   pred p_false, p_true, p_eq0, p_eq1, p_eq2, p_eq, p_neq;
   assert(pred_construct(0, "0", &p_false));
   assert(pred_construct(0, "1", &p_true));
@@ -62,6 +63,34 @@ void test_clone_closure() {
     pred pred = clone_iterator_deref(&it);
     assert(pred_is_essential(&pred));
   }
+}
+
+void test_clone_closure2() {
+  pred p3_1_1, p3_1_3, p3_2_b, p3_2_11;
+  pred_construct(1, "001", &p3_1_1);
+  pred_construct(1, "011", &p3_1_3);
+  pred_construct(2, "000001011", &p3_2_b);
+  pred_construct(2, "000010001", &p3_2_11);
+  
+  struct clone cl, closure, expected_closure;
+  clone_init(&cl);
+  clone_insert_dummy_preds(&cl);
+  clone_insert_pred(&cl, &p3_2_b);
+  clone_closure(&cl, &closure);
+
+  clone_init(&expected_closure);
+  clone_insert_dummy_preds(&expected_closure);
+  clone_insert_pred(&expected_closure, &p3_1_1);
+  clone_insert_pred(&expected_closure, &p3_1_3);
+  clone_insert_pred(&expected_closure, &p3_2_b);
+  clone_insert_pred(&expected_closure, &p3_2_11);
+  
+  assert(clone_eq(&closure, &expected_closure));
+}
+
+void test_clone_closure() {
+  test_clone_closure1();
+  test_clone_closure2();
 }
 
 int main() {

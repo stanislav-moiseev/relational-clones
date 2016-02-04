@@ -47,6 +47,8 @@ void clone_print_verbosely(FILE *fd, const clone *clone);
  */
 void clone_insert_pred(clone *clone, const pred *pred);
 
+void clone_remove_pred(clone *clone, const pred *pred);
+
 /** `clone_test_pred` returns non-zero if the predicate is a member of the
  * clone.
  */

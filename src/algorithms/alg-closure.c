@@ -22,7 +22,7 @@ void all_essential_predicates(clone *cl, uint32_t max_arity) {
   }
 }
 
-static void clone_insert_dummy_preds(clone *cl) {
+void clone_insert_dummy_preds(clone *cl) {
   pred p_false, p_true, p_eq;
   pred_construct(0, "0", &p_false);
   pred_construct(0, "1", &p_true);

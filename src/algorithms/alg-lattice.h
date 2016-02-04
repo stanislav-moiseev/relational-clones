@@ -9,6 +9,7 @@
 
 #include "clone.h"
 
+/** Each class requires approx. 4KiB memory */
 struct class {
   /* /one of/ the parents of the class. */
   struct class *parent;

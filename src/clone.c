@@ -83,6 +83,26 @@ void clone_insert_pred(clone *clone, const pred *pred) {
   }
 }
 
+void clone_remove_pred(clone *clone, const pred *pred) {
+    assert(pred->arity <= 2);
+  switch(pred->arity) {
+  case 0:
+    clone->data0 &= ~((uint32_t)1 << pred->data);
+    break;
+  case 1:
+    clone->data1 &= ~((uint32_t)1 << pred->data);
+    break;
+  case 2: {
+    uint64_t offset, shift;
+    get_offset_shift(pred->data, &offset, &shift);
+    assert(offset < CLONE_DATA2_SIZE);
+    clone->data2[offset] &= ~((uint64_t)1 << shift);
+    break;
+  }
+  }
+}
+
+
 int clone_test_pred(const clone *clone, const pred *pred) {
   assert(pred->arity <= 2);
   switch(pred->arity) {

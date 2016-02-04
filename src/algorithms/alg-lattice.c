@@ -9,6 +9,7 @@
 
 #include "alg-closure.h"
 #include "alg-lattice.h"
+#include "alg-maj.h"
 
 class *class_alloc() {
   class *c = malloc(sizeof(class));
@@ -127,10 +128,10 @@ void lattice_construct_step(lattice *lt, const pred *p) {
     clone closure;
     closure_pred_clone(p, &parent->clone, &closure);
 
-    /* test if we've constructed a new clone */
+    /* test if we've constructed a new class */
     class *child = lattice_lookup(lt, &closure);
 
-    /* If we've constructed a new clone, add it to the lattice */
+    /* if we've constructed a new class, add it to the lattice */
     if(child == NULL) {
       child = class_alloc();
       child->parent = parent;
@@ -163,10 +164,11 @@ void latice_construct(lattice *lt) {
   int idx = 0;
   /* iteratively construct new classes */
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-    printf("%d:\t %ld\n", idx, lt->num_classes);
+    printf("%d\t %ld\n", idx, lt->num_classes);
     lattice_construct_step(lt, p);
     ++idx;
   }
 
   free(uniq_preds);
 }
+
