@@ -9,6 +9,60 @@
 
 #include "closure.h"
 
+closure_operator *clop_alloc_straight_forward() {
+  closure_operator *clop = malloc(sizeof(closure_operator));
+  assert(clop);
+
+  clop->type    = clop_straight_forward_t;
+  clop->table2p = NULL;
+
+  return clop;
+}
+
+closure_operator *clop_alloc_table_two_preds(const closure_table_two_preds *table2p) {
+  closure_operator *clop = malloc(sizeof(closure_operator));
+  assert(clop);
+
+  clop->type    = clop_table_two_preds_t;
+  clop->table2p = table2p;
+
+  return clop;
+}
+
+void clop_free(closure_operator *clop) {
+  free(clop);
+}
+
+void closure_ops1(const closure_operator *clop, const pred *p1, clone *recruit) {
+  switch(clop->type) {
+  case clop_straight_forward_t:
+    op_permut(p1, recruit);
+    op_proj(p1, recruit);
+    op_ident(p1, recruit);
+    break;
+    
+  case clop_table_two_preds_t: {
+    clone *cl = closure_table_two_preds_lookup(clop->table2p, p1, p1);
+    clone_union(recruit, cl, recruit);
+    break;
+  }}
+}
+
+void closure_ops2(const closure_operator *clop, const pred *p1, const pred *p2, clone *recruit) {
+  switch(clop->type) {
+  case clop_straight_forward_t:
+    op_conj(p1, p2, recruit);
+    op6(p1, p2, recruit);
+    op_trans(p1, p2, recruit);
+    break;
+    
+  case clop_table_two_preds_t: {
+    clone *cl = closure_table_two_preds_lookup(clop->table2p, p1, p2);
+    clone_union(recruit, cl, recruit);
+    break;
+  }}
+}
+
 void op_permut(const pred *pred, clone *clone) {
   assert(pred->arity <= 2 && "predicate operations have been implemented for pred->arity <= 2 only");
   
@@ -184,16 +238,14 @@ void op_trans(const pred *pred1, const pred *pred2, clone *clone) {
   }
 }
 
-static void clone_closure_ex(const clone *base, const clone *suppl, clone *closure) {
+static void clone_closure_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
   clone recruit;
   clone_init(&recruit);
   
   /* apply ops of arity 1 for supplement predicates */
   for(clone_iterator it = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it); clone_iterator_next(&it)) {
     pred pred = clone_iterator_deref(&it);
-    op_permut(&pred, &recruit);
-    op_proj(&pred, &recruit);
-    op_ident(&pred, &recruit);
+    closure_ops1(clop, &pred, &recruit);
   }
 
   /* apply ops of arity 2:
@@ -202,9 +254,7 @@ static void clone_closure_ex(const clone *base, const clone *suppl, clone *closu
     pred pred1 = clone_iterator_deref(&it1);
     for(clone_iterator it2 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it2); clone_iterator_next(&it2)) {
       pred pred2 = clone_iterator_deref(&it2);
-      op_conj(&pred1, &pred2, &recruit);
-      op6(&pred1, &pred2, &recruit);
-      op_trans(&pred1, &pred2, &recruit);
+      closure_ops2(clop, &pred1, &pred2, &recruit);
     }
   }
   
@@ -214,9 +264,7 @@ static void clone_closure_ex(const clone *base, const clone *suppl, clone *closu
     pred pred1 = clone_iterator_deref(&it1);
     for(clone_iterator it2 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it2); clone_iterator_next(&it2)) {
       pred pred2 = clone_iterator_deref(&it2);
-      op_conj(&pred1, &pred2, &recruit);
-      op6(&pred1, &pred2, &recruit);
-      op_trans(&pred1, &pred2, &recruit);
+      closure_ops2(clop, &pred1, &pred2, &recruit);
     }
   }
 
@@ -228,19 +276,19 @@ static void clone_closure_ex(const clone *base, const clone *suppl, clone *closu
   
   if(!clone_is_empty(&diff)) {
     /* if we've found new predicates, recursively continue computation */
-    clone_closure_ex(&new_base, &diff, closure);
+    clone_closure_ex(clop, &new_base, &diff, closure);
   } else {
     /* if we haven't found new predicates, the computation is finished */
     clone_copy(&new_base, closure);
   }
 }
 
-void clone_closure(const clone *clone, struct clone *closure) {
+void clone_closure(const closure_operator *clop, const clone *clone, struct clone *closure) {
   clone_init(closure);
   
   struct clone empty;
   clone_init(&empty);
-  clone_closure_ex(&empty, clone, closure);
+  clone_closure_ex(clop, &empty, clone, closure);
 }
 
 
@@ -256,7 +304,7 @@ void clone_insert_dummy_preds(clone *cl) {
   clone_insert_pred(cl, &p_eq);
 }
 
-void closure_zero_preds(clone *closure) {
+void closure_zero_preds(const closure_operator *clop, clone *closure) {
   clone_init(closure);
   
   clone cl;
@@ -264,10 +312,10 @@ void closure_zero_preds(clone *closure) {
   
   clone_insert_dummy_preds(&cl);
 
-  clone_closure(&cl, closure);
+  clone_closure(clop, &cl, closure);
 }
 
-void closure_one_pred(const pred *p, clone *closure) {
+void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure) {
   clone_init(closure);
 
   clone cl;
@@ -276,7 +324,15 @@ void closure_one_pred(const pred *p, clone *closure) {
   clone_insert_dummy_preds(&cl);
   clone_insert_pred(&cl, p);
 
-  clone_closure(&cl, closure);
+  clone_closure(clop, &cl, closure);
+}
+
+void closure_pred_clone(const closure_operator *clop, const pred *p, const clone *cl, clone *closure) {
+  clone union_cl;
+  clone_copy(cl, &union_cl);
+  clone_insert_pred(&union_cl, p);
+
+  clone_closure(clop, &union_cl, closure);
 }
 
 closure_table_two_preds *closure_table_two_preds_alloc() {
@@ -295,6 +351,8 @@ void closure_table_two_preds_free(closure_table_two_preds *table) {
 }
 
 void closure_table_two_preds_construct(closure_table_two_preds *table) {
+  closure_operator *clop = clop_alloc_straight_forward();
+
   for(uint32_t ar1 = 0; ar1 <= 2; ++ar1) {
     for(uint32_t ar2 = 0; ar2 <= 2; ++ar2) {
       /* number of predicates of the given arity */
@@ -323,34 +381,10 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
           clone_insert_pred(&cl, &p1);
           clone_insert_pred(&cl, &p2);
           
-          clone_closure(&cl, &table->data[ar1][ar2][data1*num2 + data2]);
+          clone_closure(clop, &cl, &table->data[ar1][ar2][data1*num2 + data2]);
         }
       }
     }
   }
+  clop_free(clop);
 }
-
-/* void closure_two_preds(const pred *p1, const pred *p2, clone *closure) { */
-/*   assert(p1->arity <= 2 && "predicate operations have been implemented for pred->arity <= 2 only"); */
-/*   assert(p2->arity <= 2 && "predicate operations have been implemented for pred->arity <= 2 only"); */
-
-/*   static int table_ready = 0; */
-/*   static closure_table_two_preds table; */
-/*   if(!table_ready) { */
-/*     table_ready = 1; */
-/*     clone_closure_two_preds_construct_table(&table); */
-/*   } */
-
-/*   /\* add new predicates to `closure` *\/ */
-/*   clone_union(table.data[p1->arity][p2->arity], closure, closure); */
-/* } */
-
-
-void closure_pred_clone(const pred *p, const clone *cl, clone *closure) {
-  clone union_cl;
-  clone_copy(cl, &union_cl);
-  clone_insert_pred(&union_cl, p);
-
-  clone_closure(&union_cl, closure);
-}
-

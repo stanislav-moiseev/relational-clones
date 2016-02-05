@@ -75,7 +75,7 @@ int clone_contains_majority(const clone *cl) {
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
-static void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
+static void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, size_t *_uniq_sz) {
   /* compute the closure of all essential predicates */
   pred *ess_preds;
   size_t num_ess_preds;
@@ -90,7 +90,7 @@ static void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
 
   for(pred *p = ess_preds; p < ess_preds + num_ess_preds; ++p) {
     clone p_closure;
-    closure_one_pred(p, &p_closure);
+    closure_one_pred(clop, p, &p_closure);
 
     int j;
     for(j = 0; j < uniq_sz; ++j) {
@@ -114,13 +114,13 @@ static void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
   *_uniq_sz = uniq_sz;
 }
 
-void lattice_construct_step(lattice *lt, const pred *p) {
+void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *parent = *cp;
 
     /* add the predicate to the parent class and compute a closure */
     clone closure;
-    closure_pred_clone(p, &parent->clone, &closure);
+    closure_pred_clone(clop, p, &parent->clone, &closure);
 
     /* test if we've constructed a new class */
     class *child = lattice_lookup(lt, &closure);
@@ -140,12 +140,12 @@ void lattice_construct_step(lattice *lt, const pred *p) {
   }
 }
 
-void latice_construct(lattice *lt) {
+void latice_construct(const closure_operator *clop, lattice *lt) {
   lattice_init(lt);
   
   /* start from a lattice containing just one clone */
   class *top = class_alloc();
-  closure_zero_preds(&top->clone);
+  closure_zero_preds(clop, &top->clone);
 
   lattice_insert_class(lt, top);
 
@@ -153,13 +153,13 @@ void latice_construct(lattice *lt) {
    * and select predicates with unique closure */
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
+  construct_uniq_ess_preds(clop, &uniq_preds, &uniq_sz);
 
   int idx = 0;
   /* iteratively construct new classes */
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
     printf("%d\t %ld\n", idx, lt->num_classes);
-    lattice_construct_step(lt, p);
+    lattice_construct_step(clop, lt, p);
     ++idx;
   }
 

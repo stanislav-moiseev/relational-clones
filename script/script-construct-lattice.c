@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "binary/bin-maj-lattice.h"
+#include "binary/bin-closure-two-preds.h"
 #include "algorithms.h"
 
 void verify(const char *maj2013, const lattice *lt) {
@@ -47,15 +48,20 @@ void verify(const char *maj2013, const lattice *lt) {
   fclose(fd);
 }
 
-void construct_lattice(const char *maj2013) {
+void construct_lattice(const char *table2p_name, const char *maj2013) {
+  closure_operator *clop = clop_alloc_straight_forward();
+
   lattice lt;
-  latice_construct(&lt);
+  latice_construct(clop, &lt);
   
   verify(maj2013, &lt);
+
+  clop_free(clop);
 }
 
 int main() {
   printf("script-construct-lattice:\n"); fflush(stdout);
-  construct_lattice("data/all-maj.2016");
+  construct_lattice("data/closure-two-preds.2016",
+                    "data/all-maj.2016");
   printf("Ok.\n");
 }

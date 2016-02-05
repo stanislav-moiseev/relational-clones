@@ -35,6 +35,8 @@ void test_pred_is_essential() {
 }
 
 void test_clone_closure1() {
+  closure_operator *clop = clop_alloc_straight_forward();
+
   pred p_false, p_true, p_eq0, p_eq1, p_eq2, p_eq, p_neq;
   assert(pred_construct(0, "0", &p_false));
   assert(pred_construct(0, "1", &p_true));
@@ -54,18 +56,22 @@ void test_clone_closure1() {
   clone_insert_pred(&clone, &p_eq2);
 
   struct clone closure;
-  clone_closure(&clone, &closure);
+  clone_closure(clop, &clone, &closure);
   assert(clone_eq(&clone, &closure));
 
   clone_insert_pred(&clone, &p_neq);
-  clone_closure(&clone, &closure);
+  clone_closure(clop, &clone, &closure);
   for(clone_iterator it = clone_iterator_begin(&closure); !clone_iterator_end(&closure, &it); clone_iterator_next(&it)) {
     pred pred = clone_iterator_deref(&it);
     assert(pred_is_essential(&pred));
   }
+
+  clop_free(clop);
 }
 
 void test_clone_closure2() {
+  closure_operator *clop = clop_alloc_straight_forward();
+
   pred p3_1_1, p3_1_3, p3_2_b, p3_2_11;
   pred_construct(1, "001", &p3_1_1);
   pred_construct(1, "011", &p3_1_3);
@@ -76,7 +82,7 @@ void test_clone_closure2() {
   clone_init(&cl);
   clone_insert_dummy_preds(&cl);
   clone_insert_pred(&cl, &p3_2_b);
-  clone_closure(&cl, &closure);
+  clone_closure(clop, &cl, &closure);
 
   clone_init(&expected_closure);
   clone_insert_dummy_preds(&expected_closure);
@@ -86,6 +92,8 @@ void test_clone_closure2() {
   clone_insert_pred(&expected_closure, &p3_2_11);
   
   assert(clone_eq(&closure, &expected_closure));
+
+  clop_free(clop);
 }
 
 void test_clone_closure() {

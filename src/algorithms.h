@@ -9,6 +9,7 @@
 
 #include "maj-lattice.h"
 #include "lattice.h"
+#include "closure.h"
 #include "z3/z3-search.h"
 
 /******************************************************************************/
@@ -33,6 +34,6 @@ int clone_contains_majority(const clone *cl);
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
-void latice_construct(lattice *lt);
+void latice_construct(const closure_operator *clop, lattice *lt);
 
 #endif
