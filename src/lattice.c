@@ -14,6 +14,7 @@ class *class_alloc() {
   assert(c);
   
   c->parent = NULL;
+  clone_init(&c->diff_parent);
   clone_init(&c->basis);
   clone_init(&c->clone);
   

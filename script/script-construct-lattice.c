@@ -58,8 +58,9 @@ void construct_lattice(const char *table2p_name, const char *maj2013) {
 
   lattice lt;
   latice_construct(clop, &lt);
-  
-  verify(maj2013, &lt);
+
+  printf("verification: "); fflush(stdout);
+  //verify(maj2013, &lt);
 
   closure_table_two_preds_free(table2p);
   clop_free(clop);

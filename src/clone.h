@@ -119,6 +119,5 @@ void clone_union(const clone *clone1, const clone *clone2, clone *clone);
  */
 void clone_diff(const clone *clone1, const clone *clone2, clone *clone);
 
-
 #endif
 

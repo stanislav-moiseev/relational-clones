@@ -63,6 +63,7 @@ void closure_ops2(const closure_operator *clop, const pred *p1, const pred *p2, 
  */
 void clone_closure(const closure_operator *clop, const clone *clone, struct clone *closure);
 
+void clone_closure_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure);
 
 /******************************************************************************/
 /** Operations over predicates */
@@ -121,10 +122,6 @@ void closure_zero_preds(const closure_operator *clop, clone *closure);
  * and write the result to `closure`.
  */
 void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure);
-
-/** `closure_pred_clone` computes a closure of the union {p} ∪ cl.
- */
-void closure_pred_clone(const closure_operator *clop, const pred *p, const clone *cl, clone *closure);
 
 struct closure_table_two_preds {
   clone *data[3][3];

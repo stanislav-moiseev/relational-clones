@@ -116,11 +116,26 @@ static void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_
 
 void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
-    class *parent = *cp;
+    class *current = *cp;
 
-    /* add the predicate to the parent class and compute a closure */
     clone closure;
-    closure_pred_clone(clop, p, &parent->clone, &closure);
+    if(current->parent == NULL) {
+      /* compute the closure of the union {p} ∪ current */
+      clone clone_p;
+      clone_init(&clone_p);
+      clone_insert_pred(&clone_p, p);
+      clone_closure_ex(clop, &current->clone, &clone_p, &closure);
+      
+    } else {
+      /* we compute the closure <{p} ∪ current> using the result of closure
+       * of its parent and `p`. */
+      class *parent_p = class_get_child(current->parent, p);
+      /* that closure <{p} ∪ parent> should have already been computed */
+      assert(parent_p != NULL);
+
+      /* <{p} ∪ current> = <<{p} ∪ parent> ∪ (current\parent)> */
+      clone_closure_ex(clop, &parent_p->clone, &current->diff_parent, &closure);
+    }
 
     /* test if we've constructed a new class */
     class *child = lattice_lookup(lt, &closure);
@@ -128,15 +143,16 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
     /* if we've constructed a new class, add it to the lattice */
     if(child == NULL) {
       child = class_alloc();
-      child->parent = parent;
-      clone_copy(&parent->basis, &child->basis);
+      child->parent = current;
+      clone_diff(&closure, &current->clone, &child->diff_parent);
+      clone_copy(&current->basis, &child->basis);
       clone_insert_pred(&child->basis, p);
       clone_copy(&closure, &child->clone);
       lattice_insert_class(lt, child);
     }
     
-    /* link the parent and the child */
-    class_set_child(parent, p, child);
+    /* link the current class and the child class */
+    class_set_child(current, p, child);
   }
 }
 

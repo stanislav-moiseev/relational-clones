@@ -238,33 +238,26 @@ void op_trans(const pred *pred1, const pred *pred2, clone *clone) {
   }
 }
 
-static void clone_closure_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
+void clone_closure_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
   clone recruit;
   clone_init(&recruit);
   
-  /* apply ops of arity 1 for supplement predicates */
-  for(clone_iterator it = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it); clone_iterator_next(&it)) {
-    pred pred = clone_iterator_deref(&it);
-    closure_ops1(clop, &pred, &recruit);
-  }
-
-  /* apply ops of arity 2:
-   * the first predicate is taken from the base set, and the second — from the supplement set. */
-  for(clone_iterator it1 = clone_iterator_begin(base); !clone_iterator_end(base, &it1); clone_iterator_next(&it1)) {
+  for(clone_iterator it1 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it1); clone_iterator_next(&it1)) {
     pred pred1 = clone_iterator_deref(&it1);
+    
+    /* apply ops of arity 1 for supplement predicates */
+    closure_ops1(clop, &pred1, &recruit);
+
+    /* apply ops of arity 2:
+     * the first predicate is taken from  the supplement,
+     * while the second — from the supplement set and from the base set */
     for(clone_iterator it2 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it2); clone_iterator_next(&it2)) {
       pred pred2 = clone_iterator_deref(&it2);
       closure_ops2(clop, &pred1, &pred2, &recruit);
     }
-  }
-  
-  /* apply ops of arity 2:
-   * both predicates are taken from the supplement set */
-  for(clone_iterator it1 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it1); clone_iterator_next(&it1)) {
-    pred pred1 = clone_iterator_deref(&it1);
-    for(clone_iterator it2 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it2); clone_iterator_next(&it2)) {
-      pred pred2 = clone_iterator_deref(&it2);
-      closure_ops2(clop, &pred1, &pred2, &recruit);
+    for(clone_iterator it3 = clone_iterator_begin(base); !clone_iterator_end(base, &it3); clone_iterator_next(&it3)) {
+      pred pred3 = clone_iterator_deref(&it3);
+      closure_ops2(clop, &pred1, &pred3, &recruit);
     }
   }
 
@@ -325,14 +318,6 @@ void closure_one_pred(const closure_operator *clop, const pred *p, clone *closur
   clone_insert_pred(&cl, p);
 
   clone_closure(clop, &cl, closure);
-}
-
-void closure_pred_clone(const closure_operator *clop, const pred *p, const clone *cl, clone *closure) {
-  clone union_cl;
-  clone_copy(cl, &union_cl);
-  clone_insert_pred(&union_cl, p);
-
-  clone_closure(clop, &union_cl, closure);
 }
 
 closure_table_two_preds *closure_table_two_preds_alloc() {
