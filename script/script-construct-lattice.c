@@ -49,13 +49,19 @@ void verify(const char *maj2013, const lattice *lt) {
 }
 
 void construct_lattice(const char *table2p_name, const char *maj2013) {
-  closure_operator *clop = clop_alloc_straight_forward();
+  FILE *fd = fopen(table2p_name, "rb");
+  assert(fd);
+  closure_table_two_preds *table2p = closure_table_two_preds_alloc();
+  closure_two_preds_read(fd, table2p);
+
+  closure_operator *clop = clop_alloc_table_two_preds(table2p);
 
   lattice lt;
   latice_construct(clop, &lt);
   
   verify(maj2013, &lt);
 
+  closure_table_two_preds_free(table2p);
   clop_free(clop);
 }
 
