@@ -1,11 +1,9 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
- *
- * @brief       Algorithms to construct lattice of all clones in P3(2).
  ******************************************************************************/
 
-#ifndef ALG_LATTICE_H
-#define ALG_LATTICE_H
+#ifndef LATTICE_H
+#define LATTICE_H
 
 #include "clone.h"
 
@@ -51,7 +49,5 @@ void lattice_free(lattice *lt);
 void lattice_insert_class(lattice *lt, class *c);
 
 class *lattice_lookup(const lattice *lt, const clone *cl);
-
-void latice_construct(lattice *lt);
 
 #endif

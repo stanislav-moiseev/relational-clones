@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "utils.h"
-#include "binary/common.h"
+#include "binary/bin-common.h"
 
 void uint32_write(FILE *fd, uint32_t x) {
   assert(fwrite(&x, 4, 1, fd) == 1);

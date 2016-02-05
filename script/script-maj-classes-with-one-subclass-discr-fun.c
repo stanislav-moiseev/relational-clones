@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary/common.h"
-#include "binary/maj-classes-with-one-subclass-discr-fun.h"
-#include "algorithms/alg-maj.h"
+#include "binary/bin-maj-lattice.h"
+#include "binary/bin-maj-classes-with-one-subclass-discr-fun.h"
+#include "algorithms.h"
 
 void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {
   FILE *fd = fopen(fname, "rb");
@@ -113,8 +113,8 @@ int verify(const char *fname, const char *fclasses_name) {
 int main() {
   printf("script-maj-classes-with-one-subclass-discr-fun:\n"); fflush(stdout);
   test_maj_classes_with_one_subclass_discr_fun("data/all-maj.2016",
-                                          "output/classes-with-one-subclass.txt",
-                                          "output/classes-with-one-subclass.2016");
+                                          "output/maj-classes-with-one-subclass-disr-fun.txt",
+                                          "output/maj-classes-with-one-subclass-disr-fun.2016");
   printf("Ok.\n");
 
   printf("verify-maj-classes-with-one-subclass-discr-fun: "); fflush(stdout);

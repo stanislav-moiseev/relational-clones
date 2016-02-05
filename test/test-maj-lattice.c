@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithms/alg-maj.h"
-#include "algorithms/alg-lattice.h"
+#include "binary/bin-maj-lattice.h"
+#include "algorithms.h"
 
 void test_size(const maj_lattice *lt) {
   assert(lt->num_layers == 51);

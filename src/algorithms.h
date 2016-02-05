@@ -1,15 +1,18 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
+ *
+ * @brief       Algorithms to construct lattice of all clones in P3(2).
  ******************************************************************************/
 
-#ifndef ALGORITHMS_ALG_MAJ_H
-#define ALGORITHMS_ALG_MAJ_H
+#ifndef ALGORITHMS_ALG_CONSTRUCT_LATTICE_H
+#define ALGORITHMS_ALG_CONSTRUCT_LATTICE_H
 
-#include "fun.h"
-#include "pred.h"
-#include "clone.h"
-#include "binary/maj-lattice.h"
-#include <z3.h>
+#include "maj-lattice.h"
+#include "lattice.h"
+#include "z3/z3-search.h"
+
+/******************************************************************************/
+/** Lattice of all clones containing a majority operation */
 
 void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***classes, uint64_t *num_classes);
 
@@ -26,5 +29,10 @@ Z3_lbool find_discr_function(const maj_class *class1, const maj_class *class2, i
  * `clone`.
  */
 int clone_contains_majority(const clone *cl);
+
+/******************************************************************************/
+/** Lattice of all clones in P3(2) */
+
+void latice_construct(lattice *lt);
 
 #endif

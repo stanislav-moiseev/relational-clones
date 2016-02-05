@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithms/alg-closure.h"
-#include "binary/common.h"
+#include "closure.h"
+#include "binary/bin-common.h"
 #include "closure.h"
 
 void test_pred_is_essential() {

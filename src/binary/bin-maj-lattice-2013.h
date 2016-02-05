@@ -9,7 +9,7 @@
 
 #include "pred.h"
 #include "clone.h"
-#include "binary/maj-lattice.h"
+#include "maj-lattice.h"
 
 /** `pred_read` read one predicate from binary file.
  */

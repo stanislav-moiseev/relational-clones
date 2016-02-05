@@ -5,14 +5,15 @@
 #ifndef BINARY_CLOSURE_TWO_PREDS
 #define BINARY_CLOSURE_TWO_PREDS
 
-#include "algorithms/alg-closure.h"
+#include "closure.h"
 
-void closure_two_preds_write(FILE *fd, const closure_two_preds_table *table);
+
+void closure_two_preds_write(FILE *fd, const closure_table_two_preds *table);
 
 /**
  * The function allocates memory to store the table.
- * Memory should be freed by calling closure_two_preds_table_free.
+ * Memory should be freed by calling closure_table_two_preds_free.
  */
-void closure_two_preds_read(FILE *fd, closure_two_preds_table *table);
+void closure_two_preds_read(FILE *fd, closure_table_two_preds *table);
 
 #endif

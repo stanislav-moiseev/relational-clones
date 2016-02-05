@@ -158,3 +158,22 @@ int pred_is_essential(const pred *pred) {
   }
 }
 
+void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size) {
+  size_t capacity = 0;
+  for(uint32_t ar = 0; ar <= max_arity; ++ar) {
+    capacity += int_pow2(int_pow(K, ar));
+  }
+  *ess_preds = malloc(capacity * sizeof(pred));
+  assert(*ess_preds);
+
+  *size = 0;
+  for(uint32_t ar = 0; ar <= max_arity; ++ar) {
+    for(uint64_t data = 0; data < int_pow2(int_pow(K, ar)); ++data) {
+      pred p = { .arity = ar, .data = data };
+      if(pred_is_essential(&p)) {
+        (*ess_preds)[*size] = p;
+        ++(*size);
+      }
+    }
+  }
+}

@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithms/alg-maj.h"
-#include "binary/common.h"
+#include "algorithms.h"
+#include "binary/bin-maj-lattice.h"
 
 void worker(const maj_layer *layer1, const maj_layer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {

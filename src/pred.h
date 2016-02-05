@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "utils.h"
+
 /**
  * Possible combinations of `k` and `arity`
  *      k:              2       3       4       5       6
@@ -88,5 +90,11 @@ static inline int pred_compute(const pred *pred, uint64_t tuple) {
  *  predicate.
  */
 int pred_is_essential(const pred *pred);
+
+/** `all_essential_predicates` returns a clone containing the set of all
+ * essential predicates of arity <= max_arity.
+ */
+void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size);
+
 
 #endif

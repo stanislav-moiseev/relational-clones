@@ -8,19 +8,19 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "binary/common.h"
-#include "algorithms/alg-closure.h"
-#include "binary/closure-two-preds.h"
+#include "closure.h"
+#include "binary/bin-common.h"
+#include "binary/bin-closure-two-preds.h"
 
 void construct_closure_two_preds(const char *fout_name) {
-  closure_two_preds_table table;
-  clone_closure_two_preds_construct_table(&table);
+  closure_table_two_preds *table = closure_table_two_preds_alloc();
+  closure_table_two_preds_construct(table);
 
   FILE *fout = fopen(fout_name, "wb");
   assert(fout);
-  closure_two_preds_write(fout, &table);
+  closure_two_preds_write(fout, table);
   
-  closure_two_preds_table_free(&table);
+  closure_table_two_preds_free(table);
   fclose(fout);
 }
 
@@ -28,10 +28,10 @@ void read_closure_two_preds(const char *fname) {
   FILE *fd = fopen(fname, "rb");
   assert(fd);
 
-  closure_two_preds_table table;
+  closure_table_two_preds table;
   closure_two_preds_read(fd, &table);
   
-  closure_two_preds_table_free(&table);
+  closure_table_two_preds_free(&table);
   fclose(fd);
 }
 

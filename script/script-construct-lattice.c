@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithms/alg-maj.h"
-#include "algorithms/alg-lattice.h"
+#include "binary/bin-maj-lattice.h"
+#include "algorithms.h"
 
 void verify(const char *maj2013, const lattice *lt) {
   FILE *fd = fopen(maj2013, "rb");

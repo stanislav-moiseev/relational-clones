@@ -5,10 +5,10 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "binary/common.h"
-#include "binary/closure-two-preds.h"
+#include "binary/bin-common.h"
+#include "binary/bin-closure-two-preds.h"
 
-void closure_two_preds_write(FILE *fd, const closure_two_preds_table *table) {
+void closure_two_preds_write(FILE *fd, const closure_table_two_preds *table) {
   uint32_write(fd, K);
   for(uint32_t ar1 = 0; ar1 <= 2; ++ar1) {
     for(uint32_t ar2 = 0; ar2 <= 2; ++ar2) {
@@ -25,7 +25,7 @@ void closure_two_preds_write(FILE *fd, const closure_two_preds_table *table) {
   }
 }
 
-void closure_two_preds_read(FILE *fd, closure_two_preds_table *table) {
+void closure_two_preds_read(FILE *fd, closure_table_two_preds *table) {
   uint32_t k = uint32_read(fd);
   assert(k == K);
 

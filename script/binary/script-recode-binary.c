@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "binary/maj-lattice-2013.h"
-#include "binary/common.h"
+#include "binary/bin-maj-lattice-2013.h"
+#include "binary/bin-maj-lattice.h"
 
 void test_maj_layer_read_classes_2013() {
   char *filename;
