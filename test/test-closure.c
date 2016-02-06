@@ -10,6 +10,7 @@
 #include "closure.h"
 #include "binary/bin-common.h"
 #include "closure.h"
+#include "algorithms.h"
 
 void test_pred_is_essential() {
   pred p_false, p_true, p_eq0, p_eq1, p_eq2, p_eq, p_neq;
@@ -32,6 +33,26 @@ void test_pred_is_essential() {
   pred p_12;
   assert(pred_construct(1, "110", &p_12));
   assert(pred_is_essential(&p_12));
+}
+
+/** Check the number of all essential predicates of arity <= 2. */
+void test_pred_num_essential_preds() {
+  pred *ess_preds;
+  size_t ess_sz;
+  get_essential_predicates(2, &ess_preds, &ess_sz);
+  assert(ess_sz == 470);
+  free(ess_preds);
+}
+
+/* Check the number of all closure-unique essential predicates of arity <= 2. */
+void test_pred_num_closure_uniq_preds() {
+  closure_operator *clop = clop_alloc_straight_forward();
+  pred *uniq_preds;
+  size_t uniq_sz;
+  construct_uniq_ess_preds(clop, &uniq_preds, &uniq_sz);
+  assert(uniq_sz == 251);
+  free(uniq_preds);
+  clop_free(clop);
 }
 
 void test_clone_closure1() {
@@ -96,17 +117,15 @@ void test_clone_closure2() {
   clop_free(clop);
 }
 
-void test_clone_closure() {
-  test_clone_closure1();
-  test_clone_closure2();
-}
-
 int main() {
   printf("test-pred-is-essential:\t"); fflush(stdout);
   test_pred_is_essential();
+  test_pred_num_essential_preds();
+  test_pred_num_closure_uniq_preds();
   printf("Ok.\n");
   
   printf("test-clone-closure:\t"); fflush(stdout);
-  test_clone_closure();
+  test_clone_closure1();
+  test_clone_closure2();
   printf("Ok.\n");
 }

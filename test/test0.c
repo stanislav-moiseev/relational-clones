@@ -59,14 +59,15 @@ void test_fun_scan() {
   free(str2);
 }
 
+
 int main() {
-  printf("test_pred_construct:\t"); fflush(stdout);
+  printf("test-pred-construct:\t"); fflush(stdout);
   test_pred_construct();
   printf("Ok.\n");
 
-  printf("test_fun_scan:\t\t"); fflush(stdout);
+  printf("test-fun-scan:\t\t"); fflush(stdout);
   test_fun_scan();
   printf("Ok.\n");
-  
+
   return 0;
 }

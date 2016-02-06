@@ -75,7 +75,7 @@ int clone_contains_majority(const clone *cl) {
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
-static void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, size_t *_uniq_sz) {
+void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, size_t *_uniq_sz) {
   /* compute the closure of all essential predicates */
   pred *ess_preds;
   size_t num_ess_preds;
@@ -117,6 +117,12 @@ static void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_
 void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *current = *cp;
+
+    /* if the current class contains the predicate to be added, skip it */
+    if(clone_test_pred(&current->clone, p)) {
+      class_set_child(current, p, current);
+      continue;
+    }
 
     clone closure;
     if(current->parent == NULL) {
