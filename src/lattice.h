@@ -10,6 +10,8 @@
 
 /** Each class requires approx. 4KiB memory */
 struct class {
+  const struct lattice *lattice;
+  
   /* the first parent of the class */
   struct class *parent;
   
@@ -22,13 +24,13 @@ struct class {
 
   /* table[ar] maps a predicate `p` of arity `ar` to a result of closure
    * <clone ∪ {p}> */
-  struct class **children[3];
+  struct class **children;
 };
 
 typedef struct class class;
 
 
-class *class_alloc();
+class *class_alloc(const struct lattice *lt);
 
 void class_free(class *c);
 
@@ -47,10 +49,18 @@ struct lattice {
 
   /* a hash table to support efficient clone membership test */
   hash_table *ht;
+
+  /* uniq_preds maps a predicate index to the predicate */
+  size_t uniq_sz;
+  pred *uniq_preds;
+  /* reverse index: uniq_pred_idx maps a predicate to its index */
+  size_t *uniq_pred_idx[3];
 };
 
 typedef struct lattice lattice;
 
+/** `uniq` is the set of all closure-unique essential predicates.
+ */
 lattice *lattice_alloc();
 
 void lattice_free(lattice *lt);
@@ -60,3 +70,4 @@ void lattice_insert_class(lattice *lt, class *c);
 class *lattice_lookup(const lattice *lt, const clone *cl);
 
 #endif
+

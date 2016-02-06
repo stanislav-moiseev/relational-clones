@@ -169,7 +169,7 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
 
     /* if we've constructed a new class, add it to the lattice */
     if(child == NULL) {
-      child = class_alloc();
+      child = class_alloc(lt);
       child->parent = current;
       clone_diff(&closure, &current->clone, &child->diff_parent);
       clone_copy(&current->basis, &child->basis);
@@ -185,7 +185,7 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
 
 void latice_construct(const closure_operator *clop, lattice *lt) {
   /* start from a lattice containing just one clone */
-  class *top = class_alloc();
+  class *top = class_alloc(lt);
   closure_zero_preds(clop, &top->clone);
   lattice_insert_class(lt, top);
 
@@ -206,8 +206,6 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
       printf("\t %u", hash_table_max_chain(lt->ht));
     }
     printf("\n");
-    
-    if(idx == 50) return;
   }
 
   free(uniq_preds);
