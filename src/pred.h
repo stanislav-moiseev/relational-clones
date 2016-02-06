@@ -96,5 +96,4 @@ int pred_is_essential(const pred *pred);
  */
 void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size);
 
-
 #endif

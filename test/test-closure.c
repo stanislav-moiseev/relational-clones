@@ -46,13 +46,11 @@ void test_pred_num_essential_preds() {
 
 /* Check the number of all closure-unique essential predicates of arity <= 2. */
 void test_pred_num_closure_uniq_preds() {
-  closure_operator *clop = clop_alloc_straight_forward();
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_uniq_ess_preds(clop, &uniq_preds, &uniq_sz);
+  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
   assert(uniq_sz == 251);
   free(uniq_preds);
-  clop_free(clop);
 }
 
 void test_clone_closure1() {

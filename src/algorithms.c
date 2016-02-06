@@ -75,7 +75,24 @@ int clone_contains_majority(const clone *cl) {
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
-void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, size_t *_uniq_sz) {
+void closure_uniq_ess_preds(clone *cl) {
+  pred *uniq_preds;
+  size_t uniq_sz;
+  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
+
+  clone_init(cl);
+  for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
+    clone_insert_pred(cl, p);
+  }
+  free(uniq_preds);
+}
+
+void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
+  closure_operator *clop = clop_alloc_straight_forward();
+
+  clone closure_zero;
+  closure_zero_preds(clop, &closure_zero);
+
   /* compute the closure of all essential predicates */
   pred *ess_preds;
   size_t num_ess_preds;
@@ -92,7 +109,10 @@ void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, 
     clone p_closure;
     closure_one_pred(clop, p, &p_closure);
 
-    int j;
+    /* we omit predicates equivalent to the top class {false(0), true(1), eq(2)} */
+    if(clone_eq(&p_closure, &closure_zero)) continue;
+
+    size_t j;
     for(j = 0; j < uniq_sz; ++j) {
       if(clone_eq(&p_closure, &uniq_closures[j])) break;
     }
@@ -104,14 +124,15 @@ void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, 
       ++uniq_sz;
     }
   }
-
-  free(ess_preds);
   
   /* copy the result */
   *_uniq_preds = malloc(uniq_sz * sizeof(pred));
   assert(_uniq_preds);
   memcpy(*_uniq_preds, uniq_preds, uniq_sz * sizeof(pred));
   *_uniq_sz = uniq_sz;
+
+  free(ess_preds);
+  clop_free(clop);
 }
 
 void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
@@ -166,25 +187,27 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
   /* start from a lattice containing just one clone */
   class *top = class_alloc();
   closure_zero_preds(clop, &top->clone);
-
   lattice_insert_class(lt, top);
 
   /* factorize all essential predicates by their closure
    * and select predicates with unique closure */
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_uniq_ess_preds(clop, &uniq_preds, &uniq_sz);
+  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
 
   int idx = 0;
   /* iteratively construct new classes */
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-    printf("%d\t %ld\n", idx, lt->num_classes);
+    printf("%d\t %lu", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
     ++idx;
-    if(idx == 75) {
-      printf("hash table max chain = %d\n", hash_table_max_chain(lt->ht));
-      return;
+
+    if(idx % 10 == 0) {
+      printf("\t %u", hash_table_max_chain(lt->ht));
     }
+    printf("\n");
+    
+    if(idx == 50) return;
   }
 
   free(uniq_preds);

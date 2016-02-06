@@ -42,6 +42,6 @@ void hash_table_insert(hash_table *ht, const void *key, const void *value);
 
 void *hash_table_lookup(const hash_table *ht, const void *key);
 
-int hash_table_max_chain(const hash_table *ht);
+unsigned hash_table_max_chain(const hash_table *ht);
 
 #endif

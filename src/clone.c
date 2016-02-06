@@ -275,6 +275,14 @@ void clone_union(const clone *clone1, const clone *clone2, clone *clone) {
   }
 }
 
+void clone_intersection(const clone *clone1, const clone *clone2, clone *clone) {
+  clone->data0 = clone1->data0 & clone2->data0;
+  clone->data1 = clone1->data1 & clone2->data1;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    clone->data2[offset] = clone1->data2[offset] & clone2->data2[offset];
+  }
+}
+
 void clone_diff(const clone *clone1, const clone *clone2, clone *clone) {
   clone->data0 = clone1->data0 & (~clone2->data0);
   clone->data1 = clone1->data1 & (~clone2->data1);

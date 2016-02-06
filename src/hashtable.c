@@ -59,7 +59,7 @@ void *hash_table_lookup(const hash_table *ht, const void *key) {
   return NULL;
 }
 
-int hash_table_max_chain(const hash_table *ht) {
+unsigned hash_table_max_chain(const hash_table *ht) {
   int max = 0;
   for(hash_elem **elemp = ht->table; elemp < ht->table + ht->capacity; ++elemp) {
     int m = 0;

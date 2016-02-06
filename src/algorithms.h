@@ -34,7 +34,9 @@ int clone_contains_majority(const clone *cl);
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
-void construct_uniq_ess_preds(const closure_operator *clop, pred **_uniq_preds, size_t *_uniq_sz);
+void closure_uniq_ess_preds(clone *cl);
+
+void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz);
 
 void latice_construct(const closure_operator *clop, lattice *lt);
 

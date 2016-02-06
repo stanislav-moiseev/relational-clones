@@ -335,8 +335,13 @@ void closure_table_two_preds_free(closure_table_two_preds *table) {
   free(table);
 }
 
+void closure_uniq_ess_preds(clone *cl);
+
 void closure_table_two_preds_construct(closure_table_two_preds *table) {
   closure_operator *clop = clop_alloc_straight_forward();
+
+  clone cl_uniq;
+  closure_uniq_ess_preds(&cl_uniq);
 
   for(uint32_t ar1 = 0; ar1 <= 2; ++ar1) {
     for(uint32_t ar2 = 0; ar2 <= 2; ++ar2) {
@@ -365,8 +370,11 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
           clone_insert_dummy_preds(&cl);
           clone_insert_pred(&cl, &p1);
           clone_insert_pred(&cl, &p2);
-          
-          clone_closure(clop, &cl, &table->data[ar1][ar2][data1*num2 + data2]);
+
+          /* leave only closure-unique predicates */
+          clone closure;
+          clone_closure(clop, &cl, &closure);
+          clone_intersection(&closure, &cl_uniq, &table->data[ar1][ar2][data1*num2 + data2]);
         }
       }
     }

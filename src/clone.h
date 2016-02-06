@@ -114,6 +114,8 @@ int clone_subset(const clone *clone1, const clone *clone2);
  */
 void clone_union(const clone *clone1, const clone *clone2, clone *clone);
 
+void clone_intersection(const clone *clone1, const clone *clone2, clone *clone);
+
 /** `clone_diff` computes the difference of two clones and write the result to
  * the third clone.
  */
