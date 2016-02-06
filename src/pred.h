@@ -65,6 +65,10 @@ void pred_extensional(const pred *pred, uint32_t **ext, size_t *size);
 int64_t pred_cardinality(const pred *pred);
 
 
+static inline int pred_eq(const pred *p1, const pred *p2) {
+  return p1->arity == p2->arity && p1->data == p2->data;;
+}
+
 /** `pred_init` initializes the predicate to be equal to zero.
  */
 static inline void pred_init(pred *pred, uint64_t arity) {

@@ -35,6 +35,21 @@ void test_pred_is_essential() {
   assert(pred_is_essential(&p_12));
 }
 
+void test_pred_preserves_majority() {
+  pred *ess_preds;
+  size_t ess_sz;
+  get_essential_predicates(2, &ess_preds, &ess_sz);
+
+ 
+  size_t num = 0;
+  for(const pred *p = p = ess_preds; p < ess_preds + ess_sz; ++p) {
+    if(pred_preserves_majority(p)) ++num;
+  }
+  assert(num == 410);
+
+}
+
+
 /** Check the number of all essential predicates of arity <= 2. */
 void test_pred_num_essential_preds() {
   pred *ess_preds;
@@ -49,7 +64,8 @@ void test_pred_num_closure_uniq_preds() {
   pred *uniq_preds;
   size_t uniq_sz;
   construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
-  assert(uniq_sz == 251);
+  assert(uniq_sz == 251-1);       /* "minus one" because we do not count dummy
+                                   * predicate zero(0) as closure-unique */
   free(uniq_preds);
 }
 
@@ -121,7 +137,11 @@ int main() {
   test_pred_num_essential_preds();
   test_pred_num_closure_uniq_preds();
   printf("Ok.\n");
-  
+
+  printf("test-pred-preserves-majority:\t"); fflush(stdout);
+  test_pred_preserves_majority();
+  printf("Ok.\n");
+ 
   printf("test-clone-closure:\t"); fflush(stdout);
   test_clone_closure1();
   test_clone_closure2();

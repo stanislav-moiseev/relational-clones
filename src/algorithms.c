@@ -72,6 +72,19 @@ int clone_contains_majority(const clone *cl) {
   return 0;
 }
 
+int pred_preserves_majority(const pred *p) {
+  fun *majs;
+  size_t num_majs;
+  min_majorities(&majs, &num_majs);
+
+  int flag = 0;
+  for(fun *f = majs; f < majs + num_majs; ++f) {
+    if(fun_preserves_pred(f, p)) { flag = 1; break; }
+  }
+  free(majs);
+  return flag;
+}
+
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
@@ -198,6 +211,7 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
   int idx = 0;
   /* iteratively construct new classes */
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
+
     printf("%d\t %lu", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
     ++idx;
