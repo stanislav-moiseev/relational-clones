@@ -157,8 +157,6 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
 }
 
 void latice_construct(const closure_operator *clop, lattice *lt) {
-  lattice_init(lt);
-  
   /* start from a lattice containing just one clone */
   class *top = class_alloc();
   closure_zero_preds(clop, &top->clone);
@@ -177,6 +175,10 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
     printf("%d\t %ld\n", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
     ++idx;
+    if(idx == 75) {
+      printf("hash table max chain = %d\n", hash_table_max_chain(lt->ht));
+      return;
+    }
   }
 
   free(uniq_preds);

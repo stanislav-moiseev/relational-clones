@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "lattice.h"
+#include "fast-hash/fasthash.h"
 
 class *class_alloc() {
   class *c = malloc(sizeof(class));
@@ -49,18 +50,32 @@ void class_set_child(class *parent, const pred *p, class *child) {
   parent->children[p->arity][p->data] = child;
 }
 
-void lattice_init(lattice *lt) {
-  lt->num_classes = 0;
-  lt->capacity    = 4e6;
-  lt->classes     = malloc(lt->capacity * sizeof(class *));
+static uint32_t clone_hash(const void *cl) {
+  return fasthash32(cl, sizeof(clone), 0);
+}
+
+static int class_eq_clone(const void *c1, const void *c2) {
+  return clone_eq((const clone *)c1, (const clone *)c2);
+}
+
+lattice *lattice_alloc() {
+  lattice *lt = malloc(sizeof(lattice));
+  assert(lt);
+  
+  lt->num_classes    = 0;
+  lt->capacity       = 4e6;
+  lt->classes        = malloc(lt->capacity * sizeof(class *));
+  lt->ht             = hash_table_alloc(lt->capacity, clone_hash, class_eq_clone);
+  
+  return lt;
 }
 
 void lattice_free(lattice *lt) {
   for(class **c = lt->classes; c < lt->classes + lt->num_classes; ++c) {
     class_free(*c);
-    free(*c);
   }
   free(lt->classes);
+  hash_table_free(lt->ht);
 }
 
 void lattice_insert_class(lattice *lt, class *c) {
@@ -72,12 +87,10 @@ void lattice_insert_class(lattice *lt, class *c) {
 
   lt->classes[lt->num_classes] = c;
   ++lt->num_classes;
+
+  hash_table_insert(lt->ht, &c->clone, c);
 }
 
 class *lattice_lookup(const lattice *lt, const clone *cl) {
-  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
-    class *c = *cp;
-    if(clone_eq(&c->clone, cl)) return c;
-  }
-  return NULL;
+  return hash_table_lookup(lt->ht, cl);
 }

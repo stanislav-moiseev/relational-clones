@@ -6,6 +6,7 @@
 #define LATTICE_H
 
 #include "clone.h"
+#include "hashtable.h"
 
 /** Each class requires approx. 4KiB memory */
 struct class {
@@ -43,11 +44,14 @@ struct lattice {
   
   /* a list of pointers to classes */
   class **classes;
+
+  /* a hash table to support efficient clone membership test */
+  hash_table *ht;
 };
 
 typedef struct lattice lattice;
 
-void lattice_init(lattice *lt);
+lattice *lattice_alloc();
 
 void lattice_free(lattice *lt);
 

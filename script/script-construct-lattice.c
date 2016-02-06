@@ -56,12 +56,13 @@ void construct_lattice(const char *table2p_name, const char *maj2013) {
 
   closure_operator *clop = clop_alloc_table_two_preds(table2p);
 
-  lattice lt;
-  latice_construct(clop, &lt);
+  lattice *lt = lattice_alloc();
+  latice_construct(clop, lt);
 
-  printf("verification: "); fflush(stdout);
-  //verify(maj2013, &lt);
+  /* printf("verification: "); fflush(stdout); */
+  /* verify(maj2013, lt); */
 
+  lattice_free(lt);
   closure_table_two_preds_free(table2p);
   clop_free(clop);
 }
