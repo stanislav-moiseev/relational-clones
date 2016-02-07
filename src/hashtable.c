@@ -16,7 +16,7 @@ hash_table *hash_table_alloc(size_t capacity,
   hash_table *ht = malloc(sizeof(hash_table));
   assert(ht);
   /* capacity must be power of 2 */
-  ht->capacity = int_pow2(int_log(2, 16*capacity));
+  ht->capacity = int_pow2(int_log(2, 2*capacity));
   ht->table    = malloc(ht->capacity * sizeof(hash_elem *));
   assert(ht->table);
   memset(ht->table, 0, ht->capacity * sizeof(hash_elem *));

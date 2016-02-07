@@ -63,7 +63,7 @@ lattice *lattice_alloc() {
   assert(lt);
   
   lt->num_classes    = 0;
-  lt->capacity       = 4e6;
+  lt->capacity       = 2<<20;
   lt->classes        = malloc(lt->capacity * sizeof(class *));
   lt->ht             = hash_table_alloc(lt->capacity, clone_hash, class_eq_clone);
 
