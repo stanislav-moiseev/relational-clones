@@ -12,7 +12,9 @@
 struct class {
   const struct lattice *lattice;
   
-  /* the first parent of the class */
+  /* Some parent of the class.
+   * We heuristically select the parent such that the different between the
+   * current clone and the parent is the smallest. */
   struct class *parent;
   
   /* diff_parent is a difference between current clone and its parent;

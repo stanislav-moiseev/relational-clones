@@ -151,7 +151,7 @@ void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
 void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *current = *cp;
-
+    
     /* if the current class contains the predicate to be added, skip it */
     if(clone_test_pred(&current->clone, p)) {
       class_set_child(current, p, current);
@@ -172,16 +172,16 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
       class *parent_p = class_get_child(current->parent, p);
       /* that closure <{p} ∪ parent> should have already been computed */
       assert(parent_p != NULL);
-
       /* <{p} ∪ current> = <<{p} ∪ parent> ∪ (current\parent)> */
       clone_closure_ex(clop, &parent_p->clone, &current->diff_parent, &closure);
     }
 
     /* test if we've constructed a new class */
     class *child = lattice_lookup(lt, &closure);
+    assert(child != current);
 
-    /* if we've constructed a new class, add it to the lattice */
     if(child == NULL) {
+      /* if we've constructed a new class, add it to the lattice */
       child = class_alloc(lt);
       child->parent = current;
       clone_diff(&closure, &current->clone, &child->diff_parent);
@@ -189,8 +189,28 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
       clone_insert_pred(&child->basis, p);
       clone_copy(&closure, &child->clone);
       lattice_insert_class(lt, child);
+    } else {
+      /* If we've found a new parent for current clone, check if the difference
+       * between it and the clone is smaller than the current child->diff_parent.
+       * We want to select the parent such that the different is the smallest.
+       * This heuristics gives significant overall computation speed-up.
+       *
+       * We apply this heuristics for `current < child` only because on each step
+       * the parents must be proceeded strictly before their children,
+       * otherwise the closure of a child will depend on a not-yet-computed
+       * closure of its parent */
+      if(current < child) {
+        size_t diff_card1 = clone_cardinality(&child->diff_parent);
+        clone diff2;
+        clone_diff(&closure, &current->clone, &diff2);
+        size_t diff_card2 = clone_cardinality(&diff2);
+        if(diff_card2 < diff_card1) {
+          child->parent = current;
+          clone_copy(&diff2, &child->diff_parent);
+        }
+      }
     }
-    
+
     /* link the current class and the child class */
     class_set_child(current, p, child);
   }
@@ -211,15 +231,9 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
   int idx = 0;
   /* iteratively construct new classes */
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-
-    printf("%d\t %lu", idx, lt->num_classes);
+    printf("%d\t %lu\n", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
     ++idx;
-
-    if(idx % 10 == 0) {
-      printf("\t %u", hash_table_max_chain(lt->ht));
-    }
-    printf("\n");
   }
 
   free(uniq_preds);

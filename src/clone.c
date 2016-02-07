@@ -116,7 +116,7 @@ int clone_test_pred(const clone *clone, const pred *pred) {
     uint64_t offset, shift;
     get_offset_shift(pred->data, &offset, &shift);
     assert(offset < CLONE_DATA2_SIZE);
-    return (clone->data2[offset] & ((uint64_t)1 << shift));
+    return (clone->data2[offset] & ((uint64_t)1 << shift)) != 0;
     break;
   }
   }
