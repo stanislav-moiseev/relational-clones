@@ -124,9 +124,9 @@ int clone_test_pred(const clone *clone, const pred *pred) {
   return 0;
 }
 
-int64_t clone_cardinality(const clone *clone) {
-  /* fro preds f airty 0 and 1 */
-  int64_t card = popcount32(clone->data0) + popcount32(clone->data1);
+uint64_t clone_cardinality(const clone *clone) {
+  /* for preds of arity 0 and 1 */
+  uint64_t card = popcount32(clone->data0) + popcount32(clone->data1);
   /* arity == 2 */
   for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
     card += popcount64(clone->data2[offset]);

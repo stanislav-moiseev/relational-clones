@@ -57,7 +57,7 @@ int clone_test_pred(const clone *clone, const pred *pred);
 /** `clone_cardinality` returns the number of predicates that the clone
  * contains.
  */
-int64_t clone_cardinality(const clone *clone);
+uint64_t clone_cardinality(const clone *clone);
 
 void clone_init(clone *clone);
 

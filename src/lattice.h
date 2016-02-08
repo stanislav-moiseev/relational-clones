@@ -52,14 +52,10 @@ struct lattice {
   /* a hash table to support efficient clone membership test */
   hash_table *ht;
 
-  /* uniq_preds maps a predicate index to the predicate */
-  size_t uniq_sz;
-  pred *uniq_preds;
-  /* reverse index: uniq_pred_idx maps a predicate to its index */
-  size_t *uniq_pred_idx[3];
+  struct predicate_numerator *pred_num;
 };
-
 typedef struct lattice lattice;
+
 
 /** `uniq` is the set of all closure-unique essential predicates.
  */

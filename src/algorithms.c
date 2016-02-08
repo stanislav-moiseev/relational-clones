@@ -88,6 +88,40 @@ int pred_preserves_majority(const pred *p) {
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
+predicate_numerator *predicate_numerator_alloc() {
+  predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
+  assert(pred_num);
+  
+    /* construct index for closure-unique predicates */
+  construct_uniq_ess_preds(&pred_num->uniq_preds, &pred_num->uniq_sz);
+  
+  /* construct reverse index */
+  for(uint32_t ar = 0; ar <= 2; ++ar) {
+    uint64_t num = int_pow2(int_pow(K, ar));
+    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(class *)); 
+    assert(pred_num->uniq_pred_idx[ar] != NULL);
+    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(class *));
+  }
+  for(pred *p = pred_num->uniq_preds; p < pred_num->uniq_preds + pred_num->uniq_sz; ++p) {
+    size_t idx = 0;
+    for(; idx < pred_num->uniq_sz; ++idx) {
+      if(pred_eq(&pred_num->uniq_preds[idx], p)) break;
+    }
+    assert(idx < pred_num->uniq_sz);
+    pred_num->uniq_pred_idx[p->arity][p->data] = idx;
+  }
+  
+  return pred_num;
+}
+
+void predicate_numerator_free(predicate_numerator *pred_num) {
+  free(pred_num->uniq_preds);
+  for(int ar = 0; ar <=2; ++ar) {
+    free(pred_num->uniq_pred_idx[ar]);
+  }
+  free(pred_num);
+}
+
 void closure_uniq_ess_preds(clone *cl) {
   pred *uniq_preds;
   size_t uniq_sz;

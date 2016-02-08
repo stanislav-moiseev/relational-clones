@@ -17,13 +17,17 @@ void verify(const closure_operator *clop, const char *maj2013, const lattice *lt
 
   maj_lattice maj_lattice;
   maj_lattice_read(fd, &maj_lattice);
-  
+
+  size_t num_maj_classes = 0;
+  size_t idx = 0;
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;
     
     /* if the clone contains a majority operation,
      * verify that it is a member of the lattice `maj2013` */
     if(!clone_contains_majority(&c->clone)) continue;
+
+    ++num_maj_classes;
 
     /* In current implementation we store only closure-unique predicates,
      * so we have to expand the clone to all essential predicates */
@@ -47,8 +51,16 @@ void verify(const closure_operator *clop, const char *maj2013, const lattice *lt
       clone_print_verbosely(stdout, &c->clone);
       return;
     }
+
+    ++idx;
+    if(idx % (lt->num_classes/20) == 0) {
+      printf(".");
+      fflush(stdout);
+    }
   }
-  
+
+  printf("%lu maj classes have been found\n", num_maj_classes);
+
   maj_lattice_free(&maj_lattice);
   fclose(fd);
 }
@@ -65,18 +77,18 @@ void construct_lattice(const char *table2p_name, const char *table2p_uniq_name, 
   lattice *lt = lattice_alloc();
   latice_construct(clop, lt);
 
-  {
-    FILE *fd = fopen(table2p_name, "rb");
-    assert(fd);
+  /* { */
+  /*   FILE *fd = fopen(table2p_name, "rb"); */
+  /*   assert(fd); */
     
-    closure_table_two_preds *table2p = closure_table_two_preds_alloc();
-    closure_two_preds_read(fd, table2p);
+  /*   closure_table_two_preds *table2p = closure_table_two_preds_alloc(); */
+  /*   closure_two_preds_read(fd, table2p); */
 
-    closure_operator *clop = clop_alloc_table_two_preds(table2p);
+  /*   closure_operator *clop = clop_alloc_table_two_preds(table2p); */
 
-    printf("verification: "); fflush(stdout);
-    verify(clop, maj2013, lt);
-  }
+  /*   printf("verification"); fflush(stdout); */
+  /*   verify(clop, maj2013, lt); */
+  /* } */
 
   lattice_free(lt);
   closure_table_two_preds_free(table2p);
