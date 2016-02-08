@@ -27,7 +27,7 @@ struct class {
   /* table[ar] maps a predicate `p` of arity `ar` to a result of closure
    * <clone ∪ {p}> */
   struct class **children;
-};
+} __attribute__ ((aligned (32)));
 
 typedef struct class class;
 

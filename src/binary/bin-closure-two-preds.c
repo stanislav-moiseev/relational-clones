@@ -35,7 +35,7 @@ void closure_two_preds_read(FILE *fd, closure_table_two_preds *table) {
       uint64_t num1 = int_pow2(int_pow(K, ar1));
       uint64_t num2 = int_pow2(int_pow(K, ar2));
       
-      table->data[ar1][ar2] = malloc(num1 * num2 * sizeof(clone));
+      table->data[ar1][ar2] = aligned_alloc(32, num1 * num2 * sizeof(clone));
       assert(table->data[ar1][ar2] != NULL);
       
       for(uint64_t data1 = 0; data1 < num1; ++data1) {

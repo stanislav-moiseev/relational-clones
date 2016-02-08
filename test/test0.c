@@ -59,6 +59,45 @@ void test_fun_scan() {
   free(str2);
 }
 
+void clone_union_straightforward(const clone *clone1, const clone *clone2, clone *clone) {
+  clone->data0 = clone1->data0 | clone2->data0;
+  clone->data1 = clone1->data1 | clone2->data1;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    clone->data2[offset] = clone1->data2[offset] | clone2->data2[offset];
+  }
+}
+
+void test_clone_union() {
+  char str1[pred_print_extensional_size()];
+  char str2[pred_print_extensional_size()];
+
+  for(int i = 0; i < 100; ++i) {
+    clone cl1, cl2;
+    clone_init(&cl1);
+    clone_init(&cl2);
+
+    size_t sz[3] = { 1, 3, 64 };
+    for(int ar = 0; ar <= 2 ;++ ar) {
+      for(int j = 0; j < sz[ar]; ++j) {
+        pred p1, p2;
+        random_pred_extensional(ar, str1);
+        pred_construct(ar, str1, &p1);
+        clone_insert_pred(&cl1, &p1);
+      
+        random_pred_extensional(ar, str2);
+        pred_construct(ar, str2, &p2);
+        clone_insert_pred(&cl2, &p2);
+      }
+
+      clone cl3, cl4;
+      clone_union_straightforward(&cl1, &cl2, &cl3);
+      clone_union(&cl1, &cl2, &cl4);
+
+      assert(clone_eq(&cl3, &cl4));
+    }
+  }
+}
+
 
 int main() {
   printf("test-pred-construct:\t"); fflush(stdout);
@@ -69,5 +108,9 @@ int main() {
   test_fun_scan();
   printf("Ok.\n");
 
+  printf("test_clone_union:\t"); fflush(stdout);
+  test_clone_union();
+  printf("Ok.\n");
+  
   return 0;
 }

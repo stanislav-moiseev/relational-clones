@@ -12,13 +12,14 @@
 #define CLONE_DATA2_SIZE 8
 
 struct clone {
+  /* predicates of arity 2 */
+  uint64_t data2[CLONE_DATA2_SIZE];
+  
   /* predicates of arity 0 */
   uint32_t data0;
   /* predicates of arity 1 */
   uint32_t data1;
-  /* predicates of arity 2 */
-  uint64_t data2[CLONE_DATA2_SIZE];
-};
+} __attribute__ ((aligned (32)));
 
 typedef struct clone clone;
 

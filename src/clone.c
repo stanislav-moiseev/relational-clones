@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <immintrin.h>
 
 #include "utils.h"
 #include "pred.h"
@@ -268,10 +269,18 @@ int clone_subset(const clone *clone1, const clone *clone2) {
 }
 
 void clone_union(const clone *clone1, const clone *clone2, clone *clone) {
-  clone->data0 = clone1->data0 | clone2->data0;
-  clone->data1 = clone1->data1 | clone2->data1;
-  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    clone->data2[offset] = clone1->data2[offset] | clone2->data2[offset];
+  /* clone->data0 = clone1->data0 | clone2->data0; */
+  /* clone->data1 = clone1->data1 | clone2->data1; */
+  __m128i xmm1 = _mm_load_si128((__m128i *)&clone1->data0);
+  __m128i xmm2 = _mm_load_si128((__m128i *)&clone2->data0);
+  __m128i xmm3 = _mm_or_si128(xmm1, xmm2);
+  _mm_store_si128((__m128i *)&clone->data0, xmm3);
+
+  for(int64_t offset = 1; offset >= 0; --offset) {
+    __m256i ymm1 = _mm256_load_si256((__m256i *)&clone1->data2 + offset);
+    __m256i ymm2 = _mm256_load_si256((__m256i *)&clone2->data2 + offset);
+    __m256i ymm3 = _mm256_or_si256(ymm1, ymm2);
+    _mm256_store_si256((__m256i *)&clone->data2 + offset, ymm3);
   }
 }
 

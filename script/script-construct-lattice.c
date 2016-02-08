@@ -47,19 +47,20 @@ void verify(const closure_operator *clop, const char *maj2013, const lattice *lt
 
     /* assert(maj_lattice_member(&maj_lattice, &copy)); */
     if(!maj_lattice_member(&maj_lattice, &copy)) {
-      printf("Error: the following clone has not been found in maj'2013 lattice:\n");
+      printf("\nError: the following clone has not been found in maj'2013 lattice:\n");
       clone_print_verbosely(stdout, &c->clone);
       return;
     }
 
     ++idx;
-    if(idx % (lt->num_classes/20) == 0) {
+    if(lt->num_classes >= 40)
+      if(idx % (lt->num_classes/40) == 0) {
       printf(".");
       fflush(stdout);
     }
   }
 
-  printf("%lu maj classes have been found\n", num_maj_classes);
+  printf("\n%lu maj classes have been found.\n", num_maj_classes);
 
   maj_lattice_free(&maj_lattice);
   fclose(fd);
@@ -86,7 +87,7 @@ void construct_lattice(const char *table2p_name, const char *table2p_uniq_name, 
 
   /*   closure_operator *clop = clop_alloc_table_two_preds(table2p); */
 
-  /*   printf("verification"); fflush(stdout); */
+  /*   printf("verification:\t"); fflush(stdout); */
   /*   verify(clop, maj2013, lt); */
   /* } */
 

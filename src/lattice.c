@@ -11,7 +11,7 @@
 #include "fast-hash/fasthash.h"
 
 class *class_alloc(const lattice *lt) {
-  class *c = malloc(sizeof(class));
+  class *c = aligned_alloc(32, sizeof(class));
   assert(c);
 
   c->lattice = lt;
@@ -49,7 +49,7 @@ void class_set_child(class *parent, const pred *p, class *child) {
 }
 
 static uint32_t clone_hash(const void *cl) {
-  return fasthash32(cl, sizeof(clone), 0);
+  return fasthash32(cl, 8+8*CLONE_DATA2_SIZE, 0);
 }
 
 static int class_eq_clone(const void *c1, const void *c2) {

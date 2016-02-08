@@ -349,7 +349,7 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
       uint64_t num1 = int_pow2(int_pow(K, ar1));
       uint64_t num2 = int_pow2(int_pow(K, ar2));
       
-      table->data[ar1][ar2] = malloc(num1 * num2 * sizeof(clone));
+      table->data[ar1][ar2] = aligned_alloc(32, num1 * num2 * sizeof(clone));
       assert(table->data[ar1][ar2] != NULL);
       
       /* initialize the table with empty clones */

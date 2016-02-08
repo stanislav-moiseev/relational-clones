@@ -1,4 +1,5 @@
-CC = gcc -O3 -g -std=c99 -pedantic -D_GNU_SOURCE			\
+CC = gcc -O3 -g -march=native						\
+	-std=c99 -pedantic -D_GNU_SOURCE				\
 	-Wall -Werror -Wno-unused-function				\
 	-Wno-error=maybe-uninitialized					\
 	-Isrc -I/usr/local/inlcude					\
