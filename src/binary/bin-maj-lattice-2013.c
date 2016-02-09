@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "utils.h"
+#include "binary/bin-common.h"
 #include "binary/bin-maj-lattice-2013.h"
 
 static uint32_t read_uint32(FILE *fd) {
@@ -47,13 +48,8 @@ int maj_class_read_2013(FILE *fd, maj_class *class) {
     pred_read_2013(fd, &pred);
     clone_insert_pred(&class->basis, &pred);
   }
-  
-  class->clone.data0 = read_uint32(fd);
-  class->clone.data1 = read_uint32(fd);
-  assert(CLONE_DATA2_SIZE == 8);
-  for(int64_t offset = 0; offset < CLONE_DATA2_SIZE; ++offset) {
-    class->clone.data2[offset] = read_uint64(fd);
-  }
+
+  clone_read(fd, &class->clone);
 
   class->num_subclasses = -1;
   class->subclasses     = NULL;
@@ -67,7 +63,7 @@ void maj_layer_aread_classes_2013(FILE *fd, maj_layer *layer) {
   layer->classes = malloc(layer->num_classes * sizeof(struct maj_class));
   assert(layer->classes != NULL);
   for(int j = 0; j < layer->num_classes; ++j) {
-    maj_class * class = layer->classes + j;
+    maj_class *class = layer->classes + j;
     maj_class_read_2013(fd, class);
   }
 

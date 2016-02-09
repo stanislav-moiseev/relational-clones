@@ -48,6 +48,7 @@ void pred_write(FILE *fd, const pred *pred) {
 }
 
 void clone_write(FILE *fd, const clone *clone) {
+  assert(CLONE_DATA2_SIZE == 8);
   uint32_write(fd, clone->data0);
   uint32_write(fd, clone->data1);
   for(size_t offset = 0; offset < CLONE_DATA2_SIZE; ++offset) {
@@ -73,6 +74,7 @@ void pred_read(FILE *fd, pred *pred) {
 }
 
 void clone_read(FILE *fd, clone *clone) {
+  assert(CLONE_DATA2_SIZE == 8);
   clone->data0 = uint32_read(fd);
   clone->data1 = uint32_read(fd);
   for(size_t offset = 0; offset < CLONE_DATA2_SIZE; ++offset) {

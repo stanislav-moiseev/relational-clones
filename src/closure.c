@@ -239,41 +239,54 @@ void op_trans(const pred *pred1, const pred *pred2, clone *clone) {
 }
 
 void clone_closure_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
-  clone recruit;
-  clone_init(&recruit);
-  
-  for(clone_iterator it1 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it1); clone_iterator_next(&it1)) {
-    pred pred1 = clone_iterator_deref(&it1);
-    
-    /* apply ops of arity 1 for supplement predicates */
-    closure_ops1(clop, &pred1, &recruit);
-
-    /* apply ops of arity 2:
-     * the first predicate is taken from  the supplement,
-     * while the second — from the supplement set and from the base set */
-    for(clone_iterator it2 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it2); clone_iterator_next(&it2)) {
-      pred pred2 = clone_iterator_deref(&it2);
-      closure_ops2(clop, &pred1, &pred2, &recruit);
-    }
-    for(clone_iterator it3 = clone_iterator_begin(base); !clone_iterator_end(base, &it3); clone_iterator_next(&it3)) {
-      pred pred3 = clone_iterator_deref(&it3);
-      closure_ops2(clop, &pred1, &pred3, &recruit);
-    }
-  }
-
   clone new_base;
-  clone_union(base, suppl, &new_base);
-
   clone diff;
-  clone_diff(&recruit, &new_base, &diff);
-  
-  if(!clone_is_empty(&diff)) {
-    /* if we've found new predicates, recursively continue computation */
-    clone_closure_ex(clop, &new_base, &diff, closure);
-  } else {
-    /* if we haven't found new predicates, the computation is finished */
-    clone_copy(&new_base, closure);
+  clone_copy(suppl, &diff);
+
+  /* we will store base and suppl predicates here*/
+  pred preds[2 + int_pow2(K) + int_pow2(K*K)];
+  /* predicates in [0 .. base_sz-1] are current base predicates */
+  size_t base_sz;
+  /* predicates in [base_sz .. sz-1] are current supplement predicates */
+  size_t sz = 0;
+
+  /* copy base predicates */
+  for(clone_iterator it2 = clone_iterator_begin(base); !clone_iterator_end(base, &it2); clone_iterator_next(&it2)) {
+    preds[sz] = clone_iterator_deref(&it2);
+    ++sz;
   }
+  
+  do {
+    /* consider all predicates in the array to be base,
+     * and copy new predicates to the end of the array */
+    base_sz = sz;
+    for(clone_iterator it = clone_iterator_begin(&diff); !clone_iterator_end(&diff, &it); clone_iterator_next(&it)) {
+      preds[sz] = clone_iterator_deref(&it);
+      ++sz;
+    }
+    
+    clone recruit;
+    clone_init(&recruit);
+
+    /* scan all supplement predicates */
+    for(pred *pred1 = preds + base_sz; pred1 < preds + sz; ++pred1) {
+      /* apply ops of arity 1 for supplement predicates */
+      closure_ops1(clop, pred1, &recruit);
+      /* apply ops of arity 2:
+       * the first predicate is taken from the supplement,
+       * while the second — from the supplement set and from the base set */
+      for(pred *pred2 = preds; pred2 < preds + sz; ++pred2) {
+        closure_ops2(clop, pred1, pred2, &recruit);
+      }
+    }
+
+    clone_union(base, suppl, &new_base);
+    clone_diff(&recruit, &new_base, &diff);
+    base  = &new_base;
+    suppl = &diff;
+  } while(!clone_is_empty(&diff));
+  
+  clone_copy(&new_base, closure);
 }
 
 void clone_closure(const closure_operator *clop, const clone *clone, struct clone *closure) {

@@ -92,7 +92,7 @@ predicate_numerator *predicate_numerator_alloc() {
   predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
   assert(pred_num);
   
-    /* construct index for closure-unique predicates */
+  /* construct index for closure-unique predicates */
   construct_uniq_ess_preds(&pred_num->uniq_preds, &pred_num->uniq_sz);
   
   /* construct reverse index */
@@ -182,6 +182,8 @@ void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
   clop_free(clop);
 }
 
+void clone_closure_ex2(const closure_operator *clop, const clone *base, const clone *suppl1, const clone *suppl2, clone *closure);
+
 void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *current = *cp;
@@ -192,28 +194,30 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
       continue;
     }
 
+    /* compute the closure of the union {p} ∪ current */
     clone closure;
     if(current->parent == NULL) {
-      /* compute the closure of the union {p} ∪ current */
+      /* if the current clone is the top clone, use a direct approach */
       clone clone_p;
       clone_init(&clone_p);
       clone_insert_pred(&clone_p, p);
       clone_closure_ex(clop, &current->clone, &clone_p, &closure);
-      
     } else {
-      /* we compute the closure <{p} ∪ current> using the result of closure
-       * of its parent and `p`. */
+      /* if the current clone has a parent, compute the closure <{p} ∪ current>
+       * using the result of the closure of `p` and its parent. */
       class *parent_p = class_get_child(current->parent, p);
-      /* that closure <{p} ∪ parent> should have already been computed */
+      /* the closure <{p} ∪ parent> should have already been computed */
       assert(parent_p != NULL);
-      /* <{p} ∪ current> = <<{p} ∪ parent> ∪ (current\parent)> */
-      clone_closure_ex(clop, &parent_p->clone, &current->diff_parent, &closure);
+      /* <{p}∪current> == <<{p}∪parent> ∪ (current\parent)> ==
+       *               == <<{p}∪parent> ∪ (current\parent\<{p}∪parent>)> */
+      clone tmp;        /* tmp == (current\parent) \ <{p}∪parent> */
+      clone_diff(&current->diff_parent, &parent_p->clone, &tmp);
+      clone_closure_ex(clop, &parent_p->clone, &tmp, &closure);
     }
 
     /* test if we've constructed a new class */
     class *child = lattice_lookup(lt, &closure);
     assert(child != current);
-
     if(child == NULL) {
       /* if we've constructed a new class, add it to the lattice */
       child = class_alloc(lt);

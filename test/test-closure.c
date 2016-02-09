@@ -46,7 +46,6 @@ void test_pred_preserves_majority() {
     if(pred_preserves_majority(p)) ++num;
   }
   assert(num == 410);
-
 }
 
 
@@ -132,7 +131,7 @@ void test_clone_closure2() {
 }
 
 int main() {
-  printf("test-pred-is-essential:\t"); fflush(stdout);
+  printf("test-essential-predicates:\t"); fflush(stdout);
   test_pred_is_essential();
   test_pred_num_essential_preds();
   test_pred_num_closure_uniq_preds();
@@ -142,7 +141,7 @@ int main() {
   test_pred_preserves_majority();
   printf("Ok.\n");
  
-  printf("test-clone-closure:\t"); fflush(stdout);
+  printf("test-clone-closure:\t\t"); fflush(stdout);
   test_clone_closure1();
   test_clone_closure2();
   printf("Ok.\n");
