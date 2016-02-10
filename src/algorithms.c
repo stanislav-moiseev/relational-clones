@@ -8,6 +8,8 @@
 #include <string.h>
 
 #include "closure.h"
+#include "closure/closure-straightforward.h"
+#include "closure/closure-two-preds.h"
 #include "algorithms.h"
 
 /******************************************************************************/
@@ -122,68 +124,6 @@ void predicate_numerator_free(predicate_numerator *pred_num) {
   free(pred_num);
 }
 
-void closure_uniq_ess_preds(clone *cl) {
-  pred *uniq_preds;
-  size_t uniq_sz;
-  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
-
-  clone_init(cl);
-  for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-    clone_insert_pred(cl, p);
-  }
-  free(uniq_preds);
-}
-
-void construct_closure_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
-  closure_operator *clop = clop_alloc_straightforward();
-
-  clone closure_zero;
-  closure_dummy_clone(clop, &closure_zero);
-
-  /* compute the closure of all essential predicates */
-  pred *ess_preds;
-  size_t num_ess_preds;
-  uint32_t max_arity = 2;
-  get_essential_predicates(max_arity, &ess_preds, &num_ess_preds);
-
-  /* factorize all essential predicates by their closure
-   * and select predicates with unique closure */
-  size_t uniq_sz = 0;
-  pred uniq_preds[num_ess_preds];
-  clone uniq_closures[num_ess_preds];
-
-  for(pred *p = ess_preds; p < ess_preds + num_ess_preds; ++p) {
-    clone p_closure;
-    closure_one_pred(clop, p, &p_closure);
-
-    /* we omit predicates equivalent to the top class {false(0), true(1), eq(2)} */
-    if(clone_eq(&p_closure, &closure_zero)) continue;
-
-    size_t j;
-    for(j = 0; j < uniq_sz; ++j) {
-      if(clone_eq(&p_closure, &uniq_closures[j])) break;
-    }
-    
-    /* if not found, add to the list of unique clones */
-    if(j == uniq_sz) {
-      uniq_preds[uniq_sz] = *p;
-      clone_copy(&p_closure, &uniq_closures[uniq_sz]);
-      ++uniq_sz;
-    }
-  }
-  
-  /* copy the result */
-  *_uniq_preds = malloc(uniq_sz * sizeof(pred));
-  assert(_uniq_preds);
-  memcpy(*_uniq_preds, uniq_preds, uniq_sz * sizeof(pred));
-  *_uniq_sz = uniq_sz;
-
-  free(ess_preds);
-  clop_free(clop);
-}
-
-void clone_closure_ex2(const closure_operator *clop, const clone *base, const clone *suppl1, const clone *suppl2, clone *closure);
-
 void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *current = *cp;
@@ -276,6 +216,7 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
     printf("%d\t %lu\n", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
     ++idx;
+    if(idx == 75) return;
   }
 
   free(uniq_preds);

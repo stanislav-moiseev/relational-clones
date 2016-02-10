@@ -1,7 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  *
- * Closure operator for predicates of arity <= 2.
+ * Abstract closure operator for predicates of arity <= 2.
  ******************************************************************************/
 
 #ifndef CLOSURE_H
@@ -16,34 +16,37 @@
 #include "clone.h"
 
 /******************************************************************************/
-/** Abstract closure operator and its implementations */
+/** Abstract closure operator */
 
-/** We support two implementations of closure operator:
- * clop_straight_forward_t
- *      computes elementary operation directly;
- * clop_table_two_preds_t
- *      uses a precomputed table of closure of pairs of predicates
- *      to efficiently compute the closure of the given clone.
- */
-enum closure_operator_type {
-  clop_straightforward_t,
-  clop_table_two_preds_t
+struct closure_operator_ops {
+  /** `clone_closure` computes the closure of the given clone under the above
+   * operation, selects all essential predicates, and writes the result to
+   * `closure`.
+   * 
+   * Assumptions over `clone`:
+   * 1) the clone contains the following predicates:
+   *      false(0), true(0), eq(2);
+   * 2) the clone consists of essential predicates only.
+   *
+   * The current implementation supports predicates of arity <= 2 only.
+   */
+
+  /** `clone_closure_ex` computes the closure of the union <base ∪ suppl>
+   * under an assumption that `base` is a closed set.
+   */
+  void (*closure_clone_ex)(void *internals, const clone *base, const clone *suppl, clone *closure);
+
+  /** Virtual destructor for internal data. */
+  void (*internals_free)(void *internals);
 };
-typedef enum closure_operator_type closure_operator_type;
 
-/** Abstract closure operator.
- * If type == clop_table_two_preds_t, then `table2p` contains the table of
- * closure of all pairs of predicates of arity <= 2 */
+/** Abstract closure operator. */
 struct closure_operator {
-  closure_operator_type type;
-  const struct closure_table_two_preds *table2p;
+  struct closure_operator_ops ops;
+  void *internals;
 };
 typedef struct closure_operator closure_operator;
 
-/** Constructors for different implementations of closure operator */
-closure_operator *clop_alloc_straightforward();
-
-closure_operator *clop_alloc_table_two_preds(const struct closure_table_two_preds *table2p);
 
 void clop_free(closure_operator *clop);
 
@@ -68,112 +71,19 @@ void closure_dummy_clone(const closure_operator *clop, clone *closure);
  */
 void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure);
 
-/** `clone_closure` computes the closure of the given clone under the above
- * operation, selects all essential predicates, and writes the result to
- * `closure`.
- * 
- * Assumptions over `clone`:
- * 1) the clone contains the following predicates:
- *      false(0), true(0), eq(2);
- * 2) the clone consists of essential predicates only.
- *
- * The current implementation supports predicates of arity <= 2 only.
- */
-void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure);
-
-/** `clone_closure_ex` computes the closure of the union <base ∪ suppl>
- * under an assumption that `base` is a closed set.
- */
-void closure_clone_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure);
-
-
-/******************************************************************************/
-/** Elementary operations over predicates */
-
-/** Permutation of variables:
- *      resp(x1,x0) = pred(x0,x1)
- */
-void op_permut(const pred *pred, clone *clone);
-
-/** Striking of rows:
- *      resp0(y0) = ∃x0 pred(y0,x0)
- */
-void op_proj(const pred *pred, clone *clone);
-
-/** Identifying of variables:
- *      resp(x0) = pred(x0,x0)
- */
-void op_ident(const pred *pred, clone *clone);
-
-/** Conjunction of two predicates, pred1 being of arity 2 and
- * pred2 of arity 2 or 1 (or vice versa).
- *
- *      resp(x1,x0) = pred1(x1,x0) ∧ pred2(x1,x0)       (for arity 2)
- *      resp(x1,x0) = pred1(x1,x0) ∧ pred2(x1)          (for arity 1)
- */
-void op_conj(const pred *pred1, const pred *pred2, clone *clone);
-
-/** Conjunction  with predicate of arity 1 with striking.
- * The operation takes two predicates, pred1 of arity 2 and pred2 of arity 1
- * (or vise versa):
- *      resp(x0) = ∃x1 (pred1(x1,x0) ∧ pred2(x1))
- */
-void op6(const pred *pred1, const pred *pred2, clone *clone);
-
-/** Transitivity.
- * The operation takes two predicates of arity 2:
- *      resp(x1, x0) = ∃x (pred1(x,x1) ∧ pred2(x,x0))
- */
-void op_trans(const pred *pred1, const pred *pred2, clone *clone);
-
-/** `closure_ops1` and `closure_ops2` compute all elementary operations
- * of arity 1 and 2. The exact meaning of "elementary operations" depends on the
- * type of the closure operator.
- *
- * [] clot_straightforward_t computes the following operations:
- *     - op_permut(1), op_proj(1), op_ident(1);
- *     - op_conj(2), op6(2), op_trans(2).
- *
- * [] clot_table_two_preds_t computes the closure of
- *      { false(0), true(0), eq(2), p1, p2 }
- */
-void closure_ops1(const closure_operator *clop, const pred *p1, clone *recruit);
-void closure_ops2(const closure_operator *clop, const pred *p1, const pred *p2, clone *recruit);
-
-
-/******************************************************************************/
-/** Table of closure of all pairs of predicates of arity <= 2 */
-
-struct closure_table_two_preds {
-  clone *data[3][3];
-};
-typedef struct closure_table_two_preds closure_table_two_preds;
-
-static inline clone *closure_table_two_preds_lookup(const closure_table_two_preds *table, const pred *p1, const pred *p2) {
-  assert(p1->arity <= 2 && p2->arity <= 2);
-  /* assert(pred_is_essential(p1)); */
-  /* assert(pred_is_essential(p2)); */
-  uint64_t num2 = int_pow2(int_pow(K, p2->arity));
-
-  uint64_t idx = p1->data*num2 + p2->data;
-  return &table->data[p1->arity][p2->arity][idx];
+static inline void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure) {
+  clone_init(closure);
+  
+  struct clone empty;
+  clone_init(&empty);
+  clop->ops.closure_clone_ex(clop->internals, &empty, clone, closure);
 }
 
-closure_table_two_preds *closure_table_two_preds_alloc();
+void clop_two_preds_closure_clone_ex(void *internals, const clone *base, const clone *suppl, clone *closure);
 
-void closure_table_two_preds_free(closure_table_two_preds *table);
-
-/** `closure_table_two_preds_construct` computes the closure of
- *      { false(0), true(0), eq(2), p1, p2 }
- * for all pairs of essential predicates (p1, p2)
- * and writes the result to the table.
- *
- * If either p1 or p2 is not essential, the functions writes the empty clone.
- *
- * The function allocates memory to store the table.
- * Memory should be freed by calling closure_table_two_preds_free.
- */
-void closure_table_two_preds_construct(closure_table_two_preds *);
+static inline void closure_clone_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
+  clop->ops.closure_clone_ex(clop->internals, base, suppl, closure);
+}
 
 
 #endif

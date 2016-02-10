@@ -9,7 +9,8 @@
 
 #include "closure.h"
 #include "binary/bin-common.h"
-#include "closure.h"
+#include "closure/closure-straightforward.h"
+#include "closure/closure-two-preds.h"
 #include "algorithms.h"
 
 void test_pred_is_essential() {

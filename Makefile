@@ -10,6 +10,8 @@ SRCS =									\
 	src/pred.c							\
 	src/clone.c							\
 	src/closure.c							\
+	src/closure/closure-straightforward.c				\
+	src/closure/closure-two-preds.c					\
 	src/maj-lattice.c						\
 	src/lattice.c							\
 	src/algorithms.c						\

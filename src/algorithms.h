@@ -38,16 +38,6 @@ int pred_preserves_majority(const pred *p);
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
 
-/** `closure_uniq_ess_preds` returns a clone contain all closure-unique
- * essential predicates of arity <= 2 except predicates that are equivalient
- * to dummy clone {false(0), true(1), eq(2)}.
- *
- * Two essential predicates p1 and p2 are called /closure-equivalent/
- * if <false(0), true(1), eq(2), p1}> == <false(0), true(1), eq(2), p2}>.
- */
-void closure_uniq_ess_preds(clone *cl);
-
-void construct_closure_uniq_ess_preds(pred **uniq_preds, size_t *uniq_sz);
 
 /** The main algorithm.
  * Construct the lattice P3(2) of predicates of arity <= 2.

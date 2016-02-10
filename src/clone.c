@@ -273,7 +273,7 @@ void clone_copy(const clone *clone, struct clone *copy) {
 void clone_union(const clone *clone1, const clone *clone2, clone *clone) {
   clone->data0 = clone1->data0 | clone2->data0;
   clone->data1 = clone1->data1 | clone2->data1;
-  for(int64_t offset = 1; offset >= 0; --offset) {
+  for(int64_t offset = CLONE_DATA2_SIZE/4 - 1; offset >= 0; --offset) {
     __m256i ymm1 = _mm256_load_si256((__m256i *)&clone1->data2 + offset);
     __m256i ymm2 = _mm256_load_si256((__m256i *)&clone2->data2 + offset);
     __m256i ymm3 = _mm256_or_si256(ymm1, ymm2);

@@ -67,13 +67,7 @@ void verify(const closure_operator *clop, const char *maj2013, const lattice *lt
 }
 
 void construct_lattice(const char *table2p_name, const char *table2p_uniq_name, const char *maj2013) {
-  FILE *fd = fopen(table2p_uniq_name, "rb");
-  assert(fd);
-  
-  closure_table_two_preds *table2p = closure_table_two_preds_alloc();
-  closure_two_preds_read(fd, table2p);
-
-  closure_operator *clop = clop_alloc_table_two_preds(table2p);
+  closure_operator *clop = clop_two_preds_read(table2p_uniq_name);
 
   lattice *lt = lattice_alloc();
   latice_construct(clop, lt);
@@ -92,7 +86,6 @@ void construct_lattice(const char *table2p_name, const char *table2p_uniq_name, 
   /* } */
 
   lattice_free(lt);
-  closure_table_two_preds_free(table2p);
   clop_free(clop);
 }
 
