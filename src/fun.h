@@ -2,8 +2,8 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef FUNC_H
-#define FUNC_H
+#ifndef FUN_H
+#define FUN_H
 
 #include "utils.h"
 #include "pred.h"
@@ -70,11 +70,5 @@ int fun_preserves_pred(const fun *fun, const pred *pred);
  * from `clone1` and does not preserve at least one predicate from `clone2`.
  */
 int test_discr_function(const clone *clone1, const clone *clone2, const fun *fun);
-
-/** `min_majorities` returns the list of all 7 minimal majority functions
- * in P3.
- * The pointer should be freed to release the memory.
- */
-void min_majorities(fun **majs, size_t *size);
 
 #endif

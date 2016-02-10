@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fun-majority.h"
 #include "binary/bin-maj-lattice.h"
 #include "binary/bin-closure-two-preds.h"
 #include "algorithms.h"

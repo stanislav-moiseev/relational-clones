@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fun-majority.h"
 #include "closure.h"
 #include "binary/bin-common.h"
 #include "closure/closure-straightforward.h"

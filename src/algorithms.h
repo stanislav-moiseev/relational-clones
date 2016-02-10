@@ -25,19 +25,8 @@ void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***cla
  */
 Z3_lbool find_discr_function(const maj_class *class1, const maj_class *class2, int max_fun_arity, fun *fun);
 
-/** `clone_contains_majority` returns true if there is at least one minimal
- * majority operation `maj` such that `maj` preserves all the predicates from
- * `clone`.
- */
-int clone_contains_majority(const clone *cl);
-
-/* `pred_preserves_majority` return true if there is a minimal majority
- * operation preserving the predicate */
-int pred_preserves_majority(const pred *p);
-
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */
-
 
 /** The main algorithm.
  * Construct the lattice P3(2) of predicates of arity <= 2.

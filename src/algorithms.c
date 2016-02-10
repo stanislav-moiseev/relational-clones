@@ -56,36 +56,6 @@ Z3_lbool find_discr_function(const maj_class *class, const struct maj_class *sub
   return final_rc;
 }
 
-int clone_contains_majority(const clone *cl) {
-  fun *majs;
-  size_t num;
-  min_majorities(&majs, &num);
-
-  for(fun *f = majs; f < majs + num; ++f) {
-    int flag = 1;
-    for(clone_iterator it = clone_iterator_begin(cl); !clone_iterator_end(cl, &it); clone_iterator_next(&it)) {
-      pred p = clone_iterator_deref(&it);
-      if(!fun_preserves_pred(f, &p)) { flag = 0; break; }
-    }
-    if(flag) { free(majs); return 1; }
-  }
-
-  free(majs);
-  return 0;
-}
-
-int pred_preserves_majority(const pred *p) {
-  fun *majs;
-  size_t num_majs;
-  min_majorities(&majs, &num_majs);
-
-  int flag = 0;
-  for(fun *f = majs; f < majs + num_majs; ++f) {
-    if(fun_preserves_pred(f, p)) { flag = 1; break; }
-  }
-  free(majs);
-  return flag;
-}
 
 /******************************************************************************/
 /** Lattice of all clones in P3(2) */

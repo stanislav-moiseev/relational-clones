@@ -7,6 +7,7 @@ CC = gcc -O3 -g -march=native						\
 
 SRCS =									\
 	src/fun.c							\
+	src/fun-majority.c						\
 	src/pred.c							\
 	src/pred-essential.c						\
 	src/clone.c							\
