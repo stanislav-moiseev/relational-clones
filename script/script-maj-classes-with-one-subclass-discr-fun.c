@@ -9,7 +9,7 @@
 
 #include "binary/bin-maj-lattice.h"
 #include "binary/bin-maj-classes-with-one-subclass-discr-fun.h"
-#include "algorithms.h"
+#include "algorithm/alg-maj-classes.h"
 
 void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {
   FILE *fd = fopen(fname, "rb");

@@ -11,12 +11,16 @@ SRCS =									\
 	src/pred.c							\
 	src/pred-essential.c						\
 	src/clone.c							\
+									\
 	src/closure.c							\
 	src/closure/closure-straightforward.c				\
 	src/closure/closure-two-preds.c					\
+									\
 	src/maj-lattice.c						\
-	src/lattice.c							\
-	src/algorithms.c						\
+									\
+	src/algorithm/alg-maj-classes.c					\
+	src/algorithm/alg-closure-clone-pred.c				\
+	src/algorithm/alg-closure-two-preds.c				\
 	src/hashtable.c							\
 	src/fast-hash/fasthash.c					\
 									\

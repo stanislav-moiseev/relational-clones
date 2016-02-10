@@ -7,58 +7,91 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "closure.h"
-#include "closure/closure-straightforward.h"
-#include "closure/closure-two-preds.h"
-#include "algorithms.h"
+#include "algorithm/alg-closure-clone-pred.h"
+#include "pred-essential.h"
+#include "fast-hash/fasthash.h"
 
-/******************************************************************************/
-/** Lattice of all clones containing a majority operation */
+class *class_alloc(const lattice *lt) {
+  class *c = aligned_alloc(32, sizeof(class));
+  assert(c);
 
-void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***classes, uint64_t *num_classes) {
-  size_t capacity = 128;
-  size_t size = 0;
-  *classes = malloc(capacity * sizeof(maj_class *));
-  assert(*classes);
-  for(maj_layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
-    for(maj_class *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
-      if(class->num_subclasses == 1) {
-        if(size == capacity) {
-          capacity *= 2;
-          *classes = realloc(*classes, capacity * sizeof(struct class *));
-          assert(*classes);
-        }
-        (*classes)[size] = class;
-        ++size;
-      }
-    }
-  }
-  *num_classes = size;
+  c->lattice = lt;
+  c->parent = NULL;
+  clone_init(&c->diff_parent);
+  clone_init(&c->basis);
+  clone_init(&c->clone);
+  
+  c->children = malloc(lt->pred_num->uniq_sz * sizeof(class *)); 
+  assert(c->children != NULL);
+  memset(c->children, 0, lt->pred_num->uniq_sz * sizeof(class *));
+
+  return c;
 }
 
-Z3_lbool find_discr_function(const maj_class *class, const struct maj_class *subclass, int max_fun_arity, fun *fun) {
-  int fun_arity;
-  Z3_lbool final_rc = Z3_L_FALSE;     /* the flag shows if we have proved that
-                                         the discriminating function of current
-                                         arity does not exist */
-  for(fun_arity = 0; fun_arity <= max_fun_arity; ++fun_arity) {
-    Z3_lbool rc = z3_find_discr_function(&class->basis, &class->clone, &subclass->clone, fun_arity, fun);
-    if(rc == Z3_L_UNDEF) {
-      /* we no longer have a proof that the discriminating function does not
-         exist */
-      final_rc = Z3_L_UNDEF;
-    }
-    if(rc == Z3_L_TRUE) {
-      final_rc = Z3_L_TRUE;
-      break;    /* do not search for functions of higher arities */
-    }
-  }
-  return final_rc;
+void class_free(class *c) {
+  free(c->children);
+  free(c);
 }
 
+class *class_parent(const class *c) {
+  return c->parent;
+}
 
-/******************************************************************************/
-/** Lattice of all clones in P3(2) */
+class *class_get_child(const class *c, const pred *p) {
+  assert(p->arity <= 2 && "classes support predicates of arity <= 2 only");
+  return c->children[pred_idx(c->lattice->pred_num, p)];
+}
+
+void class_set_child(class *parent, const pred *p, class *child) {
+  assert(p->arity <= 2 && "classes support predicates of arity <= 2 only");
+  parent->children[pred_idx(parent->lattice->pred_num, p)] = child;
+}
+
+static uint32_t clone_hash(const void *cl) {
+  return fasthash32(cl, 8+8*CLONE_DATA2_SIZE, 0);
+}
+
+static int class_eq_clone(const void *c1, const void *c2) {
+  return clone_eq((const clone *)c1, (const clone *)c2);
+}
+
+lattice *lattice_alloc() {
+  lattice *lt = malloc(sizeof(lattice));
+  assert(lt);
+  lt->num_classes = 0;
+  lt->capacity    = 2<<20;
+  lt->classes     = malloc(lt->capacity * sizeof(class *));
+  lt->ht          = hash_table_alloc(lt->capacity, clone_hash, class_eq_clone);
+  lt->pred_num    = predicate_numerator_alloc();
+  return lt;
+}
+
+void lattice_free(lattice *lt) {
+  for(class **c = lt->classes; c < lt->classes + lt->num_classes; ++c) {
+    class_free(*c);
+  }
+  free(lt->classes);
+  hash_table_free(lt->ht);
+  predicate_numerator_free(lt->pred_num);
+  free(lt);
+}
+
+void lattice_insert_class(lattice *lt, class *c) {
+  if(lt->num_classes == lt->capacity) {
+    lt->capacity *= 2;
+    lt->classes = realloc(lt->classes, lt->capacity);
+    assert(lt->classes);
+  }
+
+  lt->classes[lt->num_classes] = c;
+  ++lt->num_classes;
+
+  hash_table_insert(lt->ht, &c->clone, c);
+}
+
+class *lattice_lookup(const lattice *lt, const clone *cl) {
+  return hash_table_lookup(lt->ht, cl);
+}
 
 predicate_numerator *predicate_numerator_alloc() {
   predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));

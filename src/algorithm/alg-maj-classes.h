@@ -4,12 +4,10 @@
  * @brief       Algorithms to construct lattice of all clones in P3(2).
  ******************************************************************************/
 
-#ifndef ALGORITHMS_ALG_CONSTRUCT_LATTICE_H
-#define ALGORITHMS_ALG_CONSTRUCT_LATTICE_H
+#ifndef ALG_MAJ_CLASSES_H
+#define ALG_MAJ_CLASSES_H
 
 #include "maj-lattice.h"
-#include "lattice.h"
-#include "closure.h"
 #include "z3/z3-search.h"
 
 /******************************************************************************/
@@ -24,13 +22,5 @@ void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***cla
  * will be stored to `fun`.
  */
 Z3_lbool find_discr_function(const maj_class *class1, const maj_class *class2, int max_fun_arity, fun *fun);
-
-/******************************************************************************/
-/** Lattice of all clones in P3(2) */
-
-/** The main algorithm.
- * Construct the lattice P3(2) of predicates of arity <= 2.
- */
-void latice_construct(const closure_operator *clop, lattice *lt);
 
 #endif

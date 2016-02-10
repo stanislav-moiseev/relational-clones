@@ -10,7 +10,8 @@
 #include "fun-majority.h"
 #include "binary/bin-maj-lattice.h"
 #include "binary/bin-closure-two-preds.h"
-#include "algorithms.h"
+#include "closure/closure-two-preds.h"
+#include "algorithm/alg-closure-clone-pred.h"
 
 void verify(const closure_operator *clop, const char *maj2013, const lattice *lt) {
   FILE *fd = fopen(maj2013, "rb");

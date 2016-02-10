@@ -8,6 +8,7 @@
 #include "clone.h"
 #include "hashtable.h"
 #include "globals.h"
+#include "closure.h"
 
 /** Each class requires approx. 4KiB memory to store the predicate-clone closure
     table. */
@@ -75,7 +76,7 @@ struct lattice {
   /* A hash table to support efficient clone membership test */
   hash_table *ht;
 
-  predicate_numerator *pred_num;
+  struct predicate_numerator *pred_num;
 };
 typedef struct lattice lattice;
 
@@ -94,6 +95,39 @@ void lattice_insert_class(lattice *lt, class *c);
  * The function returns NULL if the clone is not present in the lattice.
  */
 class *lattice_lookup(const lattice *lt, const clone *cl);
+
+
+
+/******************************************************************************/
+/** Lattice of all clones in P3(2) */
+
+struct predicate_numerator {
+  /* uniq_preds maps a predicate index to the predicate */
+  size_t uniq_sz;
+  pred *uniq_preds;
+  /* reverse index: uniq_pred_idx maps a predicate to its index */
+  size_t *uniq_pred_idx[3];
+};
+typedef struct predicate_numerator predicate_numerator;
+
+predicate_numerator *predicate_numerator_alloc();
+
+void predicate_numerator_free(predicate_numerator *pred_num);
+
+static inline size_t pred_idx(predicate_numerator *pred_num, const pred *p) {
+  assert(p->arity <= 2);
+  return pred_num->uniq_pred_idx[p->arity][p->data];
+}
+
+static inline pred idx_pred(predicate_numerator *pred_num, size_t idx) {
+  assert(idx < pred_num->uniq_sz);
+  return pred_num->uniq_preds[idx];
+}
+
+/** The main algorithm.
+ * Construct the lattice P3(2) of predicates of arity <= 2.
+ */
+void latice_construct(const closure_operator *clop, lattice *lt);
 
 #endif
 

@@ -12,7 +12,6 @@
 #include "binary/bin-common.h"
 #include "closure/closure-straightforward.h"
 #include "closure/closure-two-preds.h"
-#include "algorithms.h"
 
 void test_pred_is_essential() {
   pred p_false, p_true, p_eq0, p_eq1, p_eq2, p_eq, p_neq;

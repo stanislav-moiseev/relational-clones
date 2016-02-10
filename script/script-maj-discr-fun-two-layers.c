@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithms.h"
+#include "algorithm/alg-maj-classes.h"
 #include "binary/bin-maj-lattice.h"
 
 void worker(const maj_layer *layer1, const maj_layer *layer2) {

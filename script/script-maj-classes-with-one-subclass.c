@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "binary/bin-maj-lattice.h"
-#include "algorithms.h"
+#include "algorithm/alg-maj-classes.h"
 
 void test_find_classes_with_one_subclass(const char *fname) {
   FILE *fd = fopen(fname, "rb");
