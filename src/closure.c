@@ -9,11 +9,11 @@
 
 #include "closure.h"
 
-closure_operator *clop_alloc_straight_forward() {
+closure_operator *clop_alloc_straightforward() {
   closure_operator *clop = malloc(sizeof(closure_operator));
   assert(clop);
 
-  clop->type    = clop_straight_forward_t;
+  clop->type    = clop_straightforward_t;
   clop->table2p = NULL;
 
   return clop;
@@ -35,7 +35,7 @@ void clop_free(closure_operator *clop) {
 
 void closure_ops1(const closure_operator *clop, const pred *p1, clone *recruit) {
   switch(clop->type) {
-  case clop_straight_forward_t:
+  case clop_straightforward_t:
     op_permut(p1, recruit);
     op_proj(p1, recruit);
     op_ident(p1, recruit);
@@ -50,7 +50,7 @@ void closure_ops1(const closure_operator *clop, const pred *p1, clone *recruit) 
 
 void closure_ops2(const closure_operator *clop, const pred *p1, const pred *p2, clone *recruit) {
   switch(clop->type) {
-  case clop_straight_forward_t:
+  case clop_straightforward_t:
     op_conj(p1, p2, recruit);
     op6(p1, p2, recruit);
     op_trans(p1, p2, recruit);
@@ -238,7 +238,7 @@ void op_trans(const pred *pred1, const pred *pred2, clone *clone) {
   }
 }
 
-void clone_closure_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
+void closure_clone_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
   clone new_base;
   clone diff;
   clone_copy(suppl, &diff);
@@ -289,12 +289,12 @@ void clone_closure_ex(const closure_operator *clop, const clone *base, const clo
   clone_copy(&new_base, closure);
 }
 
-void clone_closure(const closure_operator *clop, const clone *clone, struct clone *closure) {
+void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure) {
   clone_init(closure);
   
   struct clone empty;
   clone_init(&empty);
-  clone_closure_ex(clop, &empty, clone, closure);
+  closure_clone_ex(clop, &empty, clone, closure);
 }
 
 
@@ -310,7 +310,7 @@ void clone_insert_dummy_preds(clone *cl) {
   clone_insert_pred(cl, &p_eq);
 }
 
-void closure_zero_preds(const closure_operator *clop, clone *closure) {
+void closure_dummy_clone(const closure_operator *clop, clone *closure) {
   clone_init(closure);
   
   clone cl;
@@ -318,7 +318,7 @@ void closure_zero_preds(const closure_operator *clop, clone *closure) {
   
   clone_insert_dummy_preds(&cl);
 
-  clone_closure(clop, &cl, closure);
+  closure_clone(clop, &cl, closure);
 }
 
 void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure) {
@@ -330,7 +330,7 @@ void closure_one_pred(const closure_operator *clop, const pred *p, clone *closur
   clone_insert_dummy_preds(&cl);
   clone_insert_pred(&cl, p);
 
-  clone_closure(clop, &cl, closure);
+  closure_clone(clop, &cl, closure);
 }
 
 closure_table_two_preds *closure_table_two_preds_alloc() {
@@ -351,7 +351,7 @@ void closure_table_two_preds_free(closure_table_two_preds *table) {
 void closure_uniq_ess_preds(clone *cl);
 
 void closure_table_two_preds_construct(closure_table_two_preds *table) {
-  closure_operator *clop = clop_alloc_straight_forward();
+  closure_operator *clop = clop_alloc_straightforward();
 
   clone cl_uniq;
   closure_uniq_ess_preds(&cl_uniq);
@@ -386,7 +386,7 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
 
           /* leave only closure-unique predicates */
           clone closure;
-          clone_closure(clop, &cl, &closure);
+          closure_clone(clop, &cl, &closure);
           clone_intersection(&closure, &cl_uniq, &table->data[ar1][ar2][data1*num2 + data2]);
         }
       }

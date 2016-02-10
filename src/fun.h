@@ -24,19 +24,8 @@ typedef struct fun fun;
  */
 int fun_consistent(const fun *fun);
 
-/** `fun_compute` computes the value of the function on the given
- * list of arguments.
- * `args` should have size == `fun->arity`.
- */
-uint32_t fun_compute(const fun *fun, uint64_t tuple);
-
-/** `fun_init` initializes the function to be equal to zero.
- */
-void fun_init(fun *fun, uint32_t arity);
-
-/** `fun_set_val` sets the value of the function on the given tuple.
- */
-void fun_set_val(fun *fun, uint64_t tuple, uint64_t val);
+/******************************************************************************/
+/** printing and scanning */
 
 /** `fun_print` returns a string contain the values of the function on all input
  * tuples.
@@ -50,6 +39,27 @@ void fun_print_verbosely(FILE *, const fun *fun);
 /** `fun_scan` is the reverse function to `fun_print`.
  */
 void fun_scan(const char *str, fun *fun);
+
+/******************************************************************************/
+/** basic operations */
+
+/** `fun_init` initializes the function to be equal to zero.
+ */
+void fun_init(fun *fun, uint32_t arity);
+
+/** `fun_set_val` sets the value of the function on the given tuple.
+ */
+void fun_set_val(fun *fun, uint64_t tuple, uint64_t val);
+
+/** `fun_compute` computes the value of the function on the given
+ * list of arguments.
+ * `args` should have size == `fun->arity`.
+ */
+uint32_t fun_compute(const fun *fun, uint64_t tuple);
+
+
+/******************************************************************************/
+/** Mathematical properties */
 
 /** `fun_preserves_pred` returns non-zero if the function preserves the
  * predicate.

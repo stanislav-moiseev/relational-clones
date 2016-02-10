@@ -8,6 +8,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "globals.h"
+
+
 /** `popcount32`, and `popcount64` returns the number of 1-bits in `x`.
  */
 static int popcount32(uint32_t x) {
@@ -51,14 +54,6 @@ static void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
   *offset = data / 64;
   *shift  = data % 64;
 }
-
-/** K-valued logic. Global constant
- */
-static const uint32_t K = 3;
-
-/** log2(K) rounded to ceiling */
-static const uint32_t INT_LOG2K = 2;
-
 
 /** `get_digits` represents `x` in the K-ary form, with digits[0] being the
  * highest digit. */

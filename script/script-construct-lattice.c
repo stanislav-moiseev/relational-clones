@@ -32,7 +32,7 @@ void verify(const closure_operator *clop, const char *maj2013, const lattice *lt
     /* In current implementation we store only closure-unique predicates,
      * so we have to expand the clone to all essential predicates */
     clone full_closure;
-    clone_closure(clop, &c->clone, &full_closure);
+    closure_clone(clop, &c->clone, &full_closure);
     
     /* In the previous lattice we do not store predicates false(0) and true(0),
      * that's why we remove them first.

@@ -93,7 +93,7 @@ predicate_numerator *predicate_numerator_alloc() {
   assert(pred_num);
   
   /* construct index for closure-unique predicates */
-  construct_uniq_ess_preds(&pred_num->uniq_preds, &pred_num->uniq_sz);
+  construct_closure_uniq_ess_preds(&pred_num->uniq_preds, &pred_num->uniq_sz);
   
   /* construct reverse index */
   for(uint32_t ar = 0; ar <= 2; ++ar) {
@@ -125,7 +125,7 @@ void predicate_numerator_free(predicate_numerator *pred_num) {
 void closure_uniq_ess_preds(clone *cl) {
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
+  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
 
   clone_init(cl);
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
@@ -134,11 +134,11 @@ void closure_uniq_ess_preds(clone *cl) {
   free(uniq_preds);
 }
 
-void construct_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
-  closure_operator *clop = clop_alloc_straight_forward();
+void construct_closure_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
+  closure_operator *clop = clop_alloc_straightforward();
 
   clone closure_zero;
-  closure_zero_preds(clop, &closure_zero);
+  closure_dummy_clone(clop, &closure_zero);
 
   /* compute the closure of all essential predicates */
   pred *ess_preds;
@@ -201,18 +201,22 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
       clone clone_p;
       clone_init(&clone_p);
       clone_insert_pred(&clone_p, p);
-      clone_closure_ex(clop, &current->clone, &clone_p, &closure);
+      closure_clone_ex(clop, &current->clone, &clone_p, &closure);
     } else {
       /* if the current clone has a parent, compute the closure <{p} ∪ current>
-       * using the result of the closure of `p` and its parent. */
+       * using the result of the closure of `p` and its parent:
+       * <{p}∪current> == <<{p}∪parent> ∪ (current\parent)> ==
+       *               == <<{p}∪parent> ∪ (current\parent\<{p}∪parent>)> */
+      
+      /* parent_p == <{p}∪parent> */
       class *parent_p = class_get_child(current->parent, p);
       /* the closure <{p} ∪ parent> should have already been computed */
       assert(parent_p != NULL);
-      /* <{p}∪current> == <<{p}∪parent> ∪ (current\parent)> ==
-       *               == <<{p}∪parent> ∪ (current\parent\<{p}∪parent>)> */
-      clone tmp;        /* tmp == (current\parent) \ <{p}∪parent> */
+      /* tmp == (current\parent) \ <{p}∪parent> */
+      clone tmp;
       clone_diff(&current->diff_parent, &parent_p->clone, &tmp);
-      clone_closure_ex(clop, &parent_p->clone, &tmp, &closure);
+      
+      closure_clone_ex(clop, &parent_p->clone, &tmp, &closure);
     }
 
     /* test if we've constructed a new class */
@@ -257,14 +261,14 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
 void latice_construct(const closure_operator *clop, lattice *lt) {
   /* start from a lattice containing just one clone */
   class *top = class_alloc(lt);
-  closure_zero_preds(clop, &top->clone);
+  closure_dummy_clone(clop, &top->clone);
   lattice_insert_class(lt, top);
 
   /* factorize all essential predicates by their closure
    * and select predicates with unique closure */
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
+  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
 
   int idx = 0;
   /* iteratively construct new classes */

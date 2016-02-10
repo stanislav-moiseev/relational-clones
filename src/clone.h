@@ -12,13 +12,13 @@
 #define CLONE_DATA2_SIZE 8
 
 struct clone {
-  /* predicates of arity 2 */
+  /* predicates of arity 2
+   * data2 should be 32 byte aligned to support AVX instructions in clone_union. */
   uint64_t data2[CLONE_DATA2_SIZE];
-  
-  /* predicates of arity 0 */
-  uint32_t data0;
   /* predicates of arity 1 */
   uint32_t data1;
+  /* predicates of arity 0 */
+  uint32_t data0;
 } __attribute__ ((aligned (32)));
 
 typedef struct clone clone;
@@ -28,6 +28,10 @@ typedef struct clone clone;
  * enough bits to store the predicates of arity <= 2.
  */
 int clone_consistent(const clone *clone);
+
+
+/******************************************************************************/
+/** printing functions */
 
 /** `clone_fingerprint_size` return the minimum buffer size required 
  * to write the clone fingerprint name.
@@ -43,6 +47,10 @@ void clone_print_fingerprint(char *str, const clone *clone);
  * `clone`.
  */
 void clone_print_verbosely(FILE *fd, const clone *clone);
+
+
+/******************************************************************************/
+/** operations over clones and predicates */
 
 /** `clone_insert_pred` inserts the predicate to the predicate set.
  */
@@ -60,24 +68,51 @@ int clone_test_pred(const clone *clone, const pred *pred);
  */
 uint64_t clone_cardinality(const clone *clone);
 
+
+/******************************************************************************/
+/** operations over clones */
+
+/** `clone_init` initializes the clone to be an empty clone.
+ */
 void clone_init(clone *clone);
+
+/** `clone_copy` copies `clone` to `copy`.
+ */
+void clone_copy(const clone *clone, struct clone *copy);
+
+/** `clone_union` computes the union of two clones and write the result to the
+ * third clone.
+ */
+void clone_union(const clone *clone1, const clone *clone2, clone *clone);
+
+void clone_intersection(const clone *clone1, const clone *clone2, clone *clone);
+
+/** `clone_diff` computes the difference of two clones and write the result to
+ * the third clone.
+ */
+void clone_diff(const clone *clone1, const clone *clone2, clone *clone);
+
+
+/******************************************************************************/
+/** relations over clones */
 
 /** `clone_is_empty` returns non-zero if the clone is empty.
  */
 int clone_is_empty(const clone *clone);
 
-/** `clone_get_predicates` stores all clone's predicates to the `pred_list`;
- * the number of predicates having been stored is written to `*size`.
- * The function allocates an array large enough to hold all the predicates.
- * The pointer should be free'd to release the storage.
- * On success, `clone_get_predicates` returns non-zero.
+/** `clone_eq` returns non-zero if two clones are equal.
  */
-void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
+int clone_eq(const clone *clone1, const clone *clone2);
+
+/** `clone_subset` returns non-zero if `clone1` is a subset of `clone2`.
+ */
+int clone_subset(const clone *clone1, const clone *clone2);
 
 
 /******************************************************************************/
 /** clone iterators */
 
+/** clone_iterator makes possible to iterate over all predicates of the clone. */
 struct clone_iterator {
   const clone *clone;
   int64_t offset;
@@ -92,35 +127,18 @@ int clone_iterator_end(const clone *clone, clone_iterator *it);
 
 void clone_iterator_next(clone_iterator *it);
 
+/** `clone_iterator_deref` returns the predicate the iterator is currently
+    pointing to. */
 pred clone_iterator_deref(const clone_iterator *it);
 
-
-/******************************************************************************/
-/** operations over clones */
-
-/** `clone_eq` returns non-zero if two clones are equal.
+/** `clone_get_predicates` stores all clone's predicates to the `pred_list`;
+ * the number of predicates having been stored is written to `*size`.
+ * The function allocates an array large enough to hold all the predicates.
+ * The pointer should be free'd to release the storage.
+ * On success, `clone_get_predicates` returns non-zero.
  */
-int clone_eq(const clone *clone1, const clone *clone2);
+void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size);
 
-/** `clone_copy` copies `clone` to `copy`.
- */
-void clone_copy(const clone *clone, struct clone *copy);
-
-/** `clone_subset` returns non-zero if `clone1` is a subset of `clone2`.
- */
-int clone_subset(const clone *clone1, const clone *clone2);
-
-/** `clone_union` computes the union of two clones and write the result to the
- * third clone.
- */
-void clone_union(const clone *clone1, const clone *clone2, clone *clone);
-
-void clone_intersection(const clone *clone1, const clone *clone2, clone *clone);
-
-/** `clone_diff` computes the difference of two clones and write the result to
- * the third clone.
- */
-void clone_diff(const clone *clone1, const clone *clone2, clone *clone);
 
 #endif
 

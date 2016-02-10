@@ -1,5 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
+ *
+ * Simple chaining hash table with fixed capacity.
  ******************************************************************************/
 
 #ifndef HASHTABLE_H
@@ -16,9 +18,8 @@ struct hash_elem {
 };
 typedef struct hash_elem hash_elem;
 
-/** Simple chaining hash table with fixed capacity.
- */
 struct hash_table {
+  /* the capacity is determined at hash table creation and cannot be increased */
   size_t capacity;
 
   /* key hashing function */

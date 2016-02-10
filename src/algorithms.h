@@ -47,8 +47,11 @@ int pred_preserves_majority(const pred *p);
  */
 void closure_uniq_ess_preds(clone *cl);
 
-void construct_uniq_ess_preds(pred **uniq_preds, size_t *uniq_sz);
+void construct_closure_uniq_ess_preds(pred **uniq_preds, size_t *uniq_sz);
 
+/** The main algorithm.
+ * Construct the lattice P3(2) of predicates of arity <= 2.
+ */
 void latice_construct(const closure_operator *clop, lattice *lt);
 
 #endif

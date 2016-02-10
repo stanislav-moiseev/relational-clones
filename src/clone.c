@@ -143,18 +143,11 @@ void clone_init(clone *clone) {
   }
 }
 
-int clone_is_empty(const clone *clone) {
-  if(clone->data0) return 0;
-  if(clone->data1) return 0;
-  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    if(clone->data2[offset]) return 0;
-  }
-  return 1;
-}
+/******************************************************************************/
+/** clone iterators */
 
 void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size) {
-  /* TODO: use actual size of clone here, not the maximum possible */
-  *pred_list = malloc((2 + int_pow2(K) + int_pow2(K*K)) * sizeof(pred));
+  *pred_list = malloc(clone_cardinality(clone) * sizeof(pred));
   assert(*pred_list != NULL);
   
   uint64_t _size = 0;
@@ -168,10 +161,6 @@ void clone_get_predicates(const clone *clone, pred **pred_list, uint64_t *size) 
 
   if(size != NULL) *size = _size;
 }
-
-
-/******************************************************************************/
-/** clone iterators */
 
 clone_iterator clone_iterator_begin(const clone *clone) {
   clone_iterator it = { .clone = clone,
@@ -240,7 +229,17 @@ pred clone_iterator_deref(const clone_iterator *it) {
 
 
 /******************************************************************************/
-/** operations over clones */
+/** relations over clones */
+
+
+int clone_is_empty(const clone *clone) {
+  if(clone->data0) return 0;
+  if(clone->data1) return 0;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    if(clone->data2[offset]) return 0;
+  }
+  return 1;
+}
 
 int clone_eq(const clone *clone1, const clone *clone2) {
   if(clone1->data0 != clone2->data0) return 0;
@@ -249,14 +248,6 @@ int clone_eq(const clone *clone1, const clone *clone2) {
     if(clone1->data2[offset] != clone2->data2[offset]) return 0;
   }
   return 1;
-}
-
-void clone_copy(const clone *clone, struct clone *copy) {
-  copy->data0 = clone->data0;
-  copy->data1 = clone->data1;
-  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    copy->data2[offset] = clone->data2[offset];
-  }  
 }
 
 int clone_subset(const clone *clone1, const clone *clone2) {
@@ -268,14 +259,20 @@ int clone_subset(const clone *clone1, const clone *clone2) {
   return 1;
 }
 
-void clone_union(const clone *clone1, const clone *clone2, clone *clone) {
-  /* clone->data0 = clone1->data0 | clone2->data0; */
-  /* clone->data1 = clone1->data1 | clone2->data1; */
-  __m128i xmm1 = _mm_load_si128((__m128i *)&clone1->data0);
-  __m128i xmm2 = _mm_load_si128((__m128i *)&clone2->data0);
-  __m128i xmm3 = _mm_or_si128(xmm1, xmm2);
-  _mm_store_si128((__m128i *)&clone->data0, xmm3);
+/******************************************************************************/
+/** operations over clones */
 
+void clone_copy(const clone *clone, struct clone *copy) {
+  copy->data0 = clone->data0;
+  copy->data1 = clone->data1;
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    copy->data2[offset] = clone->data2[offset];
+  }  
+}
+
+void clone_union(const clone *clone1, const clone *clone2, clone *clone) {
+  clone->data0 = clone1->data0 | clone2->data0;
+  clone->data1 = clone1->data1 | clone2->data1;
   for(int64_t offset = 1; offset >= 0; --offset) {
     __m256i ymm1 = _mm256_load_si256((__m256i *)&clone1->data2 + offset);
     __m256i ymm2 = _mm256_load_si256((__m256i *)&clone2->data2 + offset);

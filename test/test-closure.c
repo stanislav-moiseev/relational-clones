@@ -62,14 +62,14 @@ void test_pred_num_essential_preds() {
 void test_pred_num_closure_uniq_preds() {
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_uniq_ess_preds(&uniq_preds, &uniq_sz);
+  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
   assert(uniq_sz == 251-1);       /* "minus one" because we do not count dummy
                                    * predicate zero(0) as closure-unique */
   free(uniq_preds);
 }
 
 void test_clone_closure1() {
-  closure_operator *clop = clop_alloc_straight_forward();
+  closure_operator *clop = clop_alloc_straightforward();
 
   pred p_false, p_true, p_eq0, p_eq1, p_eq2, p_eq, p_neq;
   assert(pred_construct(0, "0", &p_false));
@@ -90,11 +90,11 @@ void test_clone_closure1() {
   clone_insert_pred(&clone, &p_eq2);
 
   struct clone closure;
-  clone_closure(clop, &clone, &closure);
+  closure_clone(clop, &clone, &closure);
   assert(clone_eq(&clone, &closure));
 
   clone_insert_pred(&clone, &p_neq);
-  clone_closure(clop, &clone, &closure);
+  closure_clone(clop, &clone, &closure);
   for(clone_iterator it = clone_iterator_begin(&closure); !clone_iterator_end(&closure, &it); clone_iterator_next(&it)) {
     pred pred = clone_iterator_deref(&it);
     assert(pred_is_essential(&pred));
@@ -104,7 +104,7 @@ void test_clone_closure1() {
 }
 
 void test_clone_closure2() {
-  closure_operator *clop = clop_alloc_straight_forward();
+  closure_operator *clop = clop_alloc_straightforward();
 
   pred p3_1_1, p3_1_3, p3_2_b, p3_2_11;
   pred_construct(1, "001", &p3_1_1);
@@ -116,7 +116,7 @@ void test_clone_closure2() {
   clone_init(&cl);
   clone_insert_dummy_preds(&cl);
   clone_insert_pred(&cl, &p3_2_b);
-  clone_closure(clop, &cl, &closure);
+  closure_clone(clop, &cl, &closure);
 
   clone_init(&expected_closure);
   clone_insert_dummy_preds(&expected_closure);
