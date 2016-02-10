@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "closure.h"
+#include "pred-essential.h"
 
 /** Closure operator that computes elementary operation directly:
  *     - op_permut(1), op_proj(1), op_ident(1);

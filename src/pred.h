@@ -96,18 +96,4 @@ static inline int pred_compute(const pred *pred, uint64_t tuple) {
 }
 
 
-/******************************************************************************/
-/** Mathematical properties */
-
-/** `pred_is_essential` returns non-zero if the predicate is an essential Zhuk
- *  predicate.
- */
-int pred_is_essential(const pred *pred);
-
-/** `all_essential_predicates` returns a clone containing the set of all
- * essential predicates of arity <= max_arity.
- */
-void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size);
-
-
 #endif

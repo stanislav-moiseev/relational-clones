@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "closure.h"
+#include "pred-essential.h"
 
 /** Closure operator that uses a precomputed table of closure of pairs of
  * predicates to efficiently compute the closure of the given clone.
@@ -21,21 +22,6 @@
 closure_operator *clop_two_preds_read(const char *fname);
 
 closure_operator *clop_two_preds_construct();
-
-
-/******************************************************************************/
-/** Closure-unique essential predicates */
-
-/** `closure_uniq_ess_preds` returns a clone contain all closure-unique
- * essential predicates of arity <= 2 except predicates that are equivalient
- * to dummy clone {false(0), true(1), eq(2)}.
- *
- * Two essential predicates p1 and p2 are called /closure-equivalent/
- * if <false(0), true(1), eq(2), p1}> == <false(0), true(1), eq(2), p2}>.
- */
-void closure_uniq_ess_preds(clone *cl);
-
-void construct_closure_uniq_ess_preds(pred **uniq_preds, size_t *uniq_sz);
 
 
 /******************************************************************************/
