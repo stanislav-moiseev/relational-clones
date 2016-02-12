@@ -46,9 +46,9 @@ struct class {
    * `ar` to a result of closure <{p} ∪ this_clone>
    *
    * To minimize the memory consumption, but store only a part of the table for
-   * a minimal set of 250 closure-unique predicates here (except one "dummy"
-   * predicate zero(0)). The exact predicates and their numbering scheme is
-   * determined by the lattice predicate numerator. */
+   * a minimal set of 251 closure-unique predicates of arity <= 2 here.
+   * The exact predicates and their numbering scheme is determined by the
+   * lattice predicate numerator. */
   struct class **children;
 } __attribute__ ((aligned (32)));
 

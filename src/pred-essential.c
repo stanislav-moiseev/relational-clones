@@ -121,9 +121,6 @@ void closure_uniq_ess_preds(clone *cl) {
 void construct_closure_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
   closure_operator *clop = clop_alloc_straightforward();
 
-  clone closure_zero;
-  closure_dummy_clone(clop, &closure_zero);
-
   /* compute the closure of all essential predicates */
   pred *ess_preds;
   size_t num_ess_preds;
@@ -139,9 +136,6 @@ void construct_closure_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
   for(pred *p = ess_preds; p < ess_preds + num_ess_preds; ++p) {
     clone p_closure;
     closure_one_pred(clop, p, &p_closure);
-
-    /* we omit predicates equivalent to the top class {false(0), true(1), eq(2)} */
-    if(clone_eq(&p_closure, &closure_zero)) continue;
 
     size_t j;
     for(j = 0; j < uniq_sz; ++j) {

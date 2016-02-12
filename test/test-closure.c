@@ -64,8 +64,7 @@ void test_pred_num_closure_uniq_preds() {
   pred *uniq_preds;
   size_t uniq_sz;
   construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
-  assert(uniq_sz == 251-1);       /* "minus one" because we do not count dummy
-                                   * predicate zero(0) as closure-unique */
+  assert(uniq_sz == 251);
   free(uniq_preds);
 }
 

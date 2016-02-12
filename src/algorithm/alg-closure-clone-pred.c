@@ -216,8 +216,8 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
   int idx = 0;
   /* iteratively construct new classes */
   for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-    printf("%d\t %lu\n", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
+    printf("%d\t %lu\n", idx, lt->num_classes);
     ++idx;
   }
 

@@ -38,8 +38,8 @@ void verify(const char *table2p_name, const char *maj2013, const lattice *lt) {
     clone full_closure;
     closure_clone(clop, &c->clone, &full_closure);
     
-    /* In the previous lattice we do not store predicates false(0) and true(0),
-     * that's why we remove them first.
+    /* In the previous lattice (maj'2013) we did not store predicates false(0)
+     * and true(0), that's why we remove them first.
      */
     clone copy;
     clone_copy(&full_closure, &copy);
@@ -49,7 +49,6 @@ void verify(const char *table2p_name, const char *maj2013, const lattice *lt) {
     clone_remove_pred(&copy, &p_false);
     clone_remove_pred(&copy, &p_true);
 
-    /* assert(maj_lattice_member(&maj_lattice, &copy)); */
     if(!maj_lattice_member(&maj_lattice, &copy)) {
       printf("\nError: the following clone has not been found in maj'2013 lattice:\n");
       clone_print_verbosely(stdout, &c->clone);
