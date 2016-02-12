@@ -29,6 +29,10 @@ typedef struct clone clone;
  */
 int clone_consistent(const clone *clone);
 
+/** `clone_hash` is a 32-bit hashing function for clones.
+ */
+uint32_t clone_hash(const void *clone);
+
 
 /******************************************************************************/
 /** printing functions */

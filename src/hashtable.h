@@ -18,31 +18,52 @@ struct hash_elem {
 };
 typedef struct hash_elem hash_elem;
 
-struct hash_table {
+struct hashtable {
   /* the capacity is determined at hash table creation and cannot be increased */
   size_t capacity;
 
   /* key hashing function */
-  uint32_t (*hash) (const void *);
+  uint32_t (*hash) (const void *key);
 
   /* key comparison function */
-  int (*eq) (const void *, const void *);
+  int (*eq) (const void *key1, const void *key2);
 
   /* an array of pointers to hash_elem */
   hash_elem **table;
 };
-typedef struct hash_table hash_table;
+typedef struct hashtable hashtable;
 
-hash_table *hash_table_alloc(size_t capacity,
+hashtable *hashtable_alloc(size_t capacity,
                              uint32_t (*hash) (const void *),
-                             int (*eq) (const void *, const void *));
+                           int (*eq) (const void *, const void *));
 
-void hash_table_free(hash_table *ht);
+void hashtable_free(hashtable *ht);
 
-void hash_table_insert(hash_table *ht, const void *key, const void *value);
+/** `hash_table_insert` inserts an element to the hash table. If the element is
+ * already in the hash table, this function will insert its copy. */
+void hashtable_insert(hashtable *ht, const void *key, const void *value);
 
-void *hash_table_lookup(const hash_table *ht, const void *key);
+void *hashtable_lookup(const hashtable *ht, const void *key);
 
-unsigned hash_table_max_chain(const hash_table *ht);
+unsigned hashtable_max_chain(const hashtable *ht);
+
+
+/******************************************************************************/
+/** Hash table iterators */
+
+struct hashtable_iterator {
+  const hashtable *ht;
+  hash_elem *elem;
+  hash_elem **elemp;
+};
+typedef struct hashtable_iterator hashtable_iterator;
+
+hashtable_iterator hashtable_iterator_begin(const hashtable *ht);
+
+int hashtable_iterator_end(hashtable_iterator *it);
+
+void hashtable_iterator_next(hashtable_iterator *it);
+
+hash_elem *hashtable_iterator_deref(const hashtable_iterator *it);
 
 #endif

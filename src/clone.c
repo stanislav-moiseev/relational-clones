@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "pred.h"
 #include "clone.h"
+#include "fast-hash/fasthash.h"
 
 int clone_consistent(const clone *clone) {
   /* arity == 0 */
@@ -20,6 +21,10 @@ int clone_consistent(const clone *clone) {
   /* arity == 2 */
   if(int_pow2(K*K) > 64*CLONE_DATA2_SIZE) return 0;
   return 1;
+}
+
+uint32_t clone_hash(const void *cl) {
+  return fasthash32(cl, 8+8*CLONE_DATA2_SIZE, 0);
 }
 
 size_t clone_fingerprint_size() {
@@ -56,11 +61,9 @@ void clone_print_verbosely(FILE *fd, const clone *clone) {
   pred *pred_list;
   clone_get_predicates(clone, &pred_list, &size);
   for(int64_t i = 0; i < size; ++i) {
-    char str[pred_fingerprint_size()];
-    char str2[pred_print_extensional_size()];
-    pred_print_fingerprint(str, &pred_list[i]);
-    pred_print_extensional(str2, &pred_list[i]);
-    fprintf(fd, "%s: \t%s\n", str, str2);
+    fprintf(fd, "%s: \t%s\n",
+            pred_print_fingerprint(&pred_list[i]),
+            pred_print_extensional_ex(&pred_list[i]));
   }
   free(pred_list);
 }

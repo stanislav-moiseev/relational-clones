@@ -54,6 +54,7 @@ SCRIPTS =								\
 	script/script-maj-discr-fun-two-layers.out			\
 	script/script-maj-classes-with-one-subclass.out			\
 	script/script-maj-classes-with-one-subclass-discr-fun.out	\
+	script/script-pred-equivalence-classes.out			\
 	script/script-closure-two-preds.out				\
 	script/script-construct-lattice.out				\
 

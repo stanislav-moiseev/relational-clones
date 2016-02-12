@@ -37,26 +37,32 @@ int pred_consistent(const pred *pred);
  */
 int pred_construct(uint32_t arity, const char *str, pred *pred);
 
-/** `pred_fingerprint_size` return the minimum buffer size for
- *  `pred_print_fingerprint`.
- */
-size_t pred_fingerprint_size();
-
 /** `pred_print` prints the short name of the predicate.
  * The short name contains `k`, `pred->arity` and a string representation
  * of `pred->data` (in hexadecimal format, without preceding zeros).
+ *
+ * The function returns a pointer to a statically allocated memory region.
+ * The contents of the string will be updated on next function call.
  */
-void pred_print_fingerprint(char *str, const pred *pred);
+const char *pred_print_fingerprint(const pred *pred);
 
 /** `pred_extensional_size` return the minimum buffer size for
  *  `pred_print_extensional`.
  */
 size_t pred_print_extensional_size();
 
-/** `pred_print_extensional` prints the predicate's extensional.
+/** `pred_print_extensional` prints a vector of 0s and 1s representing 
+ * to the values of the predicate of the corresponding tuples,
+ * starting from the largest tuple <k-1,...,k-1>.
  */
 void pred_print_extensional(char *str, const pred *pred);
 
+/** The function pretty prints all the tuples from the predicate.
+ *
+ * The function returns a pointer to a statically allocated memory region.
+ * The contents of the string will be updated on next function call.
+ */
+const char *pred_print_extensional_ex(const pred *p);
 
 /******************************************************************************/
 /** basic operations */

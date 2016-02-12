@@ -56,7 +56,9 @@ static void get_offset_shift(uint64_t data, uint64_t *offset, uint64_t *shift) {
 }
 
 /** `get_digits` represents `x` in the K-ary form, with digits[0] being the
- * highest digit. */
+ * highest digit.
+ *
+ * `digits` should be at least of size `arity` */
 static void get_K_digits(uint32_t digits[], uint32_t arity, size_t x) {
   for(int j = arity - 1; j >= 0; --j) {
     digits[j] = x % K;

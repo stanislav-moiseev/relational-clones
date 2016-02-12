@@ -10,10 +10,10 @@
 #include "utils.h"
 #include "hashtable.h"
 
-hash_table *hash_table_alloc(size_t capacity,
-                             uint32_t (*hash) (const void *),
-                             int (*eq) (const void *, const void *)) {
-  hash_table *ht = malloc(sizeof(hash_table));
+hashtable *hashtable_alloc(size_t capacity,
+                           uint32_t (*hash) (const void *),
+                           int (*eq) (const void *, const void *)) {
+  hashtable *ht = malloc(sizeof(hashtable));
   assert(ht);
   /* capacity must be power of 2 */
   ht->capacity = int_pow2(int_log(2, 2*capacity));
@@ -25,7 +25,7 @@ hash_table *hash_table_alloc(size_t capacity,
   return ht;
 }
 
-void hash_table_free(hash_table *ht) {
+void hashtable_free(hashtable *ht) {
   for(hash_elem **elemp = ht->table; elemp < ht->table + ht->capacity; ++elemp) {
     hash_elem *elem = *elemp;
     while(elem != NULL) {
@@ -38,7 +38,7 @@ void hash_table_free(hash_table *ht) {
   free(ht);
 }
 
-void hash_table_insert(hash_table *ht, const void *key, const void *value) {
+void hashtable_insert(hashtable *ht, const void *key, const void *value) {
   uint32_t hash = ht->hash(key);
   hash_elem *prev = ht->table[hash & (ht->capacity - 1)];
   hash_elem *elem = malloc(sizeof(hash_elem));
@@ -49,7 +49,7 @@ void hash_table_insert(hash_table *ht, const void *key, const void *value) {
   ht->table[hash & (ht->capacity - 1)] = elem;
 }
 
-void *hash_table_lookup(const hash_table *ht, const void *key) {
+void *hashtable_lookup(const hashtable *ht, const void *key) {
   uint32_t hash = ht->hash(key);
   hash_elem *elem = ht->table[hash & (ht->capacity - 1)];
   while(elem != NULL) {
@@ -59,7 +59,7 @@ void *hash_table_lookup(const hash_table *ht, const void *key) {
   return NULL;
 }
 
-unsigned hash_table_max_chain(const hash_table *ht) {
+unsigned hashtable_max_chain(const hashtable *ht) {
   int max = 0;
   for(hash_elem **elemp = ht->table; elemp < ht->table + ht->capacity; ++elemp) {
     int m = 0;
@@ -73,3 +73,36 @@ unsigned hash_table_max_chain(const hash_table *ht) {
   return max;
 }
 
+
+/******************************************************************************/
+/** Hash table iterators */
+
+hashtable_iterator hashtable_iterator_begin(const hashtable *ht) {
+  hashtable_iterator it = { .ht    = ht,
+                            .elem  = NULL,
+                            .elemp = ht->table - 1 };
+  hashtable_iterator_next(&it);
+  return it;
+}
+
+int hashtable_iterator_end(hashtable_iterator *it) {
+  if(it->elemp == it->ht->table + it->ht->capacity) return 1;
+  else return 0;
+}
+
+void hashtable_iterator_next(hashtable_iterator *it) {
+  if(it->elem != NULL) { it->elem = it->elem->next; }
+  
+  if(it->elem == NULL) {
+    do {
+      ++it->elemp;
+    } while(it->elemp < it->ht->table + it->ht->capacity && *it->elemp == NULL);
+    if(it->elemp < it->ht->table + it->ht->capacity) {
+      it->elem = *it->elemp;
+    }
+  }
+}
+
+hash_elem *hashtable_iterator_deref(const hashtable_iterator *it) {
+  return it->elem;
+}

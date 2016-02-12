@@ -9,7 +9,6 @@
 
 #include "algorithm/alg-closure-clone-pred.h"
 #include "pred-essential.h"
-#include "fast-hash/fasthash.h"
 
 class *class_alloc(const lattice *lt) {
   class *c = aligned_alloc(32, sizeof(class));
@@ -47,21 +46,13 @@ void class_set_child(class *parent, const pred *p, class *child) {
   parent->children[pred_idx(parent->lattice->pred_num, p)] = child;
 }
 
-static uint32_t clone_hash(const void *cl) {
-  return fasthash32(cl, 8+8*CLONE_DATA2_SIZE, 0);
-}
-
-static int class_eq_clone(const void *c1, const void *c2) {
-  return clone_eq((const clone *)c1, (const clone *)c2);
-}
-
 lattice *lattice_alloc() {
   lattice *lt = malloc(sizeof(lattice));
   assert(lt);
   lt->num_classes = 0;
   lt->capacity    = 2<<20;
   lt->classes     = malloc(lt->capacity * sizeof(class *));
-  lt->ht          = hash_table_alloc(lt->capacity, clone_hash, class_eq_clone);
+  lt->ht          = hashtable_alloc(2*lt->capacity, clone_hash, (int (*)(const void *, const void *))clone_eq);
   lt->pred_num    = predicate_numerator_alloc();
   return lt;
 }
@@ -71,7 +62,7 @@ void lattice_free(lattice *lt) {
     class_free(*c);
   }
   free(lt->classes);
-  hash_table_free(lt->ht);
+  hashtable_free(lt->ht);
   predicate_numerator_free(lt->pred_num);
   free(lt);
 }
@@ -86,11 +77,11 @@ void lattice_insert_class(lattice *lt, class *c) {
   lt->classes[lt->num_classes] = c;
   ++lt->num_classes;
 
-  hash_table_insert(lt->ht, &c->clone, c);
+  hashtable_insert(lt->ht, &c->clone, c);
 }
 
 class *lattice_lookup(const lattice *lt, const clone *cl) {
-  return hash_table_lookup(lt->ht, cl);
+  return hashtable_lookup(lt->ht, cl);
 }
 
 predicate_numerator *predicate_numerator_alloc() {

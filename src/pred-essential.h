@@ -30,7 +30,7 @@ void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size
  * essential predicates of arity <= 2.
  *
  * Two essential predicates p1 and p2 are called /closure-equivalent/
- * if <false(0), true(1), eq(2), p1}> == <false(0), true(1), eq(2), p2}>.
+ * if <false(0), true(0), eq(2), p1}> == <false(0), true(0), eq(2), p2}>.
  */
 void closure_uniq_ess_preds(clone *cl);
 

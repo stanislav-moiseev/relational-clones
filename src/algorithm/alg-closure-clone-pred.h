@@ -88,7 +88,7 @@ struct lattice {
 
   /* A hash table to support efficient clone membership test.
    * See `lattice_lookup` */
-  hash_table *ht;
+  hashtable *ht;
 
   /* A structure that enumerates all closure-unique predicates with natural
    * numbers (pred_idx_t). The numbering is used in clone-predicate closure
