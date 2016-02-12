@@ -18,7 +18,7 @@ class *class_alloc(const lattice *lt) {
   c->lattice = lt;
   c->parent = NULL;
   clone_init(&c->diff_parent);
-  clone_init(&c->basis);
+  clone_init(&c->generator);
   clone_init(&c->clone);
   
   c->children = malloc(lt->pred_num->uniq_sz * sizeof(class *)); 
@@ -170,8 +170,8 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
       child = class_alloc(lt);
       child->parent = current;
       clone_diff(&closure, &current->clone, &child->diff_parent);
-      clone_copy(&current->basis, &child->basis);
-      clone_insert_pred(&child->basis, p);
+      clone_copy(&current->generator, &child->generator);
+      clone_insert_pred(&child->generator, p);
       clone_copy(&closure, &child->clone);
       lattice_insert_class(lt, child);
     } else {
@@ -219,7 +219,6 @@ void latice_construct(const closure_operator *clop, lattice *lt) {
     printf("%d\t %lu\n", idx, lt->num_classes);
     lattice_construct_step(clop, lt, p);
     ++idx;
-    if(idx == 75) return;
   }
 
   free(uniq_preds);

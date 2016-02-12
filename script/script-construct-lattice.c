@@ -13,7 +13,9 @@
 #include "closure/closure-two-preds.h"
 #include "algorithm/alg-closure-clone-pred.h"
 
-void verify(const closure_operator *clop, const char *maj2013, const lattice *lt) {
+void verify(const char *table2p_name, const char *maj2013, const lattice *lt) {
+  closure_operator *clop = clop_two_preds_read(table2p_name);
+
   FILE *fd = fopen(maj2013, "rb");
   assert(fd != NULL);
 
@@ -62,39 +64,36 @@ void verify(const closure_operator *clop, const char *maj2013, const lattice *lt
     }
   }
 
-  printf("\n%lu maj classes have been found.\n", num_maj_classes);
+  printf("\n%lu classes with majority have been found.\n", num_maj_classes);
 
   maj_lattice_free(&maj_lattice);
+  clop_free(clop);
   fclose(fd);
 }
 
-void construct_lattice(const char *table2p_name, const char *table2p_uniq_name, const char *maj2013) {
+lattice *construct_lattice(const char *table2p_uniq_name) {
   closure_operator *clop = clop_two_preds_read(table2p_uniq_name);
 
   lattice *lt = lattice_alloc();
   latice_construct(clop, lt);
-
-  /* { */
-  /*   FILE *fd = fopen(table2p_name, "rb"); */
-  /*   assert(fd); */
-    
-  /*   closure_table_two_preds *table2p = closure_table_two_preds_alloc(); */
-  /*   closure_two_preds_read(fd, table2p); */
-
-  /*   closure_operator *clop = clop_alloc_table_two_preds(table2p); */
-
-  /*   printf("verification:\t"); fflush(stdout); */
-  /*   verify(clop, maj2013, lt); */
-  /* } */
-
+  return lt;
+  
   lattice_free(lt);
   clop_free(clop);
 }
 
 int main() {
   printf("script-construct-lattice:\n"); fflush(stdout);
-  construct_lattice("data/closure-two-preds.2016",
-                    "data/closure-two-uniq-preds.2016",
-                    "data/all-maj.2016");
+  time_t t0 = time(NULL);
+  lattice *lt = construct_lattice("data/closure-two-uniq-preds.2016");
+  printf("%.2f min\n\n", difftime(time(NULL), t0) / 60.);
+  printf("Ok.\n");
+
+  printf("verification:\t"); fflush(stdout);
+  time_t t1 = time(NULL);
+  verify("data/closure-two-preds.2016",
+         "data/all-maj.2016",
+         lt);
+  printf("%.2f min\n", difftime(time(NULL), t1) / 60.);
   printf("Ok.\n");
 }

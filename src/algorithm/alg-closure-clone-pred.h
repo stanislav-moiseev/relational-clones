@@ -10,7 +10,7 @@
 #include "globals.h"
 #include "closure.h"
 
-/** Each class requires approx. 4KiB memory to store the predicate-clone closure
+/** Each class requires approx. 2KiB memory to store the predicate-clone closure
     table. */
 struct class {
   const struct lattice *lattice;
@@ -24,18 +24,31 @@ struct class {
    * current clone and the parent is the smallest. */
   struct class *parent;
   
-  /* `diff_parent` is a difference between current clone and its parent;
-   * it is used to optimize the computation of the closure of the union <p ∪ clone>. */
+  /* `diff_parent` is a difference between current clone and its parent.
+   * It is used to optimize the computation of the closure of the union
+   * <p ∪ clone>. */
   clone diff_parent;
 
-  /* A "basis" set of the clone in a sense that <basis> == clone
-   * Note that the elements of the basis set are not necessary independent. */
-  clone basis;
+  /* A generator of the clone is a set of predicates such that
+   *    <generator> == clone.
+   *
+   * The generator reflects the way how the clone was constructed. Given that
+   * for each predicate clone there can be many generator; the exact contents of
+   * the generator is determined by the lattice construction procedure and
+   * depends on the implementation. The elements of the generator are not
+   * necessary independent. */
+  clone generator;
+
+  /* A closed set of predicates, a closure of the generator. */
   clone clone;
 
-  /* A predicate-clone closure table.
-   * table[ar] maps a predicate `p` of arity `ar` to a result of closure
-   *    <{p} ∪ clone> */
+  /* A clone-predicate closure table. table[ar] maps a predicate `p` of arity
+   * `ar` to a result of closure <{p} ∪ this_clone>
+   *
+   * To minimize the memory consumption, but store only a part of the table for
+   * a minimal set of 250 closure-unique predicates here (except one "dummy"
+   * predicate zero(0)). The exact predicates and their numbering scheme is
+   * determined by the lattice predicate numerator. */
   struct class **children;
 } __attribute__ ((aligned (32)));
 
@@ -73,9 +86,13 @@ struct lattice {
    * is inserted to the lattice. */
   size_t capacity;
 
-  /* A hash table to support efficient clone membership test */
+  /* A hash table to support efficient clone membership test.
+   * See `lattice_lookup` */
   hash_table *ht;
 
+  /* A structure that enumerates all closure-unique predicates with natural
+   * numbers (pred_idx_t). The numbering is used in clone-predicate closure
+   * table. */
   struct predicate_numerator *pred_num;
 };
 typedef struct lattice lattice;
@@ -97,16 +114,18 @@ void lattice_insert_class(lattice *lt, class *c);
 class *lattice_lookup(const lattice *lt, const clone *cl);
 
 
-
 /******************************************************************************/
-/** Lattice of all clones in P3(2) */
+typedef size_t pred_idx_t;
 
 struct predicate_numerator {
-  /* uniq_preds maps a predicate index to the predicate */
+  /* Number of predicates. */
   size_t uniq_sz;
+  
+  /* uniq_preds maps a predicate index to the predicate. */
   pred *uniq_preds;
-  /* reverse index: uniq_pred_idx maps a predicate to its index */
-  size_t *uniq_pred_idx[3];
+  
+  /* reverse index: uniq_pred_idx[ar] maps a predicate of arity `ar` to its index. */
+  pred_idx_t *uniq_pred_idx[3];
 };
 typedef struct predicate_numerator predicate_numerator;
 
@@ -114,7 +133,7 @@ predicate_numerator *predicate_numerator_alloc();
 
 void predicate_numerator_free(predicate_numerator *pred_num);
 
-static inline size_t pred_idx(predicate_numerator *pred_num, const pred *p) {
+static inline pred_idx_t pred_idx(predicate_numerator *pred_num, const pred *p) {
   assert(p->arity <= 2);
   return pred_num->uniq_pred_idx[p->arity][p->data];
 }
@@ -124,8 +143,12 @@ static inline pred idx_pred(predicate_numerator *pred_num, size_t idx) {
   return pred_num->uniq_preds[idx];
 }
 
+
+/******************************************************************************/
+/** Lattice of all clones in R3(2) */
+
 /** The main algorithm.
- * Construct the lattice P3(2) of predicates of arity <= 2.
+ * Construct the lattice R3(2) of predicates of arity <= 2.
  */
 void latice_construct(const closure_operator *clop, lattice *lt);
 

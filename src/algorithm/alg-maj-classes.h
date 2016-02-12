@@ -1,7 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  *
- * @brief       Algorithms to construct lattice of all clones in P3(2).
+ * @brief       Algorithms to construct lattice of all clones in R3(2).
  ******************************************************************************/
 
 #ifndef ALG_MAJ_CLASSES_H
