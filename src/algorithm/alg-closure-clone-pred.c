@@ -58,7 +58,7 @@ void lattice_free(lattice *lt) {
     class_free(*c);
   }
   free(lt->classes);
-  hashtable_free(lt->ht);
+  if(lt->ht) hashtable_free(lt->ht);
   predicate_numerator_free(lt->pred_num);
   free(lt);
 }
@@ -76,7 +76,7 @@ void lattice_insert_class(lattice *lt, class *c) {
   c->lt       = lt;
   c->children = malloc(lt->pred_num->uniq_sz * sizeof(class_idx)); 
   assert(c->children != NULL);
-  memset(c->children, 0, lt->pred_num->uniq_sz * sizeof(class_idx));
+  memset(c->children, 0xFF, lt->pred_num->uniq_sz * sizeof(class_idx));
 
   /* insert class to lattice */
   lt->classes[lt->num_classes] = c;
