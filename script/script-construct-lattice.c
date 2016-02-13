@@ -72,6 +72,7 @@ void verify(const char *ccp_name, const char *table2p_name, const char *maj2013)
   }
 
   printf("\n%lu classes with majority have been found.\n", num_maj_classes);
+  assert(num_maj_classes == 1918040);
 
   maj_lattice_free(&maj_lattice);
   lattice_free(lt);
@@ -87,7 +88,7 @@ void construct_lattice(const char *table2p_uniq_name, const char *ccp_name) {
 
   printf("writing \"%s\"...", ccp_name); fflush(stdout);
   lattice_write(ccp_name, lt);
-  printf("\tOk.");
+  printf("\tOk.\n");
   
   lattice_free(lt);
   clop_free(clop);
@@ -99,9 +100,9 @@ int main() {
   construct_lattice("data/closure-two-uniq-preds.2016",
                     "output/closure-clone-pred.2016");
   printf("%.2f min\n", difftime(time(NULL), t0) / 60.);
-  printf("Ok.\n");
 
   time_t t1 = time(NULL);
+  printf("\nscript-verify-lattice:\n");
   verify("output/closure-clone-pred.2016",
          "data/closure-two-preds.2016",
          "data/all-maj.2016");

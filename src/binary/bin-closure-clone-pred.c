@@ -14,7 +14,8 @@ static void class_write(FILE *fd, const class *c) {
   uint32_write(fd, c->idx);
   clone_write(fd, &c->generator);
   clone_write(fd, &c->clone);
-  for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz; ++child_idx) {
+  uint32_write(fd, c->pidx_begin);
+  for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz - c->pidx_begin; ++child_idx) {
     uint32_write(fd, *child_idx);
   }
 }
@@ -44,7 +45,10 @@ static void class_read(FILE *fd, const lattice *lt, class *c) {
   c->idx = uint32_read(fd);
   clone_read(fd, &c->generator);
   clone_read(fd, &c->clone);
-  for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz; ++child_idx) {
+  c->pidx_begin = uint32_read(fd);
+  c->children = malloc((lt->pred_num->uniq_sz - c->pidx_begin) * sizeof(class_idx)); 
+  assert(c->children != NULL);
+  for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz - c->pidx_begin; ++child_idx) {
     *child_idx = uint32_read(fd);
   }
 }
@@ -75,8 +79,6 @@ lattice *lattice_read(const char *fname) {
   /* alloc memory for classes; make pointers to classes be ready */
   for(class **classp = lt->classes; classp < lt->classes + lt->num_classes; ++classp) {
     *classp = class_alloc();
-    (*classp)->children = malloc(lt->pred_num->uniq_sz * sizeof(class_idx)); 
-    assert((*classp)->children != NULL);
   }
   
   /* read classes from file and connect them together */

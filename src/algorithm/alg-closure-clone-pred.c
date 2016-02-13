@@ -14,9 +14,11 @@ class *class_alloc() {
   class *c = aligned_alloc(32, sizeof(class));
   assert(c);
 
-  c->idx    = -1;
-  c->lt     = NULL;
-  c->parent = NULL;
+  c->idx        = -1;
+  c->parent     = NULL;
+  c->children   = NULL;
+  c->pidx_begin = -1;
+  c->lt         = NULL;
   clone_init(&c->diff_parent);
   clone_init(&c->generator);
   clone_init(&c->clone);
@@ -34,11 +36,15 @@ class *class_parent(const class *c) {
 }
 
 class *class_get_child(const class *c, const pred *p) {
-  return lattice_get_class(c->lt, c->children[pred_idx(c->lt->pred_num, p)]);
+  pred_idx_t pidx = pred_idx(c->lt->pred_num, p);
+  assert(pidx >= c->pidx_begin);
+  return lattice_get_class(c->lt, c->children[pidx - c->pidx_begin]);
 }
 
 void class_set_child(class *parent, const pred *p, class *child) {
-  parent->children[pred_idx(parent->lt->pred_num, p)] = child->idx;
+  pred_idx_t pidx = pred_idx(parent->lt->pred_num, p);
+  assert(pidx >= parent->pidx_begin);
+  parent->children[pidx - parent->pidx_begin] = child->idx;
 }
 
 lattice *lattice_alloc() {
@@ -49,7 +55,7 @@ lattice *lattice_alloc() {
   lt->classes     = malloc(lt->capacity * sizeof(class *));
   assert(lt->classes);
   lt->ht          = hashtable_alloc(2*lt->capacity, clone_hash, (int (*)(const void *, const void *))clone_eq);
-  lt->pred_num    = predicate_numerator_construct();
+  lt->pred_num    = NULL;
   return lt;
 }
 
@@ -59,11 +65,11 @@ void lattice_free(lattice *lt) {
   }
   free(lt->classes);
   if(lt->ht) hashtable_free(lt->ht);
-  predicate_numerator_free(lt->pred_num);
+  if(lt->pred_num) predicate_numerator_free(lt->pred_num);
   free(lt);
 }
 
-void lattice_insert_class(lattice *lt, class *c) {
+void lattice_insert_class(lattice *lt, class *c, pred_idx_t pidx_begin) {
   /* resize class storage if needed */
   if(lt->num_classes == lt->capacity) {
     lt->capacity *= 2;
@@ -72,11 +78,13 @@ void lattice_insert_class(lattice *lt, class *c) {
   }
 
   /* initialize uninitialized class fields*/
-  c->idx      = lt->num_classes;
-  c->lt       = lt;
-  c->children = malloc(lt->pred_num->uniq_sz * sizeof(class_idx)); 
+  c->idx             = lt->num_classes;
+  c->lt              = lt;
+  c->pidx_begin      = pidx_begin;
+  assert(pidx_begin <= lt->pred_num->uniq_sz);
+  c->children        = malloc((lt->pred_num->uniq_sz - pidx_begin) * sizeof(class_idx)); 
   assert(c->children != NULL);
-  memset(c->children, 0xFF, lt->pred_num->uniq_sz * sizeof(class_idx));
+  memset(c->children, 0xFF, (lt->pred_num->uniq_sz - pidx_begin) * sizeof(class_idx));
 
   /* insert class to lattice */
   lt->classes[lt->num_classes] = c;
@@ -128,8 +136,10 @@ void predicate_numerator_free(predicate_numerator *pred_num) {
   free(pred_num);
 }
 
-void lattice_construct_step(const closure_operator *clop, lattice *lt, const pred *p) {
-  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
+static void lattice_construct_step(const closure_operator *clop, lattice *lt, pred_idx_t pidx) {
+  const pred *p = idx_pred(lt->pred_num, pidx);
+  size_t cur_step_num_classes = lt->num_classes;
+  for(class **cp = lt->classes; cp < lt->classes + cur_step_num_classes; ++cp) {
     class *current = *cp;
     
     /* if the current class contains the predicate to be added, skip it */
@@ -174,7 +184,7 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
       clone_copy(&current->generator, &child->generator);
       clone_insert_pred(&child->generator, p);
       clone_copy(&closure, &child->clone);
-      lattice_insert_class(lt, child);
+      lattice_insert_class(lt, child, pidx+1);
     } else {
       /* If we've found a new parent for current clone, check if the difference
        * between it and the clone is smaller than the current child->diff_parent.
@@ -203,25 +213,19 @@ void lattice_construct_step(const closure_operator *clop, lattice *lt, const pre
 }
 
 void latice_construct(const closure_operator *clop, lattice *lt) {
+  /* factorize all essential predicates by their closure
+   * and select predicates with unique closure */
+  lt->pred_num = predicate_numerator_construct();
+
   /* start from a lattice containing just one clone */
   class *top = class_alloc(lt);
   closure_dummy_clone(clop, &top->clone);
-  lattice_insert_class(lt, top);
-
-  /* factorize all essential predicates by their closure
-   * and select predicates with unique closure */
-  pred *uniq_preds;
-  size_t uniq_sz;
-  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
-
-  int idx = 0;
+  lattice_insert_class(lt, top, 0);
+  
   /* iteratively construct new classes */
-  for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-    lattice_construct_step(clop, lt, p);
-    printf("%d\t %lu\n", idx, lt->num_classes);
-    ++idx;
+  for(pred_idx_t pidx = 0; pidx < lt->pred_num->uniq_sz; ++pidx) {
+    lattice_construct_step(clop, lt, pidx);
+    printf("%u\t %lu\n", pidx, lt->num_classes);
   }
-
-  free(uniq_preds);
 }
 

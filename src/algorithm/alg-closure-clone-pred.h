@@ -11,14 +11,16 @@
 #include "closure.h"
 
 typedef uint32_t class_idx;
+typedef uint32_t pred_idx_t;
 
-/** Each class requires approx. 1KiB memory to store the predicate-clone closure
-    table. */
+/** Each class requires up to 1KiB memory to store the predicate-clone closure
+    table. We minimize the memory consumption be storing a part of the table for
+    predicates with index >= class->pidx_begin only. */
 struct class {
-  /* Unique identifier. */
+  /** Unique identifier. */
   class_idx idx;
   
-  /* Some parent of the class.
+  /** Some parent of the class.
    * A parent of `clone` is a clone `parent` such that there exists a
    * predicate `p` such that
    *    clone == <{p} ∪ parent>.
@@ -27,12 +29,12 @@ struct class {
    * current clone and the parent is the smallest. */
   struct class *parent;
   
-  /* `diff_parent` is a difference between current clone and its parent.
+  /** `diff_parent` is a difference between current clone and its parent.
    * It is used to optimize the computation of the closure of the union
    * <p ∪ clone>. */
   clone diff_parent;
 
-  /* A generator of the clone is a set of predicates such that
+  /** A generator of the clone is a set of predicates such that
    *    <generator> == clone.
    *
    * The generator reflects the way how the clone was constructed first time.
@@ -45,19 +47,24 @@ struct class {
    * we encounter a new set of predicates that generate the same clone). */
   clone generator;
 
-  /* A closed set of predicates, a closure of the generator. */
+  /** A closed set of predicates, a closure of the generator. */
   clone clone;
 
-  /* A clone-predicate closure table. table[ar] maps a predicate `p` of arity
+  /** A clone-predicate closure table. table[ar] maps a predicate `p` of arity
    * `ar` to a result of closure <{p} ∪ this_clone>
    *
-   * To minimize the memory consumption, but store only a part of the table for
-   * a minimal set of 251 closure-unique predicates of arity <= 2 here.
-   * The exact predicates and their numbering scheme is determined by the
-   * lattice predicate numerator. */
+   * To minimize the memory consumption, we consider closure-unique predicates
+   * only. Moreover we store only a part of the table for closure-unique
+   * predicates with indices from `pidx_begin` to 251 (inclusive).
+   * The predicates numbering scheme is determined by the lattice predicate
+   * numerator. */
   class_idx *children;
 
-  /* Enumeration functions for predicates and classes. */
+  /** The index of the first predicate we use in clone-predicate closure table
+   * `children`. */
+  pred_idx_t pidx_begin;
+
+  /** Enumeration functions for predicates and classes. */
   const struct lattice *lt;
 
 } __attribute__ ((aligned (32)));
@@ -89,7 +96,7 @@ struct lattice {
   /** Number of classes in the lattice. */
   size_t num_classes;
   
-  /* A list of all lattice members (pointers to classes).
+  /** A list of all lattice members (pointers to classes).
    *
    * We store ppointers to classes here (not classes itself) because
    * 1) we need a resizable storage;
@@ -97,30 +104,32 @@ struct lattice {
    *    clone-pred closure table). */
   class **classes;
   
-  /* The current capacity of `classes` array. We realloc the memory when the
+  /** The current capacity of `classes` array. We realloc the memory when the
    * space becomes exhausted. The reallocation can occur only when a new class
    * is inserted to the lattice. */
   size_t capacity;
 
-  /* A hash table to support efficient clone membership test.
+  /** A hash table to support efficient clone membership test.
    * See `lattice_lookup` */
   hashtable *ht;
 
-  /* A structure that enumerates all closure-unique predicates with natural
+  /** A structure that enumerates all closure-unique predicates with natural
    * numbers (pred_idx_t). The numbering is used in clone-predicate closure
    * table. */
   struct predicate_numerator *pred_num;
 };
 typedef struct lattice lattice;
 
-
 lattice *lattice_alloc();
 
 void lattice_free(lattice *lt);
 
 /** `lattice_insert_class` inserts a new class to the lattice.
+ *
+ * pidx_begin is the least index of a predicate to be added to this class.
+ * If a class is created on step number `s`, then pidx_begin == s+1.
  */
-void lattice_insert_class(lattice *lt, class *c);
+void lattice_insert_class(lattice *lt, class *c, pred_idx_t pidx_begin);
 
 /** `lattice_lookup` efficiently searches the lattice for a class corresponding
  * to a given clone. If it's been found, the function returns the corresponding
@@ -132,8 +141,6 @@ class *lattice_lookup(const lattice *lt, const clone *cl);
 class *lattice_get_class(const lattice *lt, class_idx idx);
 
 /******************************************************************************/
-typedef size_t pred_idx_t;
-
 struct predicate_numerator {
   /* Number of predicates. */
   size_t uniq_sz;
@@ -158,9 +165,9 @@ static inline pred_idx_t pred_idx(const predicate_numerator *pred_num, const pre
   return idx;
 }
 
-static inline pred idx_pred(const predicate_numerator *pred_num, size_t idx) {
+static inline pred *idx_pred(const predicate_numerator *pred_num, size_t idx) {
   assert(idx < pred_num->uniq_sz && "predicate idx is too large");
-  return pred_num->uniq_preds[idx];
+  return &pred_num->uniq_preds[idx];
 }
 
 
