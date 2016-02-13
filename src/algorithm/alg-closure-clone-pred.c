@@ -10,20 +10,17 @@
 #include "algorithm/alg-closure-clone-pred.h"
 #include "pred-essential.h"
 
-class *class_alloc(const lattice *lt) {
+class *class_alloc() {
   class *c = aligned_alloc(32, sizeof(class));
   assert(c);
 
-  c->lattice = lt;
+  c->idx    = -1;
+  c->lt     = NULL;
   c->parent = NULL;
   clone_init(&c->diff_parent);
   clone_init(&c->generator);
   clone_init(&c->clone);
   
-  c->children = malloc(lt->pred_num->uniq_sz * sizeof(class *)); 
-  assert(c->children != NULL);
-  memset(c->children, 0, lt->pred_num->uniq_sz * sizeof(class *));
-
   return c;
 }
 
@@ -37,13 +34,11 @@ class *class_parent(const class *c) {
 }
 
 class *class_get_child(const class *c, const pred *p) {
-  assert(p->arity <= 2 && "classes support predicates of arity <= 2 only");
-  return c->children[pred_idx(c->lattice->pred_num, p)];
+  return lattice_get_class(c->lt, c->children[pred_idx(c->lt->pred_num, p)]);
 }
 
 void class_set_child(class *parent, const pred *p, class *child) {
-  assert(p->arity <= 2 && "classes support predicates of arity <= 2 only");
-  parent->children[pred_idx(parent->lattice->pred_num, p)] = child;
+  parent->children[pred_idx(parent->lt->pred_num, p)] = child->idx;
 }
 
 lattice *lattice_alloc() {
@@ -52,8 +47,9 @@ lattice *lattice_alloc() {
   lt->num_classes = 0;
   lt->capacity    = 2<<20;
   lt->classes     = malloc(lt->capacity * sizeof(class *));
+  assert(lt->classes);
   lt->ht          = hashtable_alloc(2*lt->capacity, clone_hash, (int (*)(const void *, const void *))clone_eq);
-  lt->pred_num    = predicate_numerator_alloc();
+  lt->pred_num    = predicate_numerator_construct();
   return lt;
 }
 
@@ -68,23 +64,37 @@ void lattice_free(lattice *lt) {
 }
 
 void lattice_insert_class(lattice *lt, class *c) {
+  /* resize class storage if needed */
   if(lt->num_classes == lt->capacity) {
     lt->capacity *= 2;
-    lt->classes = realloc(lt->classes, lt->capacity);
+    lt->classes   = realloc(lt->classes, lt->capacity);
     assert(lt->classes);
   }
 
-  lt->classes[lt->num_classes] = c;
-  ++lt->num_classes;
+  /* initialize uninitialized class fields*/
+  c->idx      = lt->num_classes;
+  c->lt       = lt;
+  c->children = malloc(lt->pred_num->uniq_sz * sizeof(class_idx)); 
+  assert(c->children != NULL);
+  memset(c->children, 0, lt->pred_num->uniq_sz * sizeof(class_idx));
 
+  /* insert class to lattice */
+  lt->classes[lt->num_classes] = c;
   hashtable_insert(lt->ht, &c->clone, c);
+
+  ++lt->num_classes;
 }
 
 class *lattice_lookup(const lattice *lt, const clone *cl) {
   return hashtable_lookup(lt->ht, cl);
 }
 
-predicate_numerator *predicate_numerator_alloc() {
+class *lattice_get_class(const lattice *lt, class_idx idx) {
+  assert(idx < lt->num_classes && "class_idx too large");
+  return lt->classes[idx];
+}
+
+predicate_numerator *predicate_numerator_construct() {
   predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
   assert(pred_num);
   

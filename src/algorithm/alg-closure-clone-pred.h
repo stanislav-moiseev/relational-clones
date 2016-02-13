@@ -2,18 +2,21 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef LATTICE_H
-#define LATTICE_H
+#ifndef ALG_CLOSURE_CLONE_PRED_H
+#define ALG_CLOSURE_CLONE_PRED_H
 
 #include "clone.h"
 #include "hashtable.h"
 #include "globals.h"
 #include "closure.h"
 
-/** Each class requires approx. 2KiB memory to store the predicate-clone closure
+typedef uint32_t class_idx;
+
+/** Each class requires approx. 1KiB memory to store the predicate-clone closure
     table. */
 struct class {
-  const struct lattice *lattice;
+  /* Unique identifier. */
+  class_idx idx;
   
   /* Some parent of the class.
    * A parent of `clone` is a clone `parent` such that there exists a
@@ -32,11 +35,14 @@ struct class {
   /* A generator of the clone is a set of predicates such that
    *    <generator> == clone.
    *
-   * The generator reflects the way how the clone was constructed. Given that
-   * for each predicate clone there can be many generator; the exact contents of
-   * the generator is determined by the lattice construction procedure and
-   * depends on the implementation. The elements of the generator are not
-   * necessary independent. */
+   * The generator reflects the way how the clone was constructed first time.
+   * The elements of the generator are not necessary independent.
+   *
+   * In theory, every clone can have many generating sets. The choice of the
+   * generator for a given clone is determined by the lattice construction
+   * procedure. In the current implementation the generator is initialized when
+   * the clone is constructed first time and it never changes in future (even if
+   * we encounter a new set of predicates that generate the same clone). */
   clone generator;
 
   /* A closed set of predicates, a closure of the generator. */
@@ -49,7 +55,11 @@ struct class {
    * a minimal set of 251 closure-unique predicates of arity <= 2 here.
    * The exact predicates and their numbering scheme is determined by the
    * lattice predicate numerator. */
-  struct class **children;
+  class_idx *children;
+
+  /* Enumeration functions for predicates and classes. */
+  const struct lattice *lt;
+
 } __attribute__ ((aligned (32)));
 
 typedef struct class class;
@@ -57,7 +67,7 @@ typedef struct class class;
 /** `class_alloc` allocates memory for a class and its closure table.
  * One should call `class_free` to release the memory.
  */
-class *class_alloc(const struct lattice *lt);
+class *class_alloc();
 
 void class_free(class *c);
 
@@ -79,8 +89,14 @@ struct lattice {
   /** Number of classes in the lattice. */
   size_t num_classes;
   
-  /* A list of all lattice members (pointers to classes). */
+  /* A list of all lattice members (pointers to classes).
+   *
+   * We store ppointers to classes here (not classes itself) because
+   * 1) we need a resizable storage;
+   * 2) we want pointers to classes be fixed (because we store them in
+   *    clone-pred closure table). */
   class **classes;
+  
   /* The current capacity of `classes` array. We realloc the memory when the
    * space becomes exhausted. The reallocation can occur only when a new class
    * is inserted to the lattice. */
@@ -113,6 +129,7 @@ void lattice_insert_class(lattice *lt, class *c);
  */
 class *lattice_lookup(const lattice *lt, const clone *cl);
 
+class *lattice_get_class(const lattice *lt, class_idx idx);
 
 /******************************************************************************/
 typedef size_t pred_idx_t;
@@ -124,22 +141,25 @@ struct predicate_numerator {
   /* uniq_preds maps a predicate index to the predicate. */
   pred *uniq_preds;
   
-  /* reverse index: uniq_pred_idx[ar] maps a predicate of arity `ar` to its index. */
+  /* reverse index:
+   * uniq_pred_idx[ar] maps a predicate of arity `ar` to its index. */
   pred_idx_t *uniq_pred_idx[3];
 };
 typedef struct predicate_numerator predicate_numerator;
 
-predicate_numerator *predicate_numerator_alloc();
+predicate_numerator *predicate_numerator_construct();
 
 void predicate_numerator_free(predicate_numerator *pred_num);
 
-static inline pred_idx_t pred_idx(predicate_numerator *pred_num, const pred *p) {
-  assert(p->arity <= 2);
-  return pred_num->uniq_pred_idx[p->arity][p->data];
+static inline pred_idx_t pred_idx(const predicate_numerator *pred_num, const pred *p) {
+  assert(p->arity <= 2 && "predicate numerator supports predicates of arity <= 2 only");
+  pred_idx_t idx = pred_num->uniq_pred_idx[p->arity][p->data];
+  assert(idx != -1 && "predicate numerator does not know this predicate");
+  return idx;
 }
 
-static inline pred idx_pred(predicate_numerator *pred_num, size_t idx) {
-  assert(idx < pred_num->uniq_sz);
+static inline pred idx_pred(const predicate_numerator *pred_num, size_t idx) {
+  assert(idx < pred_num->uniq_sz && "predicate idx is too large");
   return pred_num->uniq_preds[idx];
 }
 
