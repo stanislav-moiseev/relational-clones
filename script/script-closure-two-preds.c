@@ -37,10 +37,10 @@ void read_closure_two_preds(const char *fname) {
 
 int main() {
   printf("construct-closure-two-preds: "); fflush(stdout);
-  construct_closure_two_preds("output/closure-two-preds.2016");
+  construct_closure_two_preds("output/closure-two-uniq-preds.2016");
   printf("Ok.\n");
 
   printf("read-closure-two-preds: "); fflush(stdout);
-  read_closure_two_preds("output/closure-two-preds.2016");
+  read_closure_two_preds("output/closure-two-uniq-preds.2016");
   printf("Ok.\n");
 }

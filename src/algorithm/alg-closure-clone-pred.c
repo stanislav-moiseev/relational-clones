@@ -10,15 +10,16 @@
 #include "algorithm/alg-closure-clone-pred.h"
 #include "pred-essential.h"
 
-class *class_alloc() {
-  class *c = aligned_alloc(32, sizeof(class));
+ccpnode *ccpnode_alloc() {
+  ccpnode *c = aligned_alloc(32, sizeof(ccpnode));
   assert(c);
 
-  c->idx        = -1;
-  c->parent     = NULL;
-  c->children   = NULL;
-  c->pidx_begin = -1;
-  c->lt         = NULL;
+  c->cidx         = -1;
+  c->parent       = NULL;
+  c->children     = NULL;
+  c->num_children = 0;
+  c->pidx_begin   = -1;
+  c->lt           = NULL;
   clone_init(&c->diff_parent);
   clone_init(&c->generator);
   clone_init(&c->clone);
@@ -26,80 +27,86 @@ class *class_alloc() {
   return c;
 }
 
-void class_free(class *c) {
+void ccpnode_free(ccpnode *c) {
   free(c->children);
   free(c);
 }
 
-class *class_parent(const class *c) {
+ccpnode *ccpnode_parent(const ccpnode *c) {
   return c->parent;
 }
 
-class *class_get_child(const class *c, const pred *p) {
+ccpnode *ccpnode_get_child(const ccpnode *c, const pred *p) {
   pred_idx_t pidx = pred_idx(c->lt->pred_num, p);
   assert(pidx >= c->pidx_begin);
-  return lattice_get_class(c->lt, c->children[pidx - c->pidx_begin]);
+  return ccplt_get_node(c->lt, c->children[pidx - c->pidx_begin]);
 }
 
-void class_set_child(class *parent, const pred *p, class *child) {
+void ccpnode_set_child(ccpnode *parent, const pred *p, ccpnode *child) {
   pred_idx_t pidx = pred_idx(parent->lt->pred_num, p);
   assert(pidx >= parent->pidx_begin);
-  parent->children[pidx - parent->pidx_begin] = child->idx;
+  parent->children[pidx - parent->pidx_begin] = child->cidx;
 }
 
-lattice *lattice_alloc() {
-  lattice *lt = malloc(sizeof(lattice));
+ccplt *ccplt_alloc() {
+  ccplt *lt = malloc(sizeof(ccplt));
   assert(lt);
-  lt->num_classes = 0;
-  lt->capacity    = 2<<20;
-  lt->classes     = malloc(lt->capacity * sizeof(class *));
-  assert(lt->classes);
-  lt->ht          = hashtable_alloc(2*lt->capacity, clone_hash, (int (*)(const void *, const void *))clone_eq);
-  lt->pred_num    = NULL;
+  lt->num_nodes = 0;
+  lt->capacity  = 2<<20;
+  lt->nodes     = malloc(lt->capacity * sizeof(ccpnode *));
+  assert(lt->nodes);
+  lt->ht        = hashtable_alloc(2*lt->capacity, clone_hash, (int (*)(const void *, const void *))clone_eq);
+  lt->pred_num  = NULL;
   return lt;
 }
 
-void lattice_free(lattice *lt) {
-  for(class **c = lt->classes; c < lt->classes + lt->num_classes; ++c) {
-    class_free(*c);
+void ccplt_free(ccplt *lt) {
+  for(ccpnode **c = lt->nodes; c < lt->nodes + lt->num_nodes; ++c) {
+    ccpnode_free(*c);
   }
-  free(lt->classes);
+  free(lt->nodes);
   if(lt->ht) hashtable_free(lt->ht);
   if(lt->pred_num) predicate_numerator_free(lt->pred_num);
   free(lt);
 }
 
-void lattice_insert_class(lattice *lt, class *c, pred_idx_t pidx_begin) {
-  /* resize class storage if needed */
-  if(lt->num_classes == lt->capacity) {
+ccpnode *ccplt_top_clone(const ccplt *lt) {
+  assert(lt->num_nodes >= 1);
+  return lt->nodes[0];
+}
+
+void ccplt_insert_node(ccplt *lt, ccpnode *c, pred_idx_t pidx_begin) {
+  /* resize ccpnode storage if needed */
+  if(lt->num_nodes == lt->capacity) {
     lt->capacity *= 2;
-    lt->classes   = realloc(lt->classes, lt->capacity);
-    assert(lt->classes);
+    lt->nodes   = realloc(lt->nodes, lt->capacity);
+    assert(lt->nodes);
   }
 
-  /* initialize uninitialized class fields*/
-  c->idx             = lt->num_classes;
+  /* initialize uninitialized ccpnode fields*/
+  c->cidx            = lt->num_nodes;
   c->lt              = lt;
   c->pidx_begin      = pidx_begin;
   assert(pidx_begin <= lt->pred_num->uniq_sz);
-  c->children        = malloc((lt->pred_num->uniq_sz - pidx_begin) * sizeof(class_idx)); 
+  c->num_children    = lt->pred_num->uniq_sz - pidx_begin;
+  c->children        = malloc(c->num_children * sizeof(class_idx)); 
   assert(c->children != NULL);
-  memset(c->children, 0xFF, (lt->pred_num->uniq_sz - pidx_begin) * sizeof(class_idx));
+  memset(c->children, 0xFF, c->num_children * sizeof(class_idx));
 
-  /* insert class to lattice */
-  lt->classes[lt->num_classes] = c;
+  /* insert ccpnode to ccplt */
+  lt->nodes[lt->num_nodes] = c;
   hashtable_insert(lt->ht, &c->clone, c);
 
-  ++lt->num_classes;
+  ++lt->num_nodes;
 }
 
-class *lattice_lookup(const lattice *lt, const clone *cl) {
+ccpnode *ccplt_lookup(const ccplt *lt, const clone *cl) {
   return hashtable_lookup(lt->ht, cl);
 }
 
-class *lattice_get_class(const lattice *lt, class_idx idx) {
-  assert(idx < lt->num_classes && "class_idx too large");
-  return lt->classes[idx];
+ccpnode *ccplt_get_node(const ccplt *lt, class_idx idx) {
+  assert(idx < lt->num_nodes && "class_idx too large");
+  return lt->nodes[idx];
 }
 
 predicate_numerator *predicate_numerator_construct() {
@@ -112,9 +119,9 @@ predicate_numerator *predicate_numerator_construct() {
   /* construct reverse index */
   for(uint32_t ar = 0; ar <= 2; ++ar) {
     uint64_t num = int_pow2(int_pow(K, ar));
-    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(class *)); 
+    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(ccpnode *)); 
     assert(pred_num->uniq_pred_idx[ar] != NULL);
-    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(class *));
+    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(ccpnode *));
   }
   for(pred *p = pred_num->uniq_preds; p < pred_num->uniq_preds + pred_num->uniq_sz; ++p) {
     size_t idx = 0;
@@ -136,15 +143,15 @@ void predicate_numerator_free(predicate_numerator *pred_num) {
   free(pred_num);
 }
 
-static void lattice_construct_step(const closure_operator *clop, lattice *lt, pred_idx_t pidx) {
+static void ccplt_construct_step(const closure_operator *clop, ccplt *lt, pred_idx_t pidx) {
   const pred *p = idx_pred(lt->pred_num, pidx);
-  size_t cur_step_num_classes = lt->num_classes;
-  for(class **cp = lt->classes; cp < lt->classes + cur_step_num_classes; ++cp) {
-    class *current = *cp;
+  size_t cur_step_num_nodes = lt->num_nodes;
+  for(ccpnode **cp = lt->nodes; cp < lt->nodes + cur_step_num_nodes; ++cp) {
+    ccpnode *current = *cp;
     
-    /* if the current class contains the predicate to be added, skip it */
+    /* if the current ccpnode contains the predicate to be added, skip it */
     if(clone_test_pred(&current->clone, p)) {
-      class_set_child(current, p, current);
+      ccpnode_set_child(current, p, current);
       continue;
     }
 
@@ -163,7 +170,7 @@ static void lattice_construct_step(const closure_operator *clop, lattice *lt, pr
        *               == <<{p}∪parent> ∪ (current\parent\<{p}∪parent>)> */
       
       /* parent_p == <{p}∪parent> */
-      class *parent_p = class_get_child(current->parent, p);
+      ccpnode *parent_p = ccpnode_get_child(current->parent, p);
       /* the closure <{p} ∪ parent> should have already been computed */
       assert(parent_p != NULL);
       /* tmp == (current\parent) \ <{p}∪parent> */
@@ -173,18 +180,18 @@ static void lattice_construct_step(const closure_operator *clop, lattice *lt, pr
       closure_clone_ex(clop, &parent_p->clone, &tmp, &closure);
     }
 
-    /* test if we've constructed a new class */
-    class *child = lattice_lookup(lt, &closure);
+    /* test if we've constructed a new ccpnode */
+    ccpnode *child = ccplt_lookup(lt, &closure);
     assert(child != current);
     if(child == NULL) {
-      /* if we've constructed a new class, add it to the lattice */
-      child = class_alloc(lt);
+      /* if we've constructed a new ccpnode, add it to the ccplt */
+      child = ccpnode_alloc(lt);
       child->parent = current;
       clone_diff(&closure, &current->clone, &child->diff_parent);
       clone_copy(&current->generator, &child->generator);
       clone_insert_pred(&child->generator, p);
       clone_copy(&closure, &child->clone);
-      lattice_insert_class(lt, child, pidx+1);
+      ccplt_insert_node(lt, child, pidx+1);
     } else {
       /* If we've found a new parent for current clone, check if the difference
        * between it and the clone is smaller than the current child->diff_parent.
@@ -207,25 +214,25 @@ static void lattice_construct_step(const closure_operator *clop, lattice *lt, pr
       }
     }
 
-    /* link the current class and the child class */
-    class_set_child(current, p, child);
+    /* link the current ccpnode and the child ccpnode */
+    ccpnode_set_child(current, p, child);
   }
 }
 
-void latice_construct(const closure_operator *clop, lattice *lt) {
+void latice_construct(const closure_operator *clop, ccplt *lt) {
   /* factorize all essential predicates by their closure
    * and select predicates with unique closure */
   lt->pred_num = predicate_numerator_construct();
 
-  /* start from a lattice containing just one clone */
-  class *top = class_alloc(lt);
+  /* start from a ccplt containing just one clone */
+  ccpnode *top = ccpnode_alloc(lt);
   closure_dummy_clone(clop, &top->clone);
-  lattice_insert_class(lt, top, 0);
+  ccplt_insert_node(lt, top, 0);
   
-  /* iteratively construct new classes */
+  /* iteratively construct new ccpnodes */
   for(pred_idx_t pidx = 0; pidx < lt->pred_num->uniq_sz; ++pidx) {
-    lattice_construct_step(clop, lt, pidx);
-    printf("%u\t %lu\n", pidx, lt->num_classes);
+    ccplt_construct_step(clop, lt, pidx);
+    printf("%u\t %lu\n", pidx, lt->num_nodes);
   }
 }
 

@@ -10,12 +10,13 @@
 #include "binary/bin-common.h"
 #include "binary/bin-closure-clone-pred.h"
 
-static void class_write(FILE *fd, const class *c) {
-  uint32_write(fd, c->idx);
+static void ccpnode_write(FILE *fd, const ccpnode *c) {
+  uint32_write(fd, c->cidx);
   clone_write(fd, &c->generator);
   clone_write(fd, &c->clone);
   uint32_write(fd, c->pidx_begin);
-  for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz - c->pidx_begin; ++child_idx) {
+  /* uint64_write(fd, c->num_children); */
+  for(class_idx *child_idx = c->children; child_idx < c->children + c->num_children; ++child_idx) {
     uint32_write(fd, *child_idx);
   }
 }
@@ -27,44 +28,46 @@ static void predicate_numerator_write(FILE *fd, const predicate_numerator *pred_
   }
 }
 
-void lattice_write(const char *fname, const lattice *lt) {
+void ccplt_write(const char *fname, const ccplt *lt) {
   FILE *fd = fopen(fname, "wb");
   assert(fd);
 
-  uint64_write(fd, lt->num_classes);
+  uint64_write(fd, lt->num_nodes);
   predicate_numerator_write(fd, lt->pred_num);
-  for(class **classp = lt->classes; classp < lt->classes + lt->num_classes; ++classp) {
-    class *c = *classp;
-    class_write(fd, c);
+  for(ccpnode **ccpnodep = lt->nodes; ccpnodep < lt->nodes + lt->num_nodes; ++ccpnodep) {
+    ccpnode *c = *ccpnodep;
+    ccpnode_write(fd, c);
   }
 
   fclose(fd);
 }
 
-static void class_read(FILE *fd, const lattice *lt, class *c) {
-  c->idx = uint32_read(fd);
+static void ccpnode_read(FILE *fd, const ccplt *lt, ccpnode *c) {
+  c->cidx         = uint32_read(fd);
   clone_read(fd, &c->generator);
   clone_read(fd, &c->clone);
-  c->pidx_begin = uint32_read(fd);
-  c->children = malloc((lt->pred_num->uniq_sz - c->pidx_begin) * sizeof(class_idx)); 
+  c->pidx_begin   = uint32_read(fd);
+  c->num_children = lt->pred_num->uniq_sz - c->pidx_begin;
+  /* c->num_children = uint64_read(fd); */
+  c->children     = malloc(c->num_children * sizeof(class_idx)); 
   assert(c->children != NULL);
   for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz - c->pidx_begin; ++child_idx) {
     *child_idx = uint32_read(fd);
   }
 }
 
-lattice *lattice_read(const char *fname) {
+ccplt *ccplt_read(const char *fname) {
   FILE *fd = fopen(fname, "rb");
   assert(fd);
 
-  lattice *lt = malloc(sizeof(lattice));
+  ccplt *lt = malloc(sizeof(ccplt));
   assert(lt);
-  lt->num_classes = uint64_read(fd);
-  lt->capacity    = lt->num_classes;
-  lt->classes     = malloc(lt->capacity * sizeof(class *));
-  assert(lt->classes);
-  lt->ht = NULL;
-  lt->pred_num = predicate_numerator_construct();
+  lt->num_nodes = uint64_read(fd);
+  lt->capacity  = lt->num_nodes;
+  lt->nodes     = malloc(lt->capacity * sizeof(ccpnode *));
+  assert(lt->nodes);
+  lt->ht        = NULL;
+  lt->pred_num  = predicate_numerator_construct();
 
   /* verify that the generated predicate numerator and that in the file are
    * identical */
@@ -76,18 +79,18 @@ lattice *lattice_read(const char *fname) {
     assert(pred_eq(p, &p2));
   }
 
-  /* alloc memory for classes; make pointers to classes be ready */
-  for(class **classp = lt->classes; classp < lt->classes + lt->num_classes; ++classp) {
-    *classp = class_alloc();
+  /* alloc memory for ccpnodes; make pointers to ccpnodes be ready */
+  for(ccpnode **ccpnodep = lt->nodes; ccpnodep < lt->nodes + lt->num_nodes; ++ccpnodep) {
+    *ccpnodep = ccpnode_alloc();
   }
   
-  /* read classes from file and connect them together */
+  /* read ccpnodes from file and connect them together */
   class_idx idx = 0;
-  for(class **classp = lt->classes; classp < lt->classes + lt->num_classes; ++classp) {
-    class *c = *classp;
+  for(ccpnode **ccpnodep = lt->nodes; ccpnodep < lt->nodes + lt->num_nodes; ++ccpnodep) {
+    ccpnode *c = *ccpnodep;
     c->lt = lt;
-    class_read(fd, lt, c);
-    assert(c->idx == idx);
+    ccpnode_read(fd, lt, c);
+    assert(c->cidx == idx);
     ++idx;
   }
 

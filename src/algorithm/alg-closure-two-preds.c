@@ -52,13 +52,13 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
       
       for(uint64_t data1 = 0; data1 < num1; ++data1) {
         pred p1 = { .arity = ar1, .data = data1 };
-        /* if p1 is not essential, write empty clones */
-        if(!pred_is_essential(&p1)) continue;
+        /* skip if p1 is not a closure-unique essential predicate */
+        if(!clone_test_pred(&cl_uniq, &p1)) continue;
         
         for(uint64_t data2 = 0; data2 < num2; ++data2) {
           pred p2 = { .arity = ar2, .data = data2 };
-          /* if p2 is not essential, write empty clone */
-          if(!pred_is_essential(&p2)) continue;
+          /* skip if p2 is not a closure-unique essential predicate */
+          if(!clone_test_pred(&cl_uniq, &p2)) continue;
           
           clone cl;
           clone_init(&cl);

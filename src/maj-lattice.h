@@ -2,8 +2,8 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef LATTICE_MAJ_H
-#define LATTICE_MAJ_H
+#ifndef MAJ_LATTICE_H
+#define MAJ_LATTICE_H
 
 #include "clone.h"
 
