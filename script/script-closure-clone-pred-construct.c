@@ -17,6 +17,10 @@
 #include "binary/bin-closure-two-preds.h"
 #include "binary/bin-closure-clone-pred.h"
 
+/** Verify the computation over the previously computed lattice of all clones
+ *  containing a majority operation. If the clone from new lattice contains a
+ *  majority operation, we verify that it is a member of the lattice `maj2013`.
+ */
 void verify_lattice(const char *ccp_name, const char *table2p_name, const char *maj2013) {
   printf("reading \"%s\"...", ccp_name); fflush(stdout);
   ccplt *lt = ccplt_read(ccp_name);

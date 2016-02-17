@@ -101,6 +101,16 @@ void lattice_add_layer(lattice *lt, layer *lr) {
   ++lt->num_layers;
 }
 
+void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt) {
+  /* copy clones from ccplt */
+  assert(lt->classes == NULL);  /* We suppose that the lattice is empty. */
+  lt->num_classes = ccplt->num_nodes;
+  lt->classes = aligned_alloc(32, lt->num_classes * sizeof(class *));
+  for(size_t i = 0; i < lt->num_classes; ++i) {
+    lt->classes[i] = class_alloc(ccplt->nodes[i]);
+  }
+}
+
 static uint32_t class_idx_hash(const void *cidx) {
   return *(class_idx *)cidx;
 }
@@ -110,14 +120,6 @@ static int class_idx_eq(const void *cidx1, const void *cidx2) {
 }
   
 void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
-  /* copy clones from ccplt */
-  assert(lt->classes == NULL);  /* We suppose that the lattice is empty. */
-  lt->num_classes = ccplt->num_nodes;
-  lt->classes = aligned_alloc(32, lt->num_classes * sizeof(class *));
-  for(size_t i = 0; i < lt->num_classes; ++i) {
-    lt->classes[i] = class_alloc(ccplt->nodes[i]);
-  }
-
   /* We will construct layers iteratively. On each step, `ht` is the bunch of
    * clones where to select maximal clones from.
    *
@@ -209,5 +211,45 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
 
   assert(classes_constr == lt->num_classes);
   hashtable_free(ht);
+}
+
+void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
+  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
+    class *c = *cp;
+    const ccpnode *nd = ccplt_get_node(ccplt, c->cidx);
+    for(class_idx *child_cidx = nd->children; child_cidx < nd->children + nd->num_children; ++child_cidx) {
+      if(*child_cidx == c->cidx) continue;
+
+      /* test that we haven't inserted this subclone yet. */
+      int flag = 1;
+      for(class_idx *sub_cidx = c->subclasses; sub_cidx < c->subclasses + c->num_subclasses; ++sub_cidx) {
+        if(*child_cidx == *sub_cidx) {
+          flag = 0;
+          break;
+        }
+      }
+      if(!flag) continue;
+
+      /* test that the current child clone is a maximal subclone of `c`. */
+      clone *child = &lattice_get_class(lt, *child_cidx)->clone;
+      flag = 1;
+      for(class_idx *child2_cidx = nd->children; child2_cidx < nd->children + nd->num_children; ++child2_cidx) {
+        if(*child2_cidx == c->cidx || *child2_cidx == *child_cidx) continue;
+        clone *child2 = &lattice_get_class(lt, *child2_cidx)->clone;
+        if(clone_subset(child2, child)) {
+          flag = 0;
+          break;
+        }
+      }
+
+      /* if `child` is a new maximal subclone, insert it to the list of maximal
+       * subclones of `c`. */
+      if(flag) {
+        class_add_subclass(c, *child_cidx);
+      }
+    }
+
+    /* printf("%u\t%lu\n", c->cidx, c->num_subclasses); */
+  }
 }
 

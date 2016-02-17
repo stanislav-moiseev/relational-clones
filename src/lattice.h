@@ -93,9 +93,16 @@ void lattice_free(lattice *lt);
 
 void lattice_add_layer(lattice *lt, layer *lr);
 
+void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt);
+
 /** `lattice_construct_layers` constructs all layers from the closure table of
  * all pairs of clone plus predicate.
  */
 void lattice_construct_layers(lattice *lt, const ccplt *ccplt);
+
+/** `lattice_construct_maximal_clones` for each clone computes all maximal
+ * proper subclones.
+ */
+void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt);
 
 #endif
