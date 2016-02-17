@@ -16,6 +16,7 @@ hashtable *hashtable_alloc(size_t capacity,
   hashtable *ht = malloc(sizeof(hashtable));
   assert(ht);
   /* capacity must be power of 2 */
+  ht->size     = 0;
   ht->capacity = int_pow2(int_log(2, 2*capacity));
   ht->table    = malloc(ht->capacity * sizeof(hash_elem *));
   assert(ht->table);
@@ -39,14 +40,42 @@ void hashtable_free(hashtable *ht) {
 }
 
 void hashtable_insert(hashtable *ht, const void *key, const void *value) {
+  /* search for the element with the given key */
   uint32_t hash = ht->hash(key);
-  hash_elem *prev = ht->table[hash & (ht->capacity - 1)];
-  hash_elem *elem = malloc(sizeof(hash_elem));
+  hash_elem *elem = ht->table[hash & (ht->capacity - 1)];
+  while(elem != NULL) {
+    /* if found, update the value */
+    if(ht->eq(elem->key, key)) {
+      elem->value = (void *)value;
+      return;
+    }
+    elem = elem->next;
+  }
+
+  /* if not found, create a new hash_elem */
+  elem = malloc(sizeof(hash_elem));
   assert(elem);
   elem->key   = (void *)key;
   elem->value = (void *)value;
-  elem->next  = prev;
+  elem->next  = ht->table[hash & (ht->capacity - 1)];
   ht->table[hash & (ht->capacity - 1)] = elem;
+  ++ht->size;
+}
+
+void hashtable_remove(hashtable *ht, const void *key) {
+  uint32_t hash         = ht->hash(key);
+  hash_elem **prev_next = &ht->table[hash & (ht->capacity - 1)];
+  hash_elem *elem       = ht->table[hash & (ht->capacity - 1)];
+  while(elem != NULL) {
+    if(ht->eq(elem->key, key)) {
+      *prev_next = elem->next;
+      free(elem);
+      --ht->size;
+      return;
+    }
+    prev_next = &elem->next;
+    elem = elem->next;
+  }
 }
 
 void *hashtable_lookup(const hashtable *ht, const void *key) {
@@ -86,13 +115,14 @@ hashtable_iterator hashtable_iterator_begin(const hashtable *ht) {
 }
 
 int hashtable_iterator_end(hashtable_iterator *it) {
-  if(it->elemp == it->ht->table + it->ht->capacity) return 1;
-  else return 0;
+  return (it->elemp == it->ht->table + it->ht->capacity);
 }
 
 void hashtable_iterator_next(hashtable_iterator *it) {
+  /* if `it != hashtable_iterator_begin`, proceed to the next element */
   if(it->elem != NULL) { it->elem = it->elem->next; }
-  
+
+  /* if `it == hashtable_iterator_begin` or the next element is NULL. */
   if(it->elem == NULL) {
     do {
       ++it->elemp;

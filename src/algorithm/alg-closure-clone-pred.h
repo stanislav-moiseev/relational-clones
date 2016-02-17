@@ -5,6 +5,8 @@
 #ifndef ALG_CLOSURE_CLONE_PRED_H
 #define ALG_CLOSURE_CLONE_PRED_H
 
+#include <assert.h>
+
 #include "clone.h"
 #include "hashtable.h"
 #include "globals.h"

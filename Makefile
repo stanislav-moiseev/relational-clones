@@ -17,6 +17,7 @@ SRCS =									\
 	src/closure/closure-two-preds.c					\
 									\
 	src/maj-lattice.c						\
+	src/lattice.c							\
 									\
 	src/algorithm/alg-maj-classes.c					\
 	src/algorithm/alg-closure-clone-pred.c				\
@@ -52,12 +53,17 @@ TESTS =									\
 
 SCRIPTS =								\
 	script/binary/script-recode-binary.out				\
+									\
 	script/script-maj-discr-fun-two-layers.out			\
 	script/script-maj-classes-with-one-subclass.out			\
 	script/script-maj-classes-with-one-subclass-discr-fun.out	\
+									\
 	script/script-pred-equivalence-classes.out			\
 	script/script-closure-two-preds.out				\
-	script/script-construct-lattice.out				\
+	script/script-closure-clone-pred-construct.out			\
+									\
+	script/script-lattice-construct-layers.out			\
+
 
 all:  $(TESTS) $(SCRIPTS)
 
