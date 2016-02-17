@@ -79,7 +79,7 @@ void ccplt_insert_node(ccplt *lt, ccpnode *c, pred_idx_t pidx_begin) {
   /* resize ccpnode storage if needed */
   if(lt->num_nodes == lt->capacity) {
     lt->capacity *= 2;
-    lt->nodes   = realloc(lt->nodes, lt->capacity);
+    lt->nodes     = realloc(lt->nodes, lt->capacity);
     assert(lt->nodes);
   }
 

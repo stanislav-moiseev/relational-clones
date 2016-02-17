@@ -31,6 +31,7 @@ SRCS =									\
 	src/binary/bin-maj-classes-with-one-subclass-discr-fun.c	\
 	src/binary/bin-closure-two-preds.c				\
 	src/binary/bin-closure-clone-pred.c				\
+	src/binary/bin-lattice.c					\
 									\
 	src/z3/z3-search.c						\
 #	src/z3/gen-spec.c						\
@@ -63,7 +64,7 @@ SCRIPTS =								\
 	script/script-closure-clone-pred-construct.out			\
 									\
 	script/script-lattice-construct-layers.out			\
-
+	script/script-lattice-discr-fun.out				\
 
 all:  $(TESTS) $(SCRIPTS)
 

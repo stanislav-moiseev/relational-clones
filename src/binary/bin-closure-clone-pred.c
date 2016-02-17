@@ -51,7 +51,7 @@ static void ccpnode_read(FILE *fd, const ccplt *lt, ccpnode *c) {
   /* c->num_children = uint64_read(fd); */
   c->children     = malloc(c->num_children * sizeof(class_idx)); 
   assert(c->children != NULL);
-  for(class_idx *child_idx = c->children; child_idx < c->children + c->lt->pred_num->uniq_sz - c->pidx_begin; ++child_idx) {
+  for(class_idx *child_idx = c->children; child_idx < c->children + c->num_children; ++child_idx) {
     *child_idx = uint32_read(fd);
   }
 }
