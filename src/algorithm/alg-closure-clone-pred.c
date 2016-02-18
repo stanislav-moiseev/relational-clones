@@ -236,3 +236,19 @@ void latice_construct(const closure_operator *clop, ccplt *lt) {
   }
 }
 
+
+/** `ccplt_closure_clone` uses CCPLT to efficiently compute the closure of the
+ * given clone .*/
+ccpnode *ccplt_closure_clone(const ccplt* lt, const clone *cl) {
+  /* Start traversing the lattice from the top clone and add predicates from
+   * `cl` one by one. */
+  ccpnode *nd = ccplt_top_clone(lt);
+  /* In order to use LT, we need to process predicates form the given clone
+   * in a specific order. */
+  for(pred *p = lt->pred_num->uniq_preds; p < lt->pred_num->uniq_preds + lt->pred_num->uniq_sz; ++p) {
+    if(clone_test_pred(cl, p)) {
+      nd = ccpnode_get_child(nd, p);
+    }
+  }
+  return nd;
+}

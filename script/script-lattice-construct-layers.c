@@ -29,7 +29,7 @@ void verify_maximal_subclones(const lattice *lt, const ccplt *ccplt) {
 void script_lattice_construct_layers(const char *ccp_name, const char *fout_name) {
   printf("reading \"%s\"...", ccp_name); fflush(stdout);
   ccplt *ccplt = ccplt_read(ccp_name);
-  printf("\tOk.\n");
+  printf("\tOk.\n\n");
 
   lattice *lt = lattice_alloc();
   lattice_load_classes_from_ccplt(lt, ccplt);

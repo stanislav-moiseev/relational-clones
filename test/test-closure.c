@@ -8,10 +8,14 @@
 #include <string.h>
 
 #include "fun-majority.h"
+#include "pred-essential.h"
 #include "closure.h"
-#include "binary/bin-common.h"
 #include "closure/closure-straightforward.h"
-#include "closure/closure-two-preds.h"
+#include "closure/closure-clone-pred.h"
+#include "binary/bin-common.h"
+#include "binary/bin-closure-clone-pred.h"
+
+#include "test-random.h"
 
 void test_pred_is_essential() {
   pred p_false, p_true, p_eq0, p_eq1, p_eq2, p_eq, p_neq;
@@ -130,6 +134,59 @@ void test_clone_closure2() {
   clop_free(clop);
 }
 
+/** Test that the implementation of the closure operator based on the precomputed
+ * closure of clone plus a predicate gives the same result as the
+ * straightforward implementation. */
+void test_closure_clone_pred(const char *fname) {
+  closure_operator *clop_sf = clop_alloc_straightforward();
+  closure_operator *clop_cp = clop_clone_pred_read(fname);
+
+  clone uniq_ess;
+  closure_uniq_ess_preds(&uniq_ess);
+
+  for(int i = 0; i < 1000; ++i) {
+    /* Generate a random clone and compute its closure using different
+     * implementations of closure operator. */
+    clone cl;
+    random_clone(&cl);
+    clone_intersection(&cl, &uniq_ess, &cl);
+    clone_insert_dummy_preds(&cl);
+        
+    clone closure_sf, closure_cp;
+    closure_clone(clop_sf, &cl, &closure_sf);
+    closure_clone(clop_cp, &cl, &closure_cp);
+    
+    /* As long as `closure_cp` constains closure-unique essential predicates
+    * only, but `closure_sf` contains all essential predicates, we need to
+    * filter `closure_sf`. */
+    clone_intersection(&closure_sf, &uniq_ess, &closure_sf);
+    /* But we need to include dummy predicates :) */
+    clone_insert_dummy_preds(&closure_sf);
+
+    if(!clone_eq(&closure_sf, &closure_cp)) {
+      printf("Error\n");
+      printf("Initial set of predicates:");
+      clone_print_verbosely(stdout, &cl);
+      printf("================================\n");
+      clone diff1;
+      clone_diff(&closure_sf, &closure_cp, &diff1);
+      printf("Difference closure_sf \\ closure_cp:");
+      clone_print_verbosely(stdout, &diff1);
+      /* clone_print_verbosely(stdout, &closure_sf); */
+      printf("================================\n");
+      clone diff2;
+      clone_diff(&closure_cp, &closure_sf, &diff2);
+      printf("Difference closure_cp \\ closure_sf:");
+      clone_print_verbosely(stdout, &diff2);
+      /* clone_print_verbosely(stdout, &closure_cp); */
+      return;
+    }
+  }
+  
+  clop_free(clop_cp);
+  clop_free(clop_sf);
+}
+
 int main() {
   printf("test-essential-predicates:\t"); fflush(stdout);
   test_pred_is_essential();
@@ -145,4 +202,9 @@ int main() {
   test_clone_closure1();
   test_clone_closure2();
   printf("Ok.\n");
+
+  printf("test-closure-clone-pred:\t"); fflush(stdout);
+  test_closure_clone_pred("data/closure-clone-pred.2016");
+  printf("Ok.\n");
+
 }

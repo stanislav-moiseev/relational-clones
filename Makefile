@@ -15,6 +15,7 @@ SRCS =									\
 	src/closure.c							\
 	src/closure/closure-straightforward.c				\
 	src/closure/closure-two-preds.c					\
+	src/closure/closure-clone-pred.c				\
 									\
 	src/maj-lattice.c						\
 	src/lattice.c							\
