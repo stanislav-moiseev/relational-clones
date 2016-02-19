@@ -294,7 +294,7 @@ void get_function(z3_wrapper *z3, Z3_func_decl fun, uint32_t fun_arity, struct f
 }
 
 
-Z3_lbool z3_find_discr_function(const clone *clone1_basis, const clone *clone1, const clone *clone2, uint32_t fun_arity, fun *fun) {
+Z3_lbool z3_find_one_discr_function(const clone *clone1_basis, const clone *clone1, const clone *clone2, uint32_t fun_arity, fun *fun) {
   z3_wrapper z3;
   z3_wrapper_init(&z3);
   
@@ -310,3 +310,25 @@ Z3_lbool z3_find_discr_function(const clone *clone1_basis, const clone *clone1, 
   
   return rc;
 }
+
+Z3_lbool z3_find_discr_function(const clone *clone1_basis, const clone *clone1, const clone *clone2, int max_fun_arity, fun *fun) {
+  int fun_arity;
+  Z3_lbool final_rc = Z3_L_FALSE;     /* the flag shows if we have proved that
+                                         the discriminating function of current
+                                         arity does not exist */
+  for(fun_arity = 0; fun_arity <= max_fun_arity; ++fun_arity) {
+    Z3_lbool rc = z3_find_one_discr_function(clone1_basis, clone1, clone2, fun_arity, fun);
+    if(rc == Z3_L_UNDEF) {
+      /* we no longer have a proof that the discriminating function does not
+         exist */
+      final_rc = Z3_L_UNDEF;
+    }
+    if(rc == Z3_L_TRUE) {
+      final_rc = Z3_L_TRUE;
+      break;    /* do not search for functions of higher arities */
+    }
+  }
+  return final_rc;
+}
+
+

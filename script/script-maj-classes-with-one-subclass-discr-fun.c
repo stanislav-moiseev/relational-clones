@@ -9,14 +9,15 @@
 
 #include "binary/bin-maj-lattice.h"
 #include "binary/bin-maj-classes-with-one-subclass-discr-fun.h"
-#include "algorithm/alg-maj-classes.h"
+#include "z3/z3-search.h"
+
 
 void test_majclasses_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {
   majlattice *lattice = majlattice_read(fname);
   
   majclass **classes;
   uint64_t num_classes;
-  find_classes_with_one_subclass(lattice, &classes, &num_classes);
+  majlattice_classes_with_one_subclass(lattice, &classes, &num_classes);
 
   fun *funs = malloc(num_classes * sizeof(struct fun));
   assert(funs != NULL);  
@@ -38,7 +39,7 @@ void test_majclasses_with_one_subclass_discr_fun(const char *fname, const char *
             subclass->id.layer_id, subclass->id.class_id);
     fflush(flog);
 
-    Z3_lbool rc = find_discr_function(class, subclass, 5, funs+idx);
+    Z3_lbool rc = z3_find_discr_function(&class->basis, &class->clone, &subclass->clone, 5, funs+idx);
 
     switch(rc) {
     case Z3_L_FALSE:
@@ -115,3 +116,4 @@ int main() {
     printf("Error.\n");
   }
 }
+

@@ -1,5 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
+ *
+ * Lattice of all clones containing a majority operation
  ******************************************************************************/
 
 #ifndef MAJLATTICE_H
@@ -81,5 +83,15 @@ int majlattice_member(const majlattice *lt, const clone *cl);
  * the function returns NULL.
  */
 majclass *majlattice_lookup(const majlattice *lt, const clone *cl);
+
+
+/** `majlattice_classes_with_one_subclass` returns all classes `c` that contain
+ * exactly one proper subclass.
+ *
+ * The list of pointers to classes is written to `classes`, the number of
+ * classes is written to `num_classes`. The function allocates memory to store
+ * pointers to classes.
+ */
+void majlattice_classes_with_one_subclass(const majlattice *lattice, majclass ***classes, uint64_t *num_classes);
 
 #endif

@@ -67,3 +67,27 @@ int majlattice_member(const majlattice *lattice, const clone *cl) {
 majclass *majlattice_lookup(const majlattice *lt, const clone *cl) {
   return hashtable_lookup(lt->ht, cl);
 }
+
+
+
+void majlattice_classes_with_one_subclass(const majlattice *lattice, majclass ***classes, uint64_t *num_classes) {
+  size_t capacity = 128;
+  size_t size = 0;
+  *classes = malloc(capacity * sizeof(majclass *));
+  assert(*classes);
+  for(majlayer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
+    for(majclass *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
+      if(class->num_subclasses == 1) {
+        if(size == capacity) {
+          capacity *= 2;
+          *classes = realloc(*classes, capacity * sizeof(struct class *));
+          assert(*classes);
+        }
+        (*classes)[size] = class;
+        ++size;
+      }
+    }
+  }
+  *num_classes = size;
+}
+

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithm/alg-maj-classes.h"
+#include "z3/z3-search.h"
 #include "binary/bin-maj-lattice.h"
 
 void worker(const majlayer *layer1, const majlayer *layer2) {
@@ -24,7 +24,7 @@ void worker(const majlayer *layer1, const majlayer *layer2) {
         fflush(stdout);
 
         fun fun;
-        Z3_lbool rc = find_discr_function(class1, class2, 5, &fun);
+        Z3_lbool rc = z3_find_discr_function(&class1->basis, &class1->clone, &class2->clone, 5, &fun);
         switch(rc) {
         case Z3_L_FALSE:
           printf("unsat\n");

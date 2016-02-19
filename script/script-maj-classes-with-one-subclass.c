@@ -8,14 +8,14 @@
 #include <string.h>
 
 #include "binary/bin-maj-lattice.h"
-#include "algorithm/alg-maj-classes.h"
+#include "z3/z3-search.h"
 
 void test_find_classes_with_one_subclass(const char *fname) {
   majlattice *lattice = majlattice_read(fname);
   
   majclass **classes;
   uint64_t num_classes;
-  find_classes_with_one_subclass(lattice, &classes, &num_classes);
+  majlattice_classes_with_one_subclass(lattice, &classes, &num_classes);
   
   FILE *flog = stdout;
 

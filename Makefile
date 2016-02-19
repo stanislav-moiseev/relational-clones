@@ -20,7 +20,6 @@ SRCS =									\
 	src/maj-lattice.c						\
 	src/lattice.c							\
 									\
-	src/algorithm/alg-maj-classes.c					\
 	src/algorithm/alg-closure-clone-pred.c				\
 	src/algorithm/alg-closure-two-preds.c				\
 	src/hashtable.c							\
