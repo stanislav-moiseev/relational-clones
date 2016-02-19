@@ -2,84 +2,84 @@
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  ******************************************************************************/
 
-#ifndef MAJ_LATTICE_H
-#define MAJ_LATTICE_H
+#ifndef MAJLATTICE_H
+#define MAJLATTICE_H
 
 #include "clone.h"
 #include "hashtable.h"
 
-/** `maj_class_id` is a unique class identifier.
+/** `majclass_id` is a unique class identifier.
  */
-struct maj_class_id {
+struct majclass_id {
   uint32_t layer_id;
   /* class number withing a layer */
   uint32_t class_id;
 };
-typedef struct maj_class_id maj_class_id;
+typedef struct majclass_id majclass_id;
 
-struct maj_class {
-  maj_class_id id;
+struct majclass {
+  majclass_id id;
   clone basis;
   clone clone;
   uint64_t num_subclasses;
-  maj_class_id *subclasses;
+  majclass_id *subclasses;
 };
 
-typedef struct maj_class maj_class;
+typedef struct majclass majclass;
 
-/** `maj_class_free` releases the memory allocated to store the list of 
+/** `majclass_free` releases the memory allocated to store the list of 
  * subclasses.
  */
-void maj_class_free(maj_class *class);
+void majclass_free(majclass *class);
 
-/** `maj_class_print_verbosely` writes
+/** `majclass_print_verbosely` writes
  *   1) a list of all basis predicates of the class `class`.
  *   2) a list of all predicates from the `class->clone`.
  */
-void maj_class_print_verbosely(FILE *fd, const maj_class *class);
+void majclass_print_verbosely(FILE *fd, const majclass *class);
 
-typedef uint32_t maj_layer_id;
+typedef uint32_t majlayer_id;
 
-struct maj_layer {
-  maj_layer_id id;
+struct majlayer {
+  majlayer_id id;
   uint64_t num_classes;
-  maj_class *classes;
+  majclass *classes;
 };
 
-typedef struct maj_layer maj_layer;
+typedef struct majlayer majlayer;
 
-struct maj_lattice {
+struct majlattice {
   uint64_t num_layers;
-  maj_layer *layers;
+  majlayer *layers;
 
   /** A hash table to support efficient clone search and membership test. */
   hashtable *ht;
 };
 
-typedef struct maj_lattice maj_lattice;
+typedef struct majlattice majlattice;
 
-void maj_layer_free(maj_layer *layer);
+void majlayer_free(majlayer *layer);
 
-/** `maj_lattice_free` releases the memory allocated to store the layers.
- * The function also calls `maj_class_free` on all classes.
+/** `majlattice_free` releases the memory allocated to store the layers.
+ * The function also calls `majclass_free` on all classes.
  */
-void maj_lattice_free(maj_lattice *lattice);
+void majlattice_free(majlattice *lattice);
 
-/** `maj_lattice_get_class` returns a pointer to a class identified by
+/** `majlattice_get_class` returns a pointer to a class identified by
  * the given class id.
  */
-maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id);
+majclass *majlattice_get_class(const majlattice *lattice, majclass_id id);
 
-maj_layer *maj_lattice_get_layer(const maj_lattice *lattice, maj_layer_id id);
+majlayer *majlattice_get_layer(const majlattice *lattice, majlayer_id id);
 
-/** `maj_lattice_member` returns true if the lattice contains the clone.
+/** `majlattice_member` returns true if the lattice contains the clone.
  */
-int maj_lattice_member(const maj_lattice *lt, const clone *cl);
+int majlattice_member(const majlattice *lt, const clone *cl);
 
-/** `maj_lattice_lookup` efficiently searches the lattice for a clone `cl`.
- * If found, the function returns the corresponding maj_class; otherwise
+/** `majlattice_lookup` efficiently searches the lattice for a clone `cl`.
+ * If found, the function returns the corresponding majclass; otherwise
  * the function returns NULL.
  */
-maj_class *maj_lattice_lookup(const maj_lattice *lt, const clone *cl);
+majclass *majlattice_lookup(const majlattice *lt, const clone *cl);
 
 #endif

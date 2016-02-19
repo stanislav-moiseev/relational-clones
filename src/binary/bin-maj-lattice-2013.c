@@ -39,7 +39,7 @@ void pred_read_2013(FILE *fd, pred *pred) {
   pred->data = read_uint64(fd);
 }
 
-int maj_class_read_2013(FILE *fd, maj_class *class) {
+int majclass_read_2013(FILE *fd, majclass *class) {
   /* the size of the basis */
   uint64_t size = read_uint64(fd);
 
@@ -57,14 +57,14 @@ int maj_class_read_2013(FILE *fd, maj_class *class) {
   return 1;
 }
 
-void maj_layer_aread_classes_2013(FILE *fd, maj_layer *layer) {
+void majlayer_aread_classes_2013(FILE *fd, majlayer *layer) {
   layer->num_classes = read_uint64(fd);
   
-  layer->classes = malloc(layer->num_classes * sizeof(struct maj_class));
+  layer->classes = malloc(layer->num_classes * sizeof(struct majclass));
   assert(layer->classes != NULL);
   for(int j = 0; j < layer->num_classes; ++j) {
-    maj_class *class = layer->classes + j;
-    maj_class_read_2013(fd, class);
+    majclass *class = layer->classes + j;
+    majclass_read_2013(fd, class);
   }
 
   /* test EOF */
@@ -72,15 +72,15 @@ void maj_layer_aread_classes_2013(FILE *fd, maj_layer *layer) {
   assert(fread(&c, 1, 1, fd) == 0);
 }
 
-void maj_layer_aread_connections_2013(FILE *fd, maj_layer *layer) {
+void majlayer_aread_connections_2013(FILE *fd, majlayer *layer) {
   assert(layer->num_classes == read_uint64(fd));
   for(int class_id = 0; class_id < layer->num_classes; ++class_id) {
-    maj_class *class = &layer->classes[class_id];
+    majclass *class = &layer->classes[class_id];
     class->id.layer_id = read_uint64(fd) - 1;   /* layer numbering start with 1 */
     class->id.class_id = read_uint64(fd);
     
     class->num_subclasses = read_uint64(fd);
-    class->subclasses = malloc(class->num_subclasses * sizeof(struct maj_class_id));
+    class->subclasses = malloc(class->num_subclasses * sizeof(struct majclass_id));
     assert(class->subclasses != NULL);
     for(int j = 0; j < class->num_subclasses; ++j) {
       class->subclasses[j].layer_id = read_uint64(fd) - 1;      /* layer numbering start with 1 */
@@ -93,12 +93,12 @@ void maj_layer_aread_connections_2013(FILE *fd, maj_layer *layer) {
   assert(fread(&c, 1, 1, fd) == 0);
 }
 
-void maj_lattice_read_2013(int num_layers, const char *dir_clones, const char *dir_connections, maj_lattice *lattice) {
+void majlattice_read_2013(int num_layers, const char *dir_clones, const char *dir_connections, majlattice *lattice) {
   lattice->num_layers = num_layers;
-  lattice->layers = malloc(num_layers * sizeof(maj_layer));
+  lattice->layers = malloc(num_layers * sizeof(majlayer));
   assert(lattice->layers != NULL);
 
-  maj_layer *layer = lattice->layers;
+  majlayer *layer = lattice->layers;
   /* layer numbering start with 1 */
   for(int layer_id = 1; layer_id < num_layers+1; ++layer_id) {
     char *fname_classes;
@@ -112,8 +112,8 @@ void maj_lattice_read_2013(int num_layers, const char *dir_clones, const char *d
     assert(fd_connections != NULL);
 
     layer->id = layer_id - 1;   /* layer numbering start with 1 */
-    maj_layer_aread_classes_2013(fd_classes, layer);
-    maj_layer_aread_connections_2013(fd_connections, layer);
+    majlayer_aread_classes_2013(fd_classes, layer);
+    majlayer_aread_connections_2013(fd_connections, layer);
 
     free(fname_classes);
     free(fname_connections);

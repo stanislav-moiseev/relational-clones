@@ -11,19 +11,19 @@
 #include "algorithm/alg-maj-classes.h"
 
 void test_find_classes_with_one_subclass(const char *fname) {
-  maj_lattice *lattice = maj_lattice_read(fname);
+  majlattice *lattice = majlattice_read(fname);
   
-  maj_class **classes;
+  majclass **classes;
   uint64_t num_classes;
   find_classes_with_one_subclass(lattice, &classes, &num_classes);
   
   FILE *flog = stdout;
 
   size_t idx = 0;
-  for(maj_class **pclass = classes; pclass < classes + num_classes; ++pclass) {
-    maj_class *class = *pclass;
+  for(majclass **pclass = classes; pclass < classes + num_classes; ++pclass) {
+    majclass *class = *pclass;
     assert(class->num_subclasses == 1);
-    struct maj_class *subclass = maj_lattice_get_class(lattice, class->subclasses[0]);
+    struct majclass *subclass = majlattice_get_class(lattice, class->subclasses[0]);
 
     fprintf(flog, "%lu:\t class %2d:%-6d\t subclass %2d:%-6d\n",
             idx,
@@ -35,7 +35,7 @@ void test_find_classes_with_one_subclass(const char *fname) {
   }
 
   free(classes);
-  maj_lattice_free(lattice);
+  majlattice_free(lattice);
 }
 
 

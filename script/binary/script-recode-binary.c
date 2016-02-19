@@ -13,54 +13,54 @@
 #include "binary/bin-maj-lattice-2013.h"
 #include "binary/bin-maj-lattice.h"
 
-void test_maj_layer_read_classes_2013() {
+void test_majlayer_read_classes_2013() {
   char *filename;
   asprintf(&filename, "data/all_maj_cpp/%d.bin", 50);
   FILE *fd = fopen(filename, "rb");
   assert(fd != NULL);
   
-  maj_layer layer;
-  maj_layer_aread_classes_2013(fd, &layer);
+  majlayer layer;
+  majlayer_aread_classes_2013(fd, &layer);
 
   free(filename);
-  maj_layer_free(&layer);
+  majlayer_free(&layer);
   fclose(fd);
 }
 
-void test_maj_lattice_read_2013() {
-  maj_lattice lattice;
-  maj_lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
-  maj_lattice_free(&lattice);
+void test_majlattice_read_2013() {
+  majlattice lattice;
+  majlattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
+  majlattice_free(&lattice);
 }
 
 /** `test_recode_binary` reads lattice in 2013 file format
  * and writes to 2016 format.
  */
 void script_recode_binary()  {
-  maj_lattice lattice;
-  maj_lattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
+  majlattice lattice;
+  majlattice_read_2013(51, "data/all_maj_cpp", "data/lattice2", &lattice);
   FILE *fout = fopen("data/all-maj.2016", "wb");
   assert(fout != NULL);
   
-  maj_lattice_write(fout, &lattice);
+  majlattice_write(fout, &lattice);
   
-  maj_lattice_free(&lattice);
+  majlattice_free(&lattice);
   fclose(fout);
 }
 
-void test_read_maj_lattice_2016(const char *fname) {
-  maj_lattice *lattice = maj_lattice_read(fname);
+void test_read_majlattice_2016(const char *fname) {
+  majlattice *lattice = majlattice_read(fname);
   
-  maj_lattice_free(lattice);
+  majlattice_free(lattice);
 }
 
 int main() {
   printf("test that I can read layer in 2013 binary format: "); fflush(stdout);
-  test_maj_layer_read_classes_2013();
+  test_majlayer_read_classes_2013();
   printf("Ok.\n");
 
   printf("test that I can read lattice in 2013 binary format: "); fflush(stdout);
-  test_maj_lattice_read_2013();
+  test_majlattice_read_2013();
   printf("Ok.\n");
 
   printf("recode binaries to new format: "); fflush(stdout);
@@ -68,6 +68,6 @@ int main() {
   printf("Ok.\n");
 
   printf("test new binaries: "); fflush(stdout);
-  test_read_maj_lattice_2016("data/all-maj.2016");
+  test_read_majlattice_2016("data/all-maj.2016");
   printf("Ok.\n");
 }

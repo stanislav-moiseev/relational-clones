@@ -15,13 +15,13 @@
 /******************************************************************************/
 /** Lattice of all clones containing a majority operation */
 
-void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***classes, uint64_t *num_classes) {
+void find_classes_with_one_subclass(const majlattice *lattice, majclass ***classes, uint64_t *num_classes) {
   size_t capacity = 128;
   size_t size = 0;
-  *classes = malloc(capacity * sizeof(maj_class *));
+  *classes = malloc(capacity * sizeof(majclass *));
   assert(*classes);
-  for(maj_layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
-    for(maj_class *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
+  for(majlayer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
+    for(majclass *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
       if(class->num_subclasses == 1) {
         if(size == capacity) {
           capacity *= 2;
@@ -36,7 +36,7 @@ void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***cla
   *num_classes = size;
 }
 
-Z3_lbool find_discr_function(const maj_class *class, const struct maj_class *subclass, int max_fun_arity, fun *fun) {
+Z3_lbool find_discr_function(const majclass *class, const struct majclass *subclass, int max_fun_arity, fun *fun) {
   int fun_arity;
   Z3_lbool final_rc = Z3_L_FALSE;     /* the flag shows if we have proved that
                                          the discriminating function of current

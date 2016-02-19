@@ -11,10 +11,10 @@
 #include "binary/bin-maj-classes-with-one-subclass-discr-fun.h"
 #include "algorithm/alg-maj-classes.h"
 
-void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {
-  maj_lattice *lattice = maj_lattice_read(fname);
+void test_majclasses_with_one_subclass_discr_fun(const char *fname, const char *flogname, const char *foutname) {
+  majlattice *lattice = majlattice_read(fname);
   
-  maj_class **classes;
+  majclass **classes;
   uint64_t num_classes;
   find_classes_with_one_subclass(lattice, &classes, &num_classes);
 
@@ -27,10 +27,10 @@ void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char 
   /** For each pair of class—subclass, we search for a discriminating function
    * of arity from 0 up to 5. */
   size_t idx = 0;
-  for(maj_class **pclass = classes; pclass < classes + num_classes; ++pclass) {
-    maj_class *class = *pclass;
+  for(majclass **pclass = classes; pclass < classes + num_classes; ++pclass) {
+    majclass *class = *pclass;
     assert(class->num_subclasses == 1);
-    struct maj_class *subclass = maj_lattice_get_class(lattice, class->subclasses[0]);
+    struct majclass *subclass = majlattice_get_class(lattice, class->subclasses[0]);
 
     fprintf(flog, "%lu:\t class %2d:%-6d\t subclass %2d:%-6d\t ",
             idx,
@@ -70,16 +70,16 @@ void test_maj_classes_with_one_subclass_discr_fun(const char *fname, const char 
   fclose(fout);
   free(funs);
   free(classes);
-  maj_lattice_free(lattice);
+  majlattice_free(lattice);
 }
 
 int verify(const char *fname, const char *fclasses_name) {
-  maj_lattice *lattice = maj_lattice_read(fname);
+  majlattice *lattice = majlattice_read(fname);
 
   FILE *fclasses = fopen(fclasses_name, "rb");
   assert(fclasses != NULL);
   
-  maj_class **classes;
+  majclass **classes;
   uint64_t num_classes;
   fun *funs;
   read_classes_with_one_subclass_discr_fun(fclasses, lattice, &classes, &num_classes, &funs);
@@ -87,10 +87,10 @@ int verify(const char *fname, const char *fclasses_name) {
 
   int rc = 1;
   for(size_t i = 0; i < num_classes; ++i) {
-    maj_class *class = classes[i];
+    majclass *class = classes[i];
     fun *fun = funs + i;
     if(class->num_subclasses != 1) { rc = 0; break; }
-    struct maj_class *subclass = maj_lattice_get_class(lattice, class->subclasses[0]);
+    struct majclass *subclass = majlattice_get_class(lattice, class->subclasses[0]);
 
     if(!test_discr_function(&class->clone, &subclass->basis, fun)) { rc = 0; break; }
   }
@@ -102,9 +102,9 @@ int verify(const char *fname, const char *fclasses_name) {
 
 int main() {
   printf("script-maj-classes-with-one-subclass-discr-fun:\n"); fflush(stdout);
-  test_maj_classes_with_one_subclass_discr_fun("data/all-maj.2016",
-                                          "output/maj-classes-with-one-subclass-disr-fun.txt",
-                                          "output/maj-classes-with-one-subclass-disr-fun.2016");
+  test_majclasses_with_one_subclass_discr_fun("data/all-maj.2016",
+                                              "output/maj-classes-with-one-subclass-disr-fun.txt",
+                                              "output/maj-classes-with-one-subclass-disr-fun.2016");
   printf("Ok.\n");
 
   printf("verify-maj-classes-with-one-subclass-discr-fun: "); fflush(stdout);

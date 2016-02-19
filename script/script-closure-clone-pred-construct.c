@@ -30,11 +30,11 @@ void verify_lattice(const char *ccp_name, const char *maj2013) {
   printf("\tOk.\n");
 
   printf("reading \"%s\"...", maj2013); fflush(stdout);
-  maj_lattice *maj_lattice = maj_lattice_read(maj2013);
+  majlattice *majlattice = majlattice_read(maj2013);
   printf("\t\t\tOk.\n");
 
   printf("verification"); fflush(stdout);
-  size_t num_maj_nodes = 0;
+  size_t num_majnodes = 0;
   size_t idx = 0;
   for(ccpnode **cp = lt->nodes; cp < lt->nodes + lt->num_nodes; ++cp) {
     ccpnode *c = *cp;
@@ -42,12 +42,12 @@ void verify_lattice(const char *ccp_name, const char *maj2013) {
     /* If the clone contains a majority operation,
      * verify that it is a member of the lattice `maj2013` */
     if(clone_contains_majority(&c->clone)) {
-      ++num_maj_nodes;
+      ++num_majnodes;
 
       clone copy;
       clone_prepare_for_maj2013(&c->clone, &copy);
 
-      if(!maj_lattice_member(maj_lattice, &copy)) {
+      if(!majlattice_member(majlattice, &copy)) {
         printf("\nError: the following clone has not been found in maj'2013 lattice:\n");
         clone_print_verbosely(stdout, &c->clone);
         return;
@@ -62,10 +62,10 @@ void verify_lattice(const char *ccp_name, const char *maj2013) {
     }
   }
 
-  printf("\n%lu clones with majority have been found.\n", num_maj_nodes);
-  assert(num_maj_nodes == 1918040);
+  printf("\n%lu clones with majority have been found.\n", num_majnodes);
+  assert(num_majnodes == 1918040);
 
-  maj_lattice_free(maj_lattice);
+  majlattice_free(majlattice);
   ccplt_free(lt);
 }
 

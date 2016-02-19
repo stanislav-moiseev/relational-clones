@@ -7,17 +7,17 @@
 
 #include "maj-lattice.h"
 
-void maj_class_id_write(FILE *fd, const maj_class_id *id);
+void majclass_id_write(FILE *fd, const majclass_id *id);
 
-/** `maj_lattice_write` writes the lattice to binary file.
+/** `majlattice_write` writes the lattice to binary file.
  */
-void maj_lattice_write(FILE *fd, const maj_lattice *lattice);
+void majlattice_write(FILE *fd, const majlattice *lattice);
 
-void maj_class_id_read(FILE *fd, maj_class_id *id);
+void majclass_id_read(FILE *fd, majclass_id *id);
 
-/** `maj_lattice_read` reads the lattice from binary file.
+/** `majlattice_read` reads the lattice from binary file.
  */
-maj_lattice *maj_lattice_read(const char *fname);
+majlattice *majlattice_read(const char *fname);
 
 #endif
 

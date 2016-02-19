@@ -10,23 +10,23 @@
 #include "binary/bin-maj-lattice.h"
 #include "algorithm/alg-maj-classes.h"
 
-void test_size(const maj_lattice *lt) {
+void test_size(const majlattice *lt) {
   assert(lt->num_layers == 51);
 
   size_t sz = 0;
-  for(maj_layer *layer = lt->layers; layer < lt->layers + lt->num_layers; ++layer) {
+  for(majlayer *layer = lt->layers; layer < lt->layers + lt->num_layers; ++layer) {
     sz += layer->num_classes;
   }
   assert(sz == 1918040);
 }
 
 void test(const char *maj2013name) {
-  maj_lattice *maj_lattice = maj_lattice_read(maj2013name);
+  majlattice *majlattice = majlattice_read(maj2013name);
   
   /* run individual tests */
-  test_size(maj_lattice);
+  test_size(majlattice);
   
-  maj_lattice_free(maj_lattice);
+  majlattice_free(majlattice);
 }
 
 int main() {

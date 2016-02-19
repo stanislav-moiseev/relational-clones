@@ -9,14 +9,14 @@
 
 #include "maj-lattice.h"
 
-void maj_class_free(maj_class *class) {
+void majclass_free(majclass *class) {
   if(class->subclasses) {
     free(class->subclasses);
     class->subclasses = NULL;
   }
 }
 
-void maj_class_print_verbosely(FILE *fd, const maj_class *class) {
+void majclass_print_verbosely(FILE *fd, const majclass *class) {
   fprintf(fd, "class %2d:%-6d\n", class->id.layer_id, class->id.class_id);
   fprintf(fd, "class basis:\n");
   clone_print_verbosely(fd, &class->basis);
@@ -24,26 +24,26 @@ void maj_class_print_verbosely(FILE *fd, const maj_class *class) {
   clone_print_verbosely(fd, &class->clone);
 }
 
-void maj_layer_free(maj_layer *layer) {
-  for(maj_class *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
-    maj_class_free(class);
+void majlayer_free(majlayer *layer) {
+  for(majclass *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
+    majclass_free(class);
   }
   free(layer->classes);
 }
 
-void maj_lattice_free(maj_lattice *lattice) {
-  for(maj_layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
-    maj_layer_free(layer);
+void majlattice_free(majlattice *lattice) {
+  for(majlayer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
+    majlayer_free(layer);
   }
   free(lattice->layers);
   hashtable_free(lattice->ht);
   free(lattice);
 }
 
-maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id) {
+majclass *majlattice_get_class(const majlattice *lattice, majclass_id id) {
   if(id.layer_id < lattice->num_layers) {
     if(id.class_id < lattice->layers[id.layer_id].num_classes) {
-      maj_class *class = &lattice->layers[id.layer_id].classes[id.class_id];
+      majclass *class = &lattice->layers[id.layer_id].classes[id.class_id];
       assert(class->id.layer_id == id.layer_id && class->id.class_id == id.class_id);
       return class;
     }
@@ -51,19 +51,19 @@ maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id) {
   return NULL;
 }
 
-maj_layer *maj_lattice_get_layer(const maj_lattice *lattice, maj_layer_id id) {
+majlayer *majlattice_get_layer(const majlattice *lattice, majlayer_id id) {
   if(id < lattice->num_layers) {
-    maj_layer *layer = lattice->layers + id;
+    majlayer *layer = lattice->layers + id;
     assert(layer->id = id);
     return layer;
   }
   return NULL;
 }
 
-int maj_lattice_member(const maj_lattice *lattice, const clone *cl) {
-  return maj_lattice_lookup(lattice, cl) != NULL;
+int majlattice_member(const majlattice *lattice, const clone *cl) {
+  return majlattice_lookup(lattice, cl) != NULL;
 }
 
-maj_class *maj_lattice_lookup(const maj_lattice *lt, const clone *cl) {
+majclass *majlattice_lookup(const majlattice *lt, const clone *cl) {
   return hashtable_lookup(lt->ht, cl);
 }

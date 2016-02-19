@@ -10,11 +10,11 @@
 #include "algorithm/alg-maj-classes.h"
 #include "binary/bin-maj-lattice.h"
 
-void worker(const maj_layer *layer1, const maj_layer *layer2) {
+void worker(const majlayer *layer1, const majlayer *layer2) {
   for(int i = 0; i < layer1->num_classes; ++i) {
     for(int j = 0; j < layer2->num_classes; ++j) {
-      const maj_class *class1 = layer1->classes + i;
-      const maj_class *class2 = layer2->classes + j;
+      const majclass *class1 = layer1->classes + i;
+      const majclass *class2 = layer2->classes + j;
 
       /* if one set is a subset of the other set */
       if(clone_subset(&class1->clone, &class2->clone)) {
@@ -46,22 +46,22 @@ void worker(const maj_layer *layer1, const maj_layer *layer2) {
   }
 }
 
-void script_maj_disrc_fun_two_layers(const char *fname, maj_layer_id id1, maj_layer_id id2) {
-  maj_lattice *lattice =  maj_lattice_read(fname);
+void script_majdisrc_fun_two_layers(const char *fname, majlayer_id id1, majlayer_id id2) {
+  majlattice *lattice =  majlattice_read(fname);
 
-  const maj_layer *layer1 = maj_lattice_get_layer(lattice, id1);
+  const majlayer *layer1 = majlattice_get_layer(lattice, id1);
   assert(layer1 != NULL);
-  const maj_layer *layer2 = maj_lattice_get_layer(lattice, id2);
+  const majlayer *layer2 = majlattice_get_layer(lattice, id2);
   assert(layer2 != NULL);
   
   worker(layer1, layer2);
   
-  maj_lattice_free(lattice);
+  majlattice_free(lattice);
 }
 
 int main() {
   printf("script-maj-disrc-fun-two-layers:\n"); fflush(stdout);
-  script_maj_disrc_fun_two_layers("data/all-maj.2016", 49, 50);
+  script_majdisrc_fun_two_layers("data/all-maj.2016", 49, 50);
   printf("Ok.\n");
 }
 

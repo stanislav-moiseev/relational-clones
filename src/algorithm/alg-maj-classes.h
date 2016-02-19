@@ -13,7 +13,7 @@
 /******************************************************************************/
 /** Lattice of all clones containing a majority operation */
 
-void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***classes, uint64_t *num_classes);
+void find_classes_with_one_subclass(const majlattice *lattice, majclass ***classes, uint64_t *num_classes);
 
 /** `find_discr_function` searches for a function `fun` of arity <= max_fun_arity,
  * such that `fun` preserves the `class1` and does not preserve the `class2`.
@@ -21,6 +21,6 @@ void find_classes_with_one_subclass(const maj_lattice *lattice, maj_class ***cla
  * On success (rc==Z3_L_TRUE), the discriminating function of the smallest arity
  * will be stored to `fun`.
  */
-Z3_lbool find_discr_function(const maj_class *class1, const maj_class *class2, int max_fun_arity, fun *fun);
+Z3_lbool find_discr_function(const majclass *class1, const majclass *class2, int max_fun_arity, fun *fun);
 
 #endif
