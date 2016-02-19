@@ -196,9 +196,13 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
      * the bunch of clones from where to select maximal on the next step. */
     for(class_idx *cidx = new_lr->classes; cidx < new_lr->classes + new_lr->num_classes; ++cidx) {
       const ccpnode *nd = ccplt_get_node(ccplt, *cidx);
-      for(class_idx *child_cidx = nd->children; child_cidx < nd->children + nd->num_children; ++child_cidx) {
-        if(*child_cidx != *cidx) {
-          hashtable_insert(ht, child_cidx, child_cidx);
+      for(pred *p = ccplt->pred_num->uniq_preds; p < ccplt->pred_num->uniq_preds + ccplt->pred_num->uniq_sz; ++p) {
+        clone cl;
+        clone_copy(&nd->clone, &cl);
+        clone_insert_pred(&cl, p);
+        ccpnode *sub = ccplt_closure_clone(ccplt, &cl);
+        if(sub->cidx != *cidx) {
+          hashtable_insert(ht, &sub->cidx, &sub->cidx);
         }
       }
     }
@@ -216,14 +220,45 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
 void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;
-    const ccpnode *nd = ccplt_get_node(ccplt, c->cidx);
-    for(class_idx *child_cidx = nd->children; child_cidx < nd->children + nd->num_children; ++child_cidx) {
-      if(*child_cidx == c->cidx) continue;
+
+    /* If some maximal proper subclones were added to `c` previously, just skip
+     * them. We will recompute all them. */
+    c->num_subclasses = 0;
+    
+    /* Get a list of all direct proper subclones of `c`. */
+    ccpnode *dirsubs[ccplt->pred_num->uniq_sz];
+    size_t dirsubs_sz = 0;
+    for(pred *p = ccplt->pred_num->uniq_preds; p < ccplt->pred_num->uniq_preds + ccplt->pred_num->uniq_sz; ++p) {
+      clone cl;
+      clone_copy(&c->clone, &cl);
+      clone_insert_pred(&cl,p);
+      ccpnode *sub = ccplt_closure_clone(ccplt, &cl);
+      /* check that `sub` is a proper subset. */
+      if(sub->cidx == c->cidx) continue;
+      /* check that `sub` is new. */
+      int flag = 1;
+      for(ccpnode **sub2 = dirsubs; sub2 < dirsubs + dirsubs_sz; ++sub2) {
+        if((*sub2)->cidx == sub->cidx) {
+          flag = 0;
+          break;
+        }
+      }
+      /* If we've found a new direct proper subclone, insert it the list. */
+      if(flag) {
+        assert(dirsubs_sz < ccplt->pred_num->uniq_sz);
+        dirsubs[dirsubs_sz] = sub;
+        ++dirsubs_sz;
+      }
+    }
+
+    /* Find all maximal subclones among direct proper subclones of `c`. */
+    for(ccpnode **subp = dirsubs; subp < dirsubs + dirsubs_sz; ++subp) {
+      ccpnode *sub = *subp;
 
       /* test that we haven't inserted this subclone yet. */
       int flag = 1;
-      for(class_idx *sub_cidx = c->subclasses; sub_cidx < c->subclasses + c->num_subclasses; ++sub_cidx) {
-        if(*child_cidx == *sub_cidx) {
+      for(class_idx *sub2_cidx = c->subclasses; sub2_cidx < c->subclasses + c->num_subclasses; ++sub2_cidx) {
+        if(*sub2_cidx == sub->cidx) {
           flag = 0;
           break;
         }
@@ -231,25 +266,41 @@ void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
       if(!flag) continue;
 
       /* test that the current child clone is a maximal subclone of `c`. */
-      clone *child = &lattice_get_class(lt, *child_cidx)->clone;
       flag = 1;
-      for(class_idx *child2_cidx = nd->children; child2_cidx < nd->children + nd->num_children; ++child2_cidx) {
-        if(*child2_cidx == c->cidx || *child2_cidx == *child_cidx) continue;
-        clone *child2 = &lattice_get_class(lt, *child2_cidx)->clone;
-        if(clone_subset(child2, child)) {
+      for(ccpnode **sub2p = dirsubs; sub2p < dirsubs + dirsubs_sz; ++sub2p) {
+        ccpnode *sub2 = *sub2p;
+        if(sub2->cidx == sub->cidx) continue;
+        if(clone_subset(&sub2->clone, &sub->clone)) {
           flag = 0;
           break;
         }
       }
 
-      /* if `child` is a new maximal subclone, insert it to the list of maximal
+      /* if `sub` is a new maximal subclone, insert it to the list of maximal
        * subclones of `c`. */
       if(flag) {
-        class_add_subclass(c, *child_cidx);
+        class_add_subclass(c, sub->cidx);
       }
     }
-
-    /* printf("%u\t%lu\n", c->cidx, c->num_subclasses); */
   }
 }
 
+
+int subcl_cmp(const void *cidx1p, const void *cidx2p, void *lt) {
+  class *sub1 = lattice_get_class((lattice *)lt, *(class_idx *)cidx1p);
+  class *sub2 = lattice_get_class((lattice *)lt, *(class_idx *)cidx2p);
+  if(sub1->lidx < sub2->lidx) return -1;
+  if(sub1->lidx == sub2->lidx) {
+    if(sub1->cpos < sub2->cpos) return -1;
+    if(sub1->cpos == sub2->cpos) return 0;
+    return 1;
+  }
+  return 1;
+}
+
+void lattice_sort_maximal_subclones(lattice *lt) {
+  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
+    class *c = *cp;
+    qsort_r(c->subclasses, c->num_subclasses, sizeof(class_idx), subcl_cmp, lt);
+  }
+}

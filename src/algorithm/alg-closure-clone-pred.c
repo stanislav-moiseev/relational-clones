@@ -243,8 +243,10 @@ ccpnode *ccplt_closure_clone(const ccplt* lt, const clone *cl) {
   /* Start traversing the lattice from the top clone and add predicates from
    * `cl` one by one. */
   ccpnode *nd = ccplt_top_clone(lt);
+  assert(nd != NULL);
   /* In order to use LT, we need to process predicates form the given clone
    * in a specific order. */
+  assert(lt->pred_num != NULL);
   for(pred *p = lt->pred_num->uniq_preds; p < lt->pred_num->uniq_preds + lt->pred_num->uniq_sz; ++p) {
     if(clone_test_pred(cl, p)) {
       nd = ccpnode_get_child(nd, p);

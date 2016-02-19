@@ -79,7 +79,8 @@ ccplt *ccplt_read(const char *fname) {
     assert(pred_eq(p, &p2));
   }
 
-  /* alloc memory for ccpnodes; make pointers to ccpnodes be ready */
+  /* Alloc memory for ccpnodes. We need the pointers to ccpnodes be ready before
+   * calling `ccpnode_read`. */
   for(ccpnode **ccpnodep = lt->nodes; ccpnodep < lt->nodes + lt->num_nodes; ++ccpnodep) {
     *ccpnodep = ccpnode_alloc();
   }

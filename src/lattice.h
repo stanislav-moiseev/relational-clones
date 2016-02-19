@@ -95,8 +95,7 @@ void lattice_add_layer(lattice *lt, layer *lr);
 
 void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt);
 
-/** `lattice_construct_layers` constructs all layers from the closure table of
- * all pairs of clone plus predicate.
+/** `lattice_construct_layers` constructs all layers.
  */
 void lattice_construct_layers(lattice *lt, const ccplt *ccplt);
 
@@ -104,5 +103,9 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt);
  * proper subclones.
  */
 void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt);
+
+/** `lattice_sort_maximal_subclones` arranged the maximal subclones of all
+    clones in an order from higher layers to lower layers. */
+void lattice_sort_maximal_subclones(lattice *lt);
 
 #endif

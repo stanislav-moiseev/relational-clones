@@ -12,19 +12,17 @@
 #include "binary/bin-lattice.h"
 
 void verify_maximal_subclones(const lattice *lt, const ccplt *ccplt) {
-  /* Verify that if no subclones have been found for a given clone `c`,
-   * then for all closure-unique predicate `p` we have <{p} ∪ c> == c */
+  /* Verify that there is exactly one clone `c` (the bottom) such that for all
+   * closure-unique predicate `p` we have <{p} ∪ c> == c. */
+  int num = 0;
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;
-    const ccpnode *nd = ccplt_get_node(ccplt, c->cidx);
     if(c->num_subclasses == 0) {
-      for(class_idx *child2_cidx = nd->children; child2_cidx < nd->children + nd->num_children; ++child2_cidx) {
-        assert(c->cidx == *child2_cidx);
-      }
+      ++num;
     }
   }
+  assert(num == 1);
 }
-
 
 void script_lattice_construct_layers(const char *ccp_name, const char *fout_name) {
   printf("reading \"%s\"...", ccp_name); fflush(stdout);
@@ -35,7 +33,9 @@ void script_lattice_construct_layers(const char *ccp_name, const char *fout_name
   lattice_load_classes_from_ccplt(lt, ccplt);
   lattice_construct_layers(lt, ccplt);
   lattice_construct_maximal_subclones(lt, ccplt);
+  lattice_sort_maximal_subclones(lt);
   verify_maximal_subclones(lt, ccplt);
+  
   lattice_write(fout_name, lt);
   
   lattice_free(lt);
