@@ -47,21 +47,16 @@ void worker(const maj_layer *layer1, const maj_layer *layer2) {
 }
 
 void script_maj_disrc_fun_two_layers(const char *fname, maj_layer_id id1, maj_layer_id id2) {
-  FILE *fd = fopen(fname, "rb");
-  assert(fd != NULL);
+  maj_lattice *lattice =  maj_lattice_read(fname);
 
-  maj_lattice lattice;
-  maj_lattice_read(fd, &lattice);
-
-  const maj_layer *layer1 = maj_lattice_get_layer(&lattice, id1);
+  const maj_layer *layer1 = maj_lattice_get_layer(lattice, id1);
   assert(layer1 != NULL);
-  const maj_layer *layer2 = maj_lattice_get_layer(&lattice, id2);
+  const maj_layer *layer2 = maj_lattice_get_layer(lattice, id2);
   assert(layer2 != NULL);
   
   worker(layer1, layer2);
   
-  maj_lattice_free(&lattice);
-  fclose(fd);
+  maj_lattice_free(lattice);
 }
 
 int main() {

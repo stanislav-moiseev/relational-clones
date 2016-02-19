@@ -30,10 +30,7 @@ void verify_lattice(const char *ccp_name, const char *maj2013) {
   printf("\tOk.\n");
 
   printf("reading \"%s\"...", maj2013); fflush(stdout);
-  FILE *fd = fopen(maj2013, "rb");
-  assert(fd != NULL);
-  maj_lattice maj_lattice;
-  maj_lattice_read(fd, &maj_lattice);
+  maj_lattice *maj_lattice = maj_lattice_read(maj2013);
   printf("\t\t\tOk.\n");
 
   printf("verification"); fflush(stdout);
@@ -50,7 +47,7 @@ void verify_lattice(const char *ccp_name, const char *maj2013) {
       clone copy;
       clone_prepare_for_maj2013(&c->clone, &copy);
 
-      if(!maj_lattice_member(&maj_lattice, &copy)) {
+      if(!maj_lattice_member(maj_lattice, &copy)) {
         printf("\nError: the following clone has not been found in maj'2013 lattice:\n");
         clone_print_verbosely(stdout, &c->clone);
         return;
@@ -68,9 +65,8 @@ void verify_lattice(const char *ccp_name, const char *maj2013) {
   printf("\n%lu clones with majority have been found.\n", num_maj_nodes);
   assert(num_maj_nodes == 1918040);
 
-  maj_lattice_free(&maj_lattice);
+  maj_lattice_free(maj_lattice);
   ccplt_free(lt);
-  fclose(fd);
 }
 
 void construct_lattice(const char *table2p_uniq_name, const char *ccp_name) {

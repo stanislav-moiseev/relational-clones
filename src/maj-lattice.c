@@ -36,9 +36,8 @@ void maj_lattice_free(maj_lattice *lattice) {
     maj_layer_free(layer);
   }
   free(lattice->layers);
-  lattice->layers = NULL;
   hashtable_free(lattice->ht);
-  lattice->ht = NULL;
+  free(lattice);
 }
 
 maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id) {

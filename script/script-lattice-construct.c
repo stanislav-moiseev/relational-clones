@@ -56,12 +56,8 @@ void script_lattice_construct_maximal_subclones(const char *ccp_name, const char
  */
 void verify_maximal_subclones(const char *fin_name, const char *maj2013) {
   printf("reading \"%s\"...", maj2013); fflush(stdout);
-  FILE *fd = fopen(maj2013, "rb");
-  assert(fd != NULL);
-  maj_lattice maj_lattice;
-  maj_lattice_read(fd, &maj_lattice);
+  maj_lattice *maj_lattice = maj_lattice_read(maj2013);
   printf("\t\tOk.\n");
-  fclose(fd);
 
   printf("reading \"%s\"...", fin_name); fflush(stdout);
   lattice *lt = lattice_read(fin_name);
@@ -75,7 +71,7 @@ void verify_maximal_subclones(const char *fin_name, const char *maj2013) {
 
     clone copy;
     clone_prepare_for_maj2013(&c->clone, &copy);
-    maj_class *maj_c = maj_lattice_lookup(&maj_lattice, &copy);
+    maj_class *maj_c = maj_lattice_lookup(maj_lattice, &copy);
     assert(maj_c != NULL);
 
     size_t num_maj_subs = 0;
@@ -87,7 +83,7 @@ void verify_maximal_subclones(const char *fin_name, const char *maj2013) {
       /* Test that the given maximal subclone is present in maj'2013. */
       clone sub_copy;
       clone_prepare_for_maj2013(&sub->clone, &sub_copy);
-      if(!maj_lattice_member(&maj_lattice, &sub_copy)) {
+      if(!maj_lattice_member(maj_lattice, &sub_copy)) {
         printf("\nError: the following clone contains a majority operation, but its maximal proper subclone has not been found in maj'2013 lattice:\n");
         clone_print_verbosely(stdout, &c->clone);
         printf("================================\n");

@@ -21,17 +21,12 @@ void test_size(const maj_lattice *lt) {
 }
 
 void test(const char *maj2013name) {
-  FILE *fd = fopen(maj2013name, "rb");
-  assert(fd != NULL);
-
-  maj_lattice maj_lattice;
-  maj_lattice_read(fd, &maj_lattice);
+  maj_lattice *maj_lattice = maj_lattice_read(maj2013name);
   
   /* run individual tests */
-  test_size(&maj_lattice);
+  test_size(maj_lattice);
   
-  maj_lattice_free(&maj_lattice);
-  fclose(fd);
+  maj_lattice_free(maj_lattice);
 }
 
 int main() {

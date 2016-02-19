@@ -73,11 +73,19 @@ void maj_layer_read(FILE *fd, maj_layer *layer, hashtable *ht) {
   }
 }
 
-void maj_lattice_read(FILE *fd, maj_lattice *lattice) {
+maj_lattice *maj_lattice_read(const char *fname) {
+  FILE *fd = fopen(fname, "rb");
+  assert(fd);
+
+  maj_lattice *lattice = malloc(sizeof(maj_lattice));
+
   lattice->num_layers = uint64_read(fd);
   lattice->layers     = malloc(lattice->num_layers * sizeof(struct maj_layer));
   lattice->ht         = hashtable_alloc(2<<20, clone_hash, (int (*)(const void *, const void *))clone_eq);
   for(maj_layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
     maj_layer_read(fd, layer, lattice->ht);
   }
+  
+  fclose(fd);
+  return lattice;
 }

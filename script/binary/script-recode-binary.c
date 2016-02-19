@@ -49,14 +49,9 @@ void script_recode_binary()  {
 }
 
 void test_read_maj_lattice_2016(const char *fname) {
-  FILE *fin = fopen(fname, "rb");
-  assert(fin != NULL);
+  maj_lattice *lattice = maj_lattice_read(fname);
   
-  maj_lattice lattice;
-  maj_lattice_read(fin, &lattice);
-  
-  maj_lattice_free(&lattice);
-  fclose(fin);
+  maj_lattice_free(lattice);
 }
 
 int main() {

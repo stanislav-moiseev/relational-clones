@@ -17,7 +17,7 @@ void maj_class_id_read(FILE *fd, maj_class_id *id);
 
 /** `maj_lattice_read` reads the lattice from binary file.
  */
-void maj_lattice_read(FILE *fd, maj_lattice *lattice);
+maj_lattice *maj_lattice_read(const char *fname);
 
 #endif
 
