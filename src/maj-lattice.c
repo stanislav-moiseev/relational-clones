@@ -37,6 +37,8 @@ void maj_lattice_free(maj_lattice *lattice) {
   }
   free(lattice->layers);
   lattice->layers = NULL;
+  hashtable_free(lattice->ht);
+  lattice->ht = NULL;
 }
 
 maj_class *maj_lattice_get_class(const maj_lattice *lattice, maj_class_id id) {
@@ -60,10 +62,9 @@ maj_layer *maj_lattice_get_layer(const maj_lattice *lattice, maj_layer_id id) {
 }
 
 int maj_lattice_member(const maj_lattice *lattice, const clone *cl) {
-  for(maj_layer *layer = lattice->layers; layer < lattice->layers + lattice->num_layers; ++layer) {
-    for(maj_class *class = layer->classes; class < layer->classes + layer->num_classes; ++class) {
-      if(clone_eq(cl, &class->clone)) return 1;
-    }
-  }
-  return 0;
+  return maj_lattice_lookup(lattice, cl) != NULL;
+}
+
+maj_class *maj_lattice_lookup(const maj_lattice *lt, const clone *cl) {
+  return hashtable_lookup(lt->ht, cl);
 }

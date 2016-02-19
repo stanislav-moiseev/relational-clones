@@ -6,6 +6,7 @@
 #define MAJ_LATTICE_H
 
 #include "clone.h"
+#include "hashtable.h"
 
 /** `maj_class_id` is a unique class identifier.
  */
@@ -50,6 +51,9 @@ typedef struct maj_layer maj_layer;
 struct maj_lattice {
   uint64_t num_layers;
   maj_layer *layers;
+
+  /** A hash table to support efficient clone search and membership test. */
+  hashtable *ht;
 };
 
 typedef struct maj_lattice maj_lattice;
@@ -71,5 +75,11 @@ maj_layer *maj_lattice_get_layer(const maj_lattice *lattice, maj_layer_id id);
 /** `maj_lattice_member` returns true if the lattice contains the clone.
  */
 int maj_lattice_member(const maj_lattice *lt, const clone *cl);
+
+/** `maj_lattice_lookup` efficiently searches the lattice for a clone `cl`.
+ * If found, the function returns the corresponding maj_class; otherwise
+ * the function returns NULL.
+ */
+maj_class *maj_lattice_lookup(const maj_lattice *lt, const clone *cl);
 
 #endif
