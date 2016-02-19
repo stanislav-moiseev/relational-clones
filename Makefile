@@ -64,7 +64,7 @@ SCRIPTS =								\
 	script/script-closure-two-preds.out				\
 	script/script-closure-clone-pred-construct.out			\
 									\
-	script/script-lattice-construct-layers.out			\
+	script/script-lattice-construct.out				\
 	script/script-lattice-discr-fun.out				\
 
 all:  $(TESTS) $(SCRIPTS)

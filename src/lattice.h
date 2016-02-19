@@ -22,14 +22,14 @@ struct class {
   /** A closed set of predicates. */
   clone clone;
 
-  /** Number of maximal subclasses for this class. */
-  size_t num_subclasses;
+  /** Number of maximal proper subclasses for this class. */
+  size_t num_maxsubs;
 
-  /** A resizable array of pointers to all maximal subclasses for this class. */
-  class_idx *subclasses;
+  /** A resizable array of maximal proper subclasses for this class. */
+  class_idx *maxsubs;
   
   /** The current array capacity. */
-  size_t cap_subclasses;
+  size_t cap_maxsubs;
 }  __attribute__ ((aligned (32)));
 typedef struct class class;
 

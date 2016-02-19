@@ -15,8 +15,8 @@ void class_write(FILE *fd, const class *c) {
   uint32_write(fd, c->lidx);
   uint32_write(fd, c->cpos);
   clone_write(fd, &c->clone);
-  uint64_write(fd, c->num_subclasses);
-  for(class_idx *sub = c->subclasses; sub < c->subclasses + c->num_subclasses; ++sub) {
+  uint64_write(fd, c->num_maxsubs);
+  for(class_idx *sub = c->maxsubs; sub < c->maxsubs + c->num_maxsubs; ++sub) {
     uint32_write(fd, *sub);
   }
 }
@@ -38,10 +38,10 @@ void class_read(FILE *fd, class *c) {
   c->lidx = uint32_read(fd);
   c->cpos = uint32_read(fd);
   clone_read(fd, &c->clone);
-  c->num_subclasses = uint64_read(fd);
-  c->cap_subclasses = c->num_subclasses;
-  c->subclasses = malloc(c->cap_subclasses * sizeof(class_idx));
-  for(class_idx *sub = c->subclasses; sub < c->subclasses + c->num_subclasses; ++sub) {
+  c->num_maxsubs = uint64_read(fd);
+  c->cap_maxsubs = c->num_maxsubs;
+  c->maxsubs = malloc(c->cap_maxsubs * sizeof(class_idx));
+  for(class_idx *sub = c->maxsubs; sub < c->maxsubs + c->num_maxsubs; ++sub) {
     *sub = uint32_read(fd);
   }
 }
@@ -55,6 +55,7 @@ lattice *lattice_read(const char *fname) {
   lt->layers      = NULL; /* TODO: construct layers */
   lt->cap_layers  = 0;
   lt->num_classes = uint64_read(fd);
+  lt->classes     = aligned_alloc(32, lt->num_classes * sizeof(class *));
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     *cp = aligned_alloc(32, sizeof(class));
     class_read(fd, *cp);

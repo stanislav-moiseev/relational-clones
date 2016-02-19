@@ -12,30 +12,30 @@
 
 class *class_alloc(const ccpnode *nd) {
   class *c = aligned_alloc(32, sizeof(class));
-  c->cidx           = nd->cidx;
-  c->lidx           = -1;
-  c->cpos           = -1;
+  c->cidx        = nd->cidx;
+  c->lidx        = -1;
+  c->cpos        = -1;
   clone_copy(&nd->clone, &c->clone);
-  c->num_subclasses = 0;
-  c->cap_subclasses = 64;
-  c->subclasses     = malloc(c->cap_subclasses * sizeof(class_idx));
+  c->num_maxsubs = 0;
+  c->cap_maxsubs = 64;
+  c->maxsubs     = malloc(c->cap_maxsubs * sizeof(class_idx));
   return c;
 }
 
 void class_free(class *c) {
-  free(c->subclasses);
+  free(c->maxsubs);
   free(c);
 }
 
 void class_add_subclass(class *c, class_idx subclass_idx) {
-  if(c->num_subclasses == c->cap_subclasses) {
-    c->cap_subclasses *= 2;
-    c->subclasses = realloc(c->subclasses, c->cap_subclasses * sizeof(class_idx));
-    assert(c->subclasses);
+  if(c->num_maxsubs == c->cap_maxsubs) {
+    c->cap_maxsubs *= 2;
+    c->maxsubs = realloc(c->maxsubs, c->cap_maxsubs * sizeof(class_idx));
+    assert(c->maxsubs);
   }
-  assert(c->num_subclasses < c->cap_subclasses);
-  c->subclasses[c->num_subclasses] = subclass_idx;
-  ++c->num_subclasses;
+  assert(c->num_maxsubs < c->cap_maxsubs);
+  c->maxsubs[c->num_maxsubs] = subclass_idx;
+  ++c->num_maxsubs;
 }
 
 layer *layer_alloc() {
@@ -218,12 +218,13 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
 }
 
 void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
+  printf("constructing maximal proper subclones"); fflush(stdout);
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;
 
     /* If some maximal proper subclones were added to `c` previously, just skip
      * them. We will recompute all them. */
-    c->num_subclasses = 0;
+    c->num_maxsubs = 0;
     
     /* Get a list of all direct proper subclones of `c`. */
     ccpnode *dirsubs[ccplt->pred_num->uniq_sz];
@@ -231,7 +232,7 @@ void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
     for(pred *p = ccplt->pred_num->uniq_preds; p < ccplt->pred_num->uniq_preds + ccplt->pred_num->uniq_sz; ++p) {
       clone cl;
       clone_copy(&c->clone, &cl);
-      clone_insert_pred(&cl,p);
+      clone_insert_pred(&cl, p);
       ccpnode *sub = ccplt_closure_clone(ccplt, &cl);
       /* check that `sub` is a proper subset. */
       if(sub->cidx == c->cidx) continue;
@@ -257,7 +258,7 @@ void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
 
       /* test that we haven't inserted this subclone yet. */
       int flag = 1;
-      for(class_idx *sub2_cidx = c->subclasses; sub2_cidx < c->subclasses + c->num_subclasses; ++sub2_cidx) {
+      for(class_idx *sub2_cidx = c->maxsubs; sub2_cidx < c->maxsubs + c->num_maxsubs; ++sub2_cidx) {
         if(*sub2_cidx == sub->cidx) {
           flag = 0;
           break;
@@ -282,11 +283,17 @@ void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
         class_add_subclass(c, sub->cidx);
       }
     }
+
+    if(lt->num_classes >= 40);
+    if(c->cidx % (lt->num_classes / 40) == 0) {
+      printf("."); fflush(stdout);
+    }
   }
+  printf("Ok.\n");
 }
 
-
-int subcl_cmp(const void *cidx1p, const void *cidx2p, void *lt) {
+/** Sorting function for maximal proper subclones of a given clone. */
+static int subcl_cmp(const void *cidx1p, const void *cidx2p, void *lt) {
   class *sub1 = lattice_get_class((lattice *)lt, *(class_idx *)cidx1p);
   class *sub2 = lattice_get_class((lattice *)lt, *(class_idx *)cidx2p);
   if(sub1->lidx < sub2->lidx) return -1;
@@ -301,6 +308,6 @@ int subcl_cmp(const void *cidx1p, const void *cidx2p, void *lt) {
 void lattice_sort_maximal_subclones(lattice *lt) {
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;
-    qsort_r(c->subclasses, c->num_subclasses, sizeof(class_idx), subcl_cmp, lt);
+    qsort_r(c->maxsubs, c->num_maxsubs, sizeof(class_idx), subcl_cmp, lt);
   }
 }
