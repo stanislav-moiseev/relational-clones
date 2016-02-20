@@ -142,20 +142,17 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
   hashtable *ht = hashtable_alloc(lt->num_classes, class_idx_hash, class_idx_eq);
 
   /* Create the top layer containing just one top clone. */
-  layer *lr = layer_alloc();
-  lattice_add_layer(lt, lr);
   ccpnode *top_node = ccplt_top_clone(ccplt);
-  layer_add_class(lr, lattice_get_class(lt, top_node->cidx));
   hashtable_insert(ht, &top_node->cidx, &top_node->cidx);
 
   printf("layer\tclones to search\tlayer size\t\tprogress\n");
   printf("idx\tfor maximal\t\t(num of maximal clones)\n");
   size_t classes_constr = 0;    /* number of classes constructed so far */
   while(ht->size > 0) {
-    printf("%lu\t%lu\t\t\t", lt->num_layers-1, ht->size); fflush(stdout);
+    printf("%lu\t%lu\t\t\t", lt->num_layers, ht->size); fflush(stdout);
         
-    layer *new_lr = layer_alloc();    /* next layer, to be constructed */
-    lattice_add_layer(lt, new_lr);
+    layer *lr = layer_alloc();    /* next layer, to be constructed */
+    lattice_add_layer(lt, lr);
 
     /* [optimization] temporary copy all class indices from hash table to normal
      * list not to traverse the whole hash table in the double for-loop
@@ -182,20 +179,20 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
       }
       /* If `cl` is a maximal clone, insert it to the layer being constructed. */
       if(flag) {
-        layer_add_class(new_lr, lattice_get_class(lt, *cidx));
+        layer_add_class(lr, lattice_get_class(lt, *cidx));
       }
     }
 
     free(bunch);
 
     /* Remove maximal clones that's been found from further consideration. */
-    for(class_idx *cidx = new_lr->classes; cidx < new_lr->classes + new_lr->num_classes; ++cidx) {
+    for(class_idx *cidx = lr->classes; cidx < lr->classes + lr->num_classes; ++cidx) {
       hashtable_remove(ht, cidx);
     }
 
     /* Insert all direct proper subclones of the clones from the new layer to
      * the bunch of clones from where to select maximal on the next step. */
-    for(class_idx *cidx = new_lr->classes; cidx < new_lr->classes + new_lr->num_classes; ++cidx) {
+    for(class_idx *cidx = lr->classes; cidx < lr->classes + lr->num_classes; ++cidx) {
       const ccpnode *nd = ccplt_get_node(ccplt, *cidx);
       for(pred *p = ccplt->pred_num->uniq_preds; p < ccplt->pred_num->uniq_preds + ccplt->pred_num->uniq_sz; ++p) {
         clone cl;
@@ -208,7 +205,6 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
       }
     }
 
-    lr = new_lr;
     classes_constr += lr->num_classes;
     printf("%lu\t\t\t%.0f%%\n", lr->num_classes,
            100. * classes_constr / lt->num_classes);

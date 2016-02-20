@@ -66,9 +66,18 @@ uint32_t fun_compute(const fun *fun, uint64_t tuple);
  */
 int fun_preserves_pred(const fun *fun, const pred *pred);
 
-/** `test_discr_function` returns non-zero if the function preserves all predicates
- * from `clone1` and does not preserve at least one predicate from `clone2`.
+/** `fun_preserves_clone` returns true if the functions preserves every
+ * predicate from the given clone.
  */
-int test_discr_function(const clone *clone1, const clone *clone2, const fun *fun);
+int fun_preserves_clone(const fun *fun, const clone *clone);
+
+/** `test_discr_function` returns non-zero if the function preserves all
+ * predicates from `clone1` and does not preserve at least one predicate from
+ * `clone2`.
+ */
+static int test_discr_function(const clone *clone1, const clone *clone2, const fun *fun) {
+  return fun_preserves_clone(fun, clone1) && !fun_preserves_clone(fun, clone2);
+}
+
 
 #endif

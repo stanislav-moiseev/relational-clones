@@ -31,7 +31,7 @@ struct class {
 
   /** A resizable list of maximal proper subclasses for this class.
    *
-   * The list of maximal proper subclones is constrcuted by
+   * The list of maximal proper subclones is constructed by
    * `lattice_construct_maximal_subclones`.
    *
    * Normally, the list is sorted by `lattice_sort_maximal_subclones`.
