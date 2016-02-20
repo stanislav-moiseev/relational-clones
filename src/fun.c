@@ -90,6 +90,8 @@ void fun_scan(const char *str, fun *fun) {
 }
 
 int fun_preserves_pred(const fun *fun, const pred *pred) {
+  assert(fun->arity >= 0);
+  
   uint32_t *pred_ext;
   size_t size;
   pred_extensional(pred, &pred_ext, &size);

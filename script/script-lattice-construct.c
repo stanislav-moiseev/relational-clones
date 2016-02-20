@@ -24,7 +24,10 @@ void script_lattice_construct_layers(const char *ccp_name, const char *fout_name
   lattice_load_classes_from_ccplt(lt, ccplt);
   printf("\n");
   lattice_construct_layers(lt, ccplt);
+
+  printf("writing \"%s\"...", fout_name); fflush(stdout);
   lattice_write(fout_name, lt);
+  printf("\t\tOk.\n");
   
   lattice_free(lt);
   ccplt_free(ccplt);
@@ -42,8 +45,11 @@ void script_lattice_construct_maximal_subclones(const char *ccp_name, const char
   lattice_construct_maximal_subclones(lt, ccplt);
   lattice_sort_maximal_subclones(lt);
 
+
+  printf("writing \"%s\"...", fout_name); fflush(stdout);
   lattice_write(fout_name, lt);
-  
+  printf("\t\tOk.\n");
+
   lattice_free(lt);
   ccplt_free(ccplt);
 }
@@ -109,20 +115,21 @@ int main() {
   time_t t0 = time(NULL);
   printf("script-lattice-construct-layers:\n");
   script_lattice_construct_layers("data/closure-clone-pred.2016",
-                                  "output/lattice.2016");
-  printf("Ok.\n");
-  printf("%.2f min\n", difftime(time(NULL), t0) / 60.);
-
+                                  "output/lattice.2016.0");
+  printf("%.2f min. Ok.\n", difftime(time(NULL), t0) / 60.);
+  
+  printf("\n");
   time_t t1 = time(NULL);
   printf("script-lattice-construct-maximal-subclones:\n");
   script_lattice_construct_maximal_subclones("data/closure-clone-pred.2016",
-                                             "output/lattice.2016",
-                                             "output/lattice.2016");
+                                             "output/lattice.2016.0",
+                                             "output/lattice.2016.1");
   printf("%.2f min. Ok.\n", difftime(time(NULL), t1) / 60.);
 
+  printf("\n");
   time_t t2 = time(NULL);
   printf("verify-maximal-subclones:\n");
-  verify_maximal_subclones("output/lattice.2016",
+  verify_maximal_subclones("output/lattice.2016.1",
                            "data/all-maj.2016");
   printf("\t%.2f min. Ok.\n", difftime(time(NULL), t2) / 60.);
 }

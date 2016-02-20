@@ -29,6 +29,7 @@ void class_free(class *c) {
 
 void class_add_subclass(class *c, class_idx subclass_idx) {
   if(c->num_maxsubs == c->cap_maxsubs) {
+    assert(c->cap_maxsubs > 0);
     c->cap_maxsubs *= 2;
     c->maxsubs = realloc(c->maxsubs, c->cap_maxsubs * sizeof(class_idx));
     assert(c->maxsubs);

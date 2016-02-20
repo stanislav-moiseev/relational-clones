@@ -15,7 +15,11 @@ struct class {
   /** Unique class identifier. */
   class_idx cidx;
   
-  /** The layer which the clone belongs to and its position withing the layer. */
+  /** The layer which the clone belongs to and its position withing the layer.
+   *
+   * Layer indices and class positions are either loaded from file or
+   * constructed by `lattice_construct_layers`
+   */
   layer_idx lidx;
   class_pos cpos;
 
@@ -25,7 +29,16 @@ struct class {
   /** Number of maximal proper subclasses for this class. */
   size_t num_maxsubs;
 
-  /** A resizable array of maximal proper subclasses for this class. */
+  /** A resizable list of maximal proper subclasses for this class.
+   *
+   * The list of maximal proper subclones is constrcuted by
+   * `lattice_construct_maximal_subclones`.
+   *
+   * Normally, the list is sorted by `lattice_sort_maximal_subclones`.
+   * Even though the sorting is not obligatory, but it is convenient for pretty
+   * printing and when searching for a function discriminating a pair clone —
+   * maximal subclone.
+   */
   class_idx *maxsubs;
   
   /** The current array capacity. */
@@ -41,6 +54,7 @@ void class_free(class *c);
 void class_add_subclass(class *c, class_idx subclass_idx);
 
 struct layer {
+  /** unique identifier. */
   layer_idx lidx;
   
   /** The layer size. */
@@ -87,6 +101,11 @@ static inline class *lattice_get_class(const lattice *lt, class_idx cidx) {
   return lt->classes[cidx];
 }
 
+static inline layer *lattice_get_layer(const lattice *lt, layer_idx lidx) {
+  assert(lidx < lt->num_layers);
+  return lt->layers[lidx];
+}
+
 lattice *lattice_alloc();
 
 void lattice_free(lattice *lt);
@@ -105,7 +124,8 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt);
 void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt);
 
 /** `lattice_sort_maximal_subclones` arranged the maximal subclones of all
-    clones in an order from higher layers to lower layers. */
+ * clones in an order from higher layers (with smaller lidx) to lower layers
+ * (with larger lidx). */
 void lattice_sort_maximal_subclones(lattice *lt);
 
 #endif
