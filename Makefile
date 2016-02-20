@@ -32,6 +32,7 @@ SRCS =									\
 	src/binary/bin-closure-two-preds.c				\
 	src/binary/bin-closure-clone-pred.c				\
 	src/binary/bin-lattice.c					\
+	src/binary/bin-lattice-discr-fun.c				\
 									\
 	src/z3/z3-search.c						\
 #	src/z3/gen-spec.c						\
