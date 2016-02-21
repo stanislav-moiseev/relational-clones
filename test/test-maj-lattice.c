@@ -30,7 +30,7 @@ void test(const char *maj2013name) {
 }
 
 int main() {
-  printf("test-maj-lattice:\n"); fflush(stdout);
+  printf("test-maj-lattice:\t\t"); fflush(stdout);
   test("data/all-maj.2016");
   printf("Ok.\n");
 }

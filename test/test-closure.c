@@ -206,5 +206,4 @@ int main() {
   printf("test-closure-clone-pred:\t"); fflush(stdout);
   test_closure_clone_pred("data/closure-clone-pred.2016");
   printf("Ok.\n");
-
 }

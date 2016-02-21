@@ -51,6 +51,7 @@ TESTS =									\
 	test/test0.out							\
 	test/test-closure.out						\
 	test/test-maj-lattice.out					\
+	test/test-lattice.out						\
 	#test/test-high-arity.c
 
 SCRIPTS =								\
@@ -66,12 +67,14 @@ SCRIPTS =								\
 									\
 	script/script-lattice-construct.out				\
 	script/script-lattice-discr-fun.out				\
+	script/script-lattice-known.out					\
 
 all:  $(TESTS) $(SCRIPTS)
 
 test: $(TESTS)
 	@./test/test0.out
 	@./test/test-closure.out
+	@./test/test-lattice.out
 
 clean:
 	rm -f $(OBJS) $(TESTS) $(SCRIPTS)

@@ -112,6 +112,9 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
          * function by invoking Z3 solver. */
         if(!flag) {
           fun f;
+          /* NB. We could have used clone generator (basis) here to speed up Z3
+           * computation, bu we do not store clone generator to binary file
+           * currently. */
           Z3_lbool rc = z3_find_discr_function(&c->clone, &c->clone, &sub->clone, 5, &f);
 
           if(rc == Z3_L_TRUE) {
