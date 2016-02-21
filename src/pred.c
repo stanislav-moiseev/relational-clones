@@ -72,14 +72,15 @@ void pred_print_extensional(char *str, const pred *pred) {
 }
 
 const char *pred_print_extensional_ex(const pred *p) {
+  assert(K <= 9 && "Only one-digit Ek elems are suppored");
   assert(p->arity <= 2);
   static char _str[64];
   char *str = _str;
   
   /* treat predicates of zero arity specially */
   if(p->arity == 0) {
-    if(p->data != 0) sprintf(str, "true(0)");
-    else sprintf(str, "false(0)");
+    if(p->data != 0) sprintf(str, "{<>}");
+    else sprintf(str, "{}");
     return str;
   }
 
@@ -101,6 +102,41 @@ const char *pred_print_extensional_ex(const pred *p) {
   return _str;
 }
 
+pred pred_scan_ex(uint32_t arity, const char *str) {
+  assert(K <= 9 && "Only one-digit Ek elems are suppored");
+  assert(arity <= 2);
+
+  if(arity == 0) {
+    pred p_false, p_true;
+    pred_construct(0, "0", &p_false);
+    pred_construct(0, "1", &p_true);
+    if(strcmp(str, "{}") == 0)   return p_false;
+    if(strcmp(str, "{<>}") == 0) return p_true;
+    assert(0 && "invalid string for predicate extensional");
+  }
+  
+  pred p;
+  pred_init(&p, arity);
+  
+  assert(str[0] == '{');
+  ++str;
+
+  while(str[0] != '}') {
+    uint32_t digits[arity];
+    for(uint32_t i = 0; i < arity; ++i) {
+      char c = str[0];
+      assert(c >= '0' && c <= '0' + K);
+      digits[i] = c - '0';
+      ++str;
+    }
+    uint64_t tuple = get_K_tuple(digits, arity);
+    pred_set(&p, tuple);
+    if(str[0] == ',') ++str;
+    while(str[0] == ' ') ++str;
+  }
+
+  return p;
+}
 
 /******************************************************************************/
 /** basic operations */
@@ -120,4 +156,116 @@ void pred_extensional(const pred *pred, uint32_t **ext, size_t *size) {
 
 int64_t pred_cardinality(const pred *pred) {
   return popcount64(pred->data);
+}
+
+
+
+/******************************************************************************/
+/* Database of known predicates (with mathematical names) */
+
+struct named_pred {
+  pred pred;
+  const char *name;
+};
+typedef struct named_pred named_pred;
+
+static named_pred *named_preds = NULL;
+static size_t num_named_preds  = 0;
+
+struct named_pred_info {
+  uint32_t arity;
+  const char *ext;
+  const char *name;
+};
+typedef struct named_pred_info named_pred_info;
+
+static named_pred_info named_pred_infos[] = {
+  /* Predicates of arity 0 */
+  { .arity = 0, .ext = "{}",     .name = "false" },
+  { .arity = 0, .ext = "{<>}",   .name = "true" },
+
+  /* Predicates of arity 1 */
+  /* central of arity 1 */
+  { .arity = 1, .ext = "{0}",    .name = "{0}" },
+  { .arity = 1, .ext = "{1}",    .name = "{1}" },
+  { .arity = 1, .ext = "{2}",    .name = "{2}" },
+  { .arity = 1, .ext = "{0, 1}", .name = "{0, 1}" },
+  { .arity = 1, .ext = "{0, 2}", .name = "{0, 2}" },
+  { .arity = 1, .ext = "{1, 2}", .name = "{1, 2}" },
+
+    
+  /* Predicates of arityity 2 */
+  /* equality */
+  { .arity = 2, .ext = "{00, 11, 22}",                 .name = "equality" },
+    
+  /* linearity order */
+  { .arity = 2, .ext = "{00, 11, 22, 01, 02, 12}",     .name = "linearity order (0 < 1 < 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 02, 01, 21}",     .name = "linearity order (0 < 2 < 1)" },
+  { .arity = 2, .ext = "{00, 11, 22, 10, 12, 02}",     .name = "linearity order (1 < 0 < 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 12, 10, 20}",     .name = "linearity order (1 < 2 < 0)" },
+  { .arity = 2, .ext = "{00, 11, 22, 20, 21, 01}",     .name = "linearity order (2 < 0 < 1)" },
+  { .arity = 2, .ext = "{00, 11, 22, 21, 20, 10}",     .name = "linearity order (2 < 1 < 0)" },
+
+  /* autodual with respect to a permutation */
+  { .arity = 2, .ext = "{01, 12, 20}",                 .name = "permutation (0, 1, 2)" },
+  { .arity = 2, .ext = "{02, 21, 10}",                 .name = "permutation (0, 2, 1)" },
+  { .arity = 2, .ext = "{10, 02, 21}",                 .name = "permutation (1, 0, 2)" },
+  { .arity = 2, .ext = "{12, 20, 01}",                 .name = "permutation (1, 2, 0)" },
+  { .arity = 2, .ext = "{20, 01, 12}",                 .name = "permutation (2, 0, 1)" },
+  { .arity = 2, .ext = "{21, 10, 02}",                 .name = "permutation (2, 1, 0)" },
+
+  /* equivalence relation */
+  { .arity = 2, .ext = "{00, 11, 22, 01, 10}",         .name = "equivalence (0 ~ 1)" },
+  { .arity = 2, .ext = "{00, 11, 22, 02, 20}",         .name = "equivalence (0 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 12, 21}",         .name = "equivalence (1 ~ 2)" },
+
+  /* central */
+  { .arity = 2, .ext = "{00, 11, 22, 01, 10, 02, 20}", .name = "central {0}" },
+  { .arity = 2, .ext = "{00, 11, 22, 10, 01, 12, 21}", .name = "central {1}" },
+  { .arity = 2, .ext = "{00, 11, 22, 20, 02, 21, 12}", .name = "central {2}" },
+
+  /* other paritytial orders */
+  { .arity = 2, .ext = "{00, 11, 22, 01, 10, 02, 12}", .name = "partial order (0 ~ 1) < 2" },
+  { .arity = 2, .ext = "{00, 11, 22, 02, 20, 01, 21}", .name = "partial order (0 ~ 2) < 1" },
+  { .arity = 2, .ext = "{00, 11, 22, 12, 21, 10, 20}", .name = "partial order (1 ~ 2) < 0" },
+  { .arity = 2, .ext = "{00, 11, 22, 01, 02, 12, 21}", .name = "partial order 0 < (1 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 10, 12, 02, 20}", .name = "partial order 1 < (0 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 20, 21, 01, 10}", .name = "partial order 2 < (0 ~ 1)" },
+
+  /* ax + by == c */
+  { .arity = 2, .ext = "{00, 12, 21}",                 .name = "x + y == 0" },
+  { .arity = 2, .ext = "{01, 10, 22}",                 .name = "x + y == 1" },
+  { .arity = 2, .ext = "{02, 20, 11}",                 .name = "x + y == 2" },
+
+  { .arity = 2, .ext = "{21, 20, 12, 10, 02, 01}",     .name = "inequality" },
+};
+
+
+static void named_preds_init() {
+  num_named_preds = sizeof(named_pred_infos) / sizeof(named_pred_info);
+  named_preds     = malloc(num_named_preds * sizeof(named_pred));
+  for(size_t i = 0; i < num_named_preds; ++i) {
+    named_pred_info *info = named_pred_infos + i;
+    named_preds[i].pred = pred_scan_ex(info->arity, info->ext);
+    named_preds[i].name = info->name;
+  }
+}
+
+const char *pred_name(const pred *p) {
+  if(named_preds == NULL) named_preds_init();
+  
+  for(named_pred *np = named_preds; np < named_preds + num_named_preds; ++np) {
+    if(pred_eq(&np->pred, p)) return np->name;
+  }
+  return NULL;
+}
+
+const pred *pred_get(const char *name) {
+  if(named_preds == NULL) named_preds_init();
+
+  for(named_pred *np = named_preds; np < named_preds + num_named_preds; ++np) {
+    if(strcmp(np->name, name) ==  0) return &np->pred;
+  }
+  assert(0 && "unknown predicate name");
+  return NULL;
 }

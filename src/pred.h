@@ -64,6 +64,32 @@ void pred_print_extensional(char *str, const pred *pred);
  */
 const char *pred_print_extensional_ex(const pred *p);
 
+/** `pred_scan` returns a predicate designated by a verbose string
+ * representation of its extensional (a set of tuples where the predicate is
+ * true), e.g.
+ *
+ *     pred_scan(2, "{00, 11, 22}");
+ *
+ * construct an identity predicate.
+ *
+ * All tuples must be of length == `arity`; the order of the tuples is
+ * insignificant.
+ */
+pred pred_scan_ex(uint32_t arity, const char *ext);
+
+/** `pred_name` looks up a database of predicates known in mathematical
+ * theory. If found, the function returns a verbose human-friendly mathematical
+ * name.
+ */
+const char *pred_name(const pred *p);
+
+/** `pred_get` looks up a database of known predicates, and returns the
+ * predicate designated by the given name (if any). If the name is unknown, an
+ * assertion will fail.
+ */
+const pred *pred_get(const char *pred_name);
+
+
 /******************************************************************************/
 /** basic operations */
 

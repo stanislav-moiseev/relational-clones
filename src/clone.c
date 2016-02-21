@@ -60,10 +60,14 @@ void clone_print_verbosely(FILE *fd, const clone *clone) {
   uint64_t size;
   pred *pred_list;
   clone_get_predicates(clone, &pred_list, &size);
-  for(int64_t i = 0; i < size; ++i) {
-    fprintf(fd, "%s: \t%s\n",
-            pred_print_fingerprint(&pred_list[i]),
-            pred_print_extensional_ex(&pred_list[i]));
+  for(pred *p = pred_list; p < pred_list + size; ++p) {
+    const char *s = pred_name(p);
+    if(s == NULL) s = "?";
+    
+    fprintf(fd, "%s: \t%-32s%s\n",
+            pred_print_fingerprint(p),
+            s,
+            pred_print_extensional_ex(p));
   }
   free(pred_list);
 }
