@@ -42,7 +42,7 @@ closure_operator *clop_clone_pred_read(const char *fname) {
   clop->ops.internals_free   = clop_clone_pred_internals_free;
   clop->internals            = malloc(sizeof(clop_clone_pred_internals));
   ((clop_clone_pred_internals *)clop->internals)->ccplt = ccplt;
-  closure_uniq_ess_preds(&((clop_clone_pred_internals *)clop->internals)->cl_uniq);
+  closure_uniq_ess_preds(2, &((clop_clone_pred_internals *)clop->internals)->cl_uniq);
 
   return clop;
 }
@@ -54,7 +54,7 @@ closure_operator *clop_clone_pred_alloc(ccplt *ccplt) {
   clop->ops.internals_free   = clop_clone_pred_internals_free;
   clop->internals            = malloc(sizeof(clop_clone_pred_internals));
   ((clop_clone_pred_internals *)clop->internals)->ccplt = ccplt;
-  closure_uniq_ess_preds(&((clop_clone_pred_internals *)clop->internals)->cl_uniq);
+  closure_uniq_ess_preds(2, &((clop_clone_pred_internals *)clop->internals)->cl_uniq);
 
   return clop;
 } 

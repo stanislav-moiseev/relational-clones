@@ -58,8 +58,16 @@ void test_pred_preserves_majority() {
 void test_pred_num_essential_preds() {
   pred *ess_preds;
   size_t ess_sz;
+  
+  get_essential_predicates(0, &ess_preds, &ess_sz);
+  assert(ess_sz == 2);
+    
+  get_essential_predicates(1, &ess_preds, &ess_sz);
+  assert(ess_sz == 2 + 6);
+
   get_essential_predicates(2, &ess_preds, &ess_sz);
-  assert(ess_sz == 470);
+  assert(ess_sz == 2 + 6 + 462);
+
   free(ess_preds);
 }
 
@@ -67,8 +75,16 @@ void test_pred_num_essential_preds() {
 void test_pred_num_closure_uniq_preds() {
   pred *uniq_preds;
   size_t uniq_sz;
-  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
-  assert(uniq_sz == 251);
+
+  construct_closure_uniq_ess_preds(0, &uniq_preds, &uniq_sz);
+  assert(uniq_sz == 1);
+  
+  construct_closure_uniq_ess_preds(1, &uniq_preds, &uniq_sz);
+  assert(uniq_sz == 1 + 6);
+
+  construct_closure_uniq_ess_preds(2, &uniq_preds, &uniq_sz);
+  assert(uniq_sz == 1 + 6 + 244);
+  
   free(uniq_preds);
 }
 
@@ -142,7 +158,7 @@ void test_closure_clone_pred(const char *fname) {
   closure_operator *clop_cp = clop_clone_pred_read(fname);
 
   clone uniq_ess;
-  closure_uniq_ess_preds(&uniq_ess);
+  closure_uniq_ess_preds(2, &uniq_ess);
 
   for(int i = 0; i < 1000; ++i) {
     /* Generate a random clone and compute its closure using different

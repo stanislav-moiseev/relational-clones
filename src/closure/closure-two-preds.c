@@ -96,7 +96,7 @@ closure_operator *clop_two_preds_read(const char *fname) {
   clop->ops.internals_free   = clop_two_preds_internals_free;
   clop->internals            = malloc(sizeof(struct clop_two_preds_internals));
   ((struct clop_two_preds_internals *)clop->internals)->table2p = table2p;
-  closure_uniq_ess_preds(&((struct clop_two_preds_internals *)clop->internals)->cl_uniq);
+  closure_uniq_ess_preds(2, &((struct clop_two_preds_internals *)clop->internals)->cl_uniq);
 
 
   fclose(fd);

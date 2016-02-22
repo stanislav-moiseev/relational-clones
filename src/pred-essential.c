@@ -106,25 +106,45 @@ void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size
 /******************************************************************************/
 /** Closure-unique essential predicates */
 
-void closure_uniq_ess_preds(clone *cl) {
-  pred *uniq_preds;
-  size_t uniq_sz;
-  construct_closure_uniq_ess_preds(&uniq_preds, &uniq_sz);
-
-  clone_init(cl);
-  for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
-    clone_insert_pred(cl, p);
+void closure_uniq_ess_preds(uint32_t max_arity, clone *cl) {
+  static int flag = 0;
+  static clone clone[3];
+  if(!flag) {
+    flag = 1;
+    pred *uniq_preds;
+    size_t uniq_sz;
+    for(uint32_t max_ar = 0; max_ar <= 2; ++max_ar) {
+      construct_closure_uniq_ess_preds(max_ar, &uniq_preds, &uniq_sz);
+      clone_init(clone + max_ar);
+      for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
+        clone_insert_pred(clone + max_ar, p);
+      }
+      free(uniq_preds);
+    }
   }
-  free(uniq_preds);
+
+  switch(max_arity) {
+  case 0: clone_copy(clone + 0, cl); break;
+  case 1: clone_copy(clone + 1, cl); break;
+  case 2: clone_copy(clone + 2, cl); break;
+  default: {
+    pred *uniq_preds;
+    size_t uniq_sz;
+    construct_closure_uniq_ess_preds(max_arity, &uniq_preds, &uniq_sz);
+    clone_init(cl);
+    for(pred *p = uniq_preds; p < uniq_preds + uniq_sz; ++p) {
+      clone_insert_pred(cl, p);
+    }
+    free(uniq_preds);
+  }}
 }
 
-void construct_closure_uniq_ess_preds(pred **_uniq_preds, size_t *_uniq_sz) {
+void construct_closure_uniq_ess_preds(uint32_t max_arity, pred **_uniq_preds, size_t *_uniq_sz) {
   closure_operator *clop = clop_alloc_straightforward();
 
   /* compute the closure of all essential predicates */
   pred *ess_preds;
   size_t num_ess_preds;
-  uint32_t max_arity = 2;
   get_essential_predicates(max_arity, &ess_preds, &num_ess_preds);
 
   /* factorize all essential predicates by their closure

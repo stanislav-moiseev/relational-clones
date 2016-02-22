@@ -114,7 +114,7 @@ predicate_numerator *predicate_numerator_construct() {
   assert(pred_num);
   
   /* construct index for closure-unique predicates */
-  construct_closure_uniq_ess_preds(&pred_num->uniq_preds, &pred_num->uniq_sz);
+  construct_closure_uniq_ess_preds(2, &pred_num->uniq_preds, &pred_num->uniq_sz);
   
   /* construct reverse index */
   for(uint32_t ar = 0; ar <= 2; ++ar) {

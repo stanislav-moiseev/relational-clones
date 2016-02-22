@@ -36,7 +36,7 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
   closure_operator *clop = clop_alloc_straightforward();
 
   clone cl_uniq;
-  closure_uniq_ess_preds(&cl_uniq);
+  closure_uniq_ess_preds(2, &cl_uniq);
 
   for(uint32_t ar1 = 0; ar1 <= 2; ++ar1) {
     for(uint32_t ar2 = 0; ar2 <= 2; ++ar2) {
