@@ -20,9 +20,10 @@
 closure_operator *clop_clone_pred_read(const char *fname);
 
 /** `clop_clone_pred_alloc` initializes the clop with the given ccplt.
+ *
  * Note that the function does /not/ make a copy of ccplt, so ccplt will be
  * freed with calling to `clop_free`.
  */
-closure_operator *clop_clone_pred_alloc(const ccplt *ccplt);
+closure_operator *clop_clone_pred_alloc(ccplt *ccplt);
 
 #endif

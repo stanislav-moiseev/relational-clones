@@ -11,14 +11,20 @@
 #include "closure/closure-two-preds.h"
 #include "binary/bin-closure-two-preds.h"
 
-static inline clone *closure_table_two_preds_lookup(const closure_table_two_preds *table, const pred *p1, const pred *p2) {
+struct clop_two_preds_internals {
+  closure_table_two_preds *table2p;
+  clone cl_uniq;
+};
+typedef struct clop_two_preds_internals clop_two_preds_internals;
+
+static inline clone *closure_table_two_preds_lookup(const clop_two_preds_internals *internals, const pred *p1, const pred *p2) {
   assert(p1->arity <= 2 && p2->arity <= 2);
-  /* assert(pred_is_essential(p1)); */
-  /* assert(pred_is_essential(p2)); */
+  assert(clone_test_pred(&internals->cl_uniq, p1) && "clop_two_preds is defined for closure-unique essential predicates only");
+  assert(clone_test_pred(&internals->cl_uniq, p2) && "clop_two_preds is defined for closure-unique essential predicates only");
   
   uint64_t num2 = int_pow2(int_pow(K, p2->arity));
-  uint64_t idx = p1->data*num2 + p2->data;
-  return &table->data[p1->arity][p2->arity][idx];
+  uint64_t idx  = p1->data*num2 + p2->data;
+  return &internals->table2p->data[p1->arity][p2->arity][idx];
 }
 
 void clop_two_preds_closure_clone_ex(void *internals, const clone *base, const clone *suppl, clone *closure) {
@@ -57,7 +63,7 @@ void clop_two_preds_closure_clone_ex(void *internals, const clone *base, const c
        * The first predicate is taken from the supplement,
        * while the second — from the supplement set and from the base set */
       for(pred *pred2 = preds; pred2 < preds + sz; ++pred2) {
-        clone *cl = closure_table_two_preds_lookup((const closure_table_two_preds *)internals, pred1, pred2);
+        clone *cl = closure_table_two_preds_lookup((const clop_two_preds_internals *)internals, pred1, pred2);
         clone_union(&recruit, cl, &recruit);
       }
     }
@@ -72,7 +78,8 @@ void clop_two_preds_closure_clone_ex(void *internals, const clone *base, const c
 }
 
 static void clop_two_preds_internals_free(void *internals) {
-  closure_table_two_preds_free((closure_table_two_preds *)internals);
+  closure_table_two_preds_free(((clop_two_preds_internals *)internals)->table2p);
+  free(internals);
 }
 
 closure_operator *clop_two_preds_read(const char *fname) {
@@ -85,9 +92,12 @@ closure_operator *clop_two_preds_read(const char *fname) {
   closure_table_two_preds *table2p = closure_table_two_preds_alloc();
   closure_two_preds_read(fd, table2p);
 
-  clop->internals            = (void *)table2p;
   clop->ops.closure_clone_ex = clop_two_preds_closure_clone_ex;
   clop->ops.internals_free   = clop_two_preds_internals_free;
+  clop->internals            = malloc(sizeof(struct clop_two_preds_internals));
+  ((struct clop_two_preds_internals *)clop->internals)->table2p = table2p;
+  closure_uniq_ess_preds(&((struct clop_two_preds_internals *)clop->internals)->cl_uniq);
+
 
   fclose(fd);
   return clop;

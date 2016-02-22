@@ -199,12 +199,14 @@ static inline pred *idx_pred(const predicate_numerator *pred_num, size_t idx) {
 void latice_construct(const closure_operator *clop, ccplt *lt);
 
 /** `ccplt_closure_clone` uses CCPLT to efficiently compute the closure of the
- * given clone. We assume that the given clone consists of closure-unique
- * essential predicates only.
+ * given clone.
  *
  * The algorithms starts traversing the lattice from the dummy clone and adds
  * predicates from `cl` one by one.
-*/
+ *
+ * Assumptions: the given clone consists of closure-unique essential predicates
+ * only.
+ */
 ccpnode *ccplt_closure_clone(const ccplt* lt, const clone *cl);
 
 #endif

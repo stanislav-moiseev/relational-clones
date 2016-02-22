@@ -66,9 +66,12 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
           clone_insert_pred(&cl, &p1);
           clone_insert_pred(&cl, &p2);
 
-          /* leave only closure-unique predicates */
+          /* Compute the full closure (= containing all essential predicates
+           * derivable from `cl`. ) */
           clone closure;
           closure_clone(clop, &cl, &closure);
+          /* After we've computed the full closure, we leave unique predicates
+           * only. */
           clone_intersection(&closure, &cl_uniq, &table->data[ar1][ar2][data1*num2 + data2]);
         }
       }

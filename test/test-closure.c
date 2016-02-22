@@ -150,10 +150,14 @@ void test_closure_clone_pred(const char *fname) {
     clone cl;
     random_clone(&cl);
     clone_intersection(&cl, &uniq_ess, &cl);
-    clone_insert_dummy_preds(&cl);
         
     clone closure_sf, closure_cp;
+    clone_insert_dummy_preds(&cl);
     closure_clone(clop_sf, &cl, &closure_sf);
+
+    /* remove dummy true(0) and eq(2) that are not closure-uniq;
+     * otherwise an assertion in clop_closure_clone_pred will fail. */
+    clone_intersection(&cl, &uniq_ess, &cl);
     closure_clone(clop_cp, &cl, &closure_cp);
     
     /* As long as `closure_cp` constains closure-unique essential predicates
@@ -165,21 +169,30 @@ void test_closure_clone_pred(const char *fname) {
 
     if(!clone_eq(&closure_sf, &closure_cp)) {
       printf("Error\n");
-      printf("Initial set of predicates:");
+      printf("================================================================\n");
+      printf("Initial set of predicates:\n");
       clone_print_verbosely(stdout, &cl);
-      printf("================================\n");
+      
+      printf("================================================================\n");
+      printf("Difference closure_sf \\ closure_cp:\n");
       clone diff1;
       clone_diff(&closure_sf, &closure_cp, &diff1);
-      printf("Difference closure_sf \\ closure_cp:");
       clone_print_verbosely(stdout, &diff1);
-      /* clone_print_verbosely(stdout, &closure_sf); */
-      printf("================================\n");
+      
+      printf("================================================================\n");
+      printf("Difference closure_cp \\ closure_sf:\n");
       clone diff2;
       clone_diff(&closure_cp, &closure_sf, &diff2);
-      printf("Difference closure_cp \\ closure_sf:");
       clone_print_verbosely(stdout, &diff2);
-      /* clone_print_verbosely(stdout, &closure_cp); */
-      return;
+      
+      printf("================================================================\n");
+      printf("Intercession closure_cp ∩ closure_sf:\n");
+      clone inter;
+      clone_intersection(&closure_sf, &closure_cp, &inter);
+      clone_print_verbosely(stdout, &inter);
+      
+      printf("================================================================\n");
+      exit(1);
     }
   }
   
