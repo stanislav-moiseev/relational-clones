@@ -186,58 +186,85 @@ static named_pred_info named_pred_infos[] = {
 
   /* Predicates of arity 1 */
   /* central of arity 1 */
-  { .arity = 1, .ext = "{0}",    .name = "{0}" },
-  { .arity = 1, .ext = "{1}",    .name = "{1}" },
-  { .arity = 1, .ext = "{2}",    .name = "{2}" },
-  { .arity = 1, .ext = "{0, 1}", .name = "{0, 1}" },
-  { .arity = 1, .ext = "{0, 2}", .name = "{0, 2}" },
-  { .arity = 1, .ext = "{1, 2}", .name = "{1, 2}" },
+  { .arity = 1, .ext = "{0}",    .name = "set {0}" },
+  { .arity = 1, .ext = "{1}",    .name = "set {1}" },
+  { .arity = 1, .ext = "{2}",    .name = "set {2}" },
+  { .arity = 1, .ext = "{0, 1}", .name = "set {0, 1}" },
+  { .arity = 1, .ext = "{0, 2}", .name = "set {0, 2}" },
+  { .arity = 1, .ext = "{1, 2}", .name = "set {1, 2}" },
 
     
-  /* Predicates of arityity 2 */
+  /* Predicates of arity 2 */
   /* equality */
-  { .arity = 2, .ext = "{00, 11, 22}",                 .name = "equality" },
+  { .arity = 2, .ext = "{00, 11, 22}",                     .name = "equality" },
     
+  /* partial orders */
+  { .arity = 2, .ext = "{22, 11, 00, 01}",                 .name = "partial order 0 < 1" },
+  { .arity = 2, .ext = "{22, 11, 00, 02}",                 .name = "partial order 0 < 2" },
+  { .arity = 2, .ext = "{22, 11, 00, 10}",                 .name = "partial order 1 < 0" },
+  { .arity = 2, .ext = "{22, 11, 00, 12}",                 .name = "partial order 1 < 2" },
+  { .arity = 2, .ext = "{22, 11, 00, 20}",                 .name = "partial order 2 < 0" },
+  { .arity = 2, .ext = "{22, 11, 00, 21}",                 .name = "partial order 2 < 1" },
+
+  { .arity = 2, .ext = "{22, 11, 00, 01, 02}",             .name = "partial order 0 < 1, 0 < 2" },
+  { .arity = 2, .ext = "{22, 11, 00, 10, 12}",             .name = "partial order 1 < 0, 1 < 2" },
+  { .arity = 2, .ext = "{22, 11, 00, 20, 21}",             .name = "partial order 2 < 0, 2 < 1" },
+  { .arity = 2, .ext = "{22, 11, 00, 02, 12}",             .name = "partial order 0 < 2, 1 < 2" },
+  { .arity = 2, .ext = "{22, 11, 00, 10, 20}",             .name = "partial order 1 < 0, 2 < 0" },
+  { .arity = 2, .ext = "{22, 11, 00, 01, 21}",             .name = "partial order 0 < 1, 2 < 1" },
+
   /* linearity order */
-  { .arity = 2, .ext = "{00, 11, 22, 01, 02, 12}",     .name = "linearity order (0 < 1 < 2)" },
-  { .arity = 2, .ext = "{00, 11, 22, 02, 01, 21}",     .name = "linearity order (0 < 2 < 1)" },
-  { .arity = 2, .ext = "{00, 11, 22, 10, 12, 02}",     .name = "linearity order (1 < 0 < 2)" },
-  { .arity = 2, .ext = "{00, 11, 22, 12, 10, 20}",     .name = "linearity order (1 < 2 < 0)" },
-  { .arity = 2, .ext = "{00, 11, 22, 20, 21, 01}",     .name = "linearity order (2 < 0 < 1)" },
-  { .arity = 2, .ext = "{00, 11, 22, 21, 20, 10}",     .name = "linearity order (2 < 1 < 0)" },
+  { .arity = 2, .ext = "{00, 11, 22, 01, 02, 12}",         .name = "linear order (0 < 1 < 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 02, 01, 21}",         .name = "linear order (0 < 2 < 1)" },
+  { .arity = 2, .ext = "{00, 11, 22, 10, 12, 02}",         .name = "linear order (1 < 0 < 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 12, 10, 20}",         .name = "linear order (1 < 2 < 0)" },
+  { .arity = 2, .ext = "{00, 11, 22, 20, 21, 01}",         .name = "linear order (2 < 0 < 1)" },
+  { .arity = 2, .ext = "{00, 11, 22, 21, 20, 10}",         .name = "linear order (2 < 1 < 0)" },
+
+  /* preorders */
+  { .arity = 2, .ext = "{00, 11, 22, 01, 10, 02, 12}",     .name = "preorder (0 ~ 1) < 2" },
+  { .arity = 2, .ext = "{00, 11, 22, 02, 20, 01, 21}",     .name = "preorder (0 ~ 2) < 1" },
+  { .arity = 2, .ext = "{00, 11, 22, 12, 21, 10, 20}",     .name = "preorder (1 ~ 2) < 0" },
+  { .arity = 2, .ext = "{00, 11, 22, 01, 02, 12, 21}",     .name = "preorder 0 < (1 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 10, 12, 02, 20}",     .name = "preorder 1 < (0 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 20, 21, 01, 10}",     .name = "preorder 2 < (0 ~ 1)" },
 
   /* autodual with respect to a permutation */
-  { .arity = 2, .ext = "{01, 12, 20}",                 .name = "permutation (0, 1, 2)" },
-  { .arity = 2, .ext = "{02, 21, 10}",                 .name = "permutation (0, 2, 1)" },
-  { .arity = 2, .ext = "{10, 02, 21}",                 .name = "permutation (1, 0, 2)" },
-  { .arity = 2, .ext = "{12, 20, 01}",                 .name = "permutation (1, 2, 0)" },
-  { .arity = 2, .ext = "{20, 01, 12}",                 .name = "permutation (2, 0, 1)" },
-  { .arity = 2, .ext = "{21, 10, 02}",                 .name = "permutation (2, 1, 0)" },
+  { .arity = 2, .ext = "{01, 12, 20}",                     .name = "permutation (0, 1, 2)" },
+  { .arity = 2, .ext = "{02, 21, 10}",                     .name = "permutation (0, 2, 1)" },
+  { .arity = 2, .ext = "{10, 02, 21}",                     .name = "permutation (1, 0, 2)" },
+  { .arity = 2, .ext = "{12, 20, 01}",                     .name = "permutation (1, 2, 0)" },
+  { .arity = 2, .ext = "{20, 01, 12}",                     .name = "permutation (2, 0, 1)" },
+  { .arity = 2, .ext = "{21, 10, 02}",                     .name = "permutation (2, 1, 0)" },
 
   /* equivalence relation */
-  { .arity = 2, .ext = "{00, 11, 22, 01, 10}",         .name = "equivalence (0 ~ 1)" },
-  { .arity = 2, .ext = "{00, 11, 22, 02, 20}",         .name = "equivalence (0 ~ 2)" },
-  { .arity = 2, .ext = "{00, 11, 22, 12, 21}",         .name = "equivalence (1 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 01, 10}",             .name = "equivalence (0 ~ 1)" },
+  { .arity = 2, .ext = "{00, 11, 22, 02, 20}",             .name = "equivalence (0 ~ 2)" },
+  { .arity = 2, .ext = "{00, 11, 22, 12, 21}",             .name = "equivalence (1 ~ 2)" },
 
   /* central */
-  { .arity = 2, .ext = "{00, 11, 22, 01, 10, 02, 20}", .name = "central {0}" },
-  { .arity = 2, .ext = "{00, 11, 22, 10, 01, 12, 21}", .name = "central {1}" },
-  { .arity = 2, .ext = "{00, 11, 22, 20, 02, 21, 12}", .name = "central {2}" },
+  { .arity = 2, .ext = "{00, 11, 22, 01, 10, 02, 20}",     .name = "central {0}" },
+  { .arity = 2, .ext = "{00, 11, 22, 10, 01, 12, 21}",     .name = "central {1}" },
+  { .arity = 2, .ext = "{00, 11, 22, 20, 02, 21, 12}",     .name = "central {2}" },
 
-  /* other paritytial orders */
-  { .arity = 2, .ext = "{00, 11, 22, 01, 10, 02, 12}", .name = "partial order (0 ~ 1) < 2" },
-  { .arity = 2, .ext = "{00, 11, 22, 02, 20, 01, 21}", .name = "partial order (0 ~ 2) < 1" },
-  { .arity = 2, .ext = "{00, 11, 22, 12, 21, 10, 20}", .name = "partial order (1 ~ 2) < 0" },
-  { .arity = 2, .ext = "{00, 11, 22, 01, 02, 12, 21}", .name = "partial order 0 < (1 ~ 2)" },
-  { .arity = 2, .ext = "{00, 11, 22, 10, 12, 02, 20}", .name = "partial order 1 < (0 ~ 2)" },
-  { .arity = 2, .ext = "{00, 11, 22, 20, 21, 01, 10}", .name = "partial order 2 < (0 ~ 1)" },
+  /* all except one */
+  { .arity = 2, .ext = "{21, 20, 12, 11, 10, 02, 01, 00}", .name = "all except 22" },
+  { .arity = 2, .ext = "{22, 20, 12, 11, 10, 02, 01, 00}", .name = "all except 21" },
+  { .arity = 2, .ext = "{22, 21, 12, 11, 10, 02, 01, 00}", .name = "all except 20" },
+  { .arity = 2, .ext = "{22, 21, 20, 11, 10, 02, 01, 00}", .name = "all except 12" },
+  { .arity = 2, .ext = "{22, 21, 20, 12, 10, 02, 01, 00}", .name = "all except 11" },
+  { .arity = 2, .ext = "{22, 21, 20, 12, 11, 02, 01, 00}", .name = "all except 10" },
+  { .arity = 2, .ext = "{22, 21, 20, 12, 11, 10, 01, 00}", .name = "all except 02" },
+  { .arity = 2, .ext = "{22, 21, 20, 12, 11, 10, 02, 00}", .name = "all except 02" },
+  { .arity = 2, .ext = "{22, 21, 20, 12, 11, 10, 02, 01}", .name = "all except 00" },
 
-  /* ax + by == c */
-  { .arity = 2, .ext = "{00, 12, 21}",                 .name = "x + y == 0" },
-  { .arity = 2, .ext = "{01, 10, 22}",                 .name = "x + y == 1" },
-  { .arity = 2, .ext = "{02, 20, 11}",                 .name = "x + y == 2" },
-
-  { .arity = 2, .ext = "{21, 20, 12, 10, 02, 01}",     .name = "inequality" },
+  /* x + y == c */
+  { .arity = 2, .ext = "{00, 12, 21}",                     .name = "x + y == 0" },
+  { .arity = 2, .ext = "{01, 10, 22}",                     .name = "x + y == 1" },
+  { .arity = 2, .ext = "{02, 20, 11}",                     .name = "x + y == 2" },
+  
+  /* other */
+  { .arity = 2, .ext = "{21, 20, 12, 10, 02, 01}",         .name = "inequality" },
 };
 
 
