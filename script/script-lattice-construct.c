@@ -13,7 +13,7 @@
 #include "binary/bin-lattice.h"
 #include "binary/bin-maj-lattice.h"
 
-#include "script-verify-maj.h"
+#include "script-maj-verify.h"
 
 void script_lattice_construct_layers(const char *ccp_name, const char *fout_name) {
   printf("reading \"%s\"...", ccp_name); fflush(stdout);

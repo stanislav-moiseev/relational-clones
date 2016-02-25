@@ -18,7 +18,7 @@
 #include "binary/bin-closure-two-preds.h"
 #include "binary/bin-closure-clone-pred.h"
 
-#include "script-verify-maj.h"
+#include "script-maj-verify.h"
 
 /** Verify the computation over the previously computed lattice of all clones
  *  containing a majority operation. If the clone from new lattice contains a

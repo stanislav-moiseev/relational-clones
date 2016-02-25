@@ -11,7 +11,7 @@
 #include "utils.h"
 #include "pred.h"
 #include "clone.h"
-#include "fast-hash/fasthash.h"
+#include "fasthash/fasthash.h"
 
 int clone_consistent(const clone *clone) {
   /* arity == 0 */

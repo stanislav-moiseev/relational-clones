@@ -21,7 +21,7 @@ SRCS =									\
 	src/lattice.c							\
 									\
 	src/hashtable.c							\
-	src/fast-hash/fasthash.c					\
+	src/fasthash/fasthash.c						\
 									\
 	src/binary/bin-common.c						\
 	src/binary/bin-maj-lattice-2013.c				\
