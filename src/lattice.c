@@ -116,6 +116,48 @@ void lattice_add_layer(lattice *lt, layer *lr) {
   ++lt->num_layers;
 }
 
+
+void lattice_construct_maximal_subclones(lattice *lt) {
+  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
+    class *c = *cp;
+
+    /* We assume that the list of subclasses for `c` is empty. */
+    assert(c->num_maxsubs == 0);
+
+    /* get a list of all proper subclasses for `c` */
+    class *subs[lt->num_classes];
+    size_t subs_sz = 0;
+    for(class **subp = lt->classes; subp < lt->classes + lt->num_classes; ++subp) {
+      class *sub = *subp;
+      if(sub->cidx == c->cidx) continue;
+      if(clone_subset(&c->clone, &sub->clone)) {
+        assert(subs_sz < lt->num_classes);
+        subs[subs_sz] = sub;
+        ++subs_sz;
+      }
+    }
+
+    /* find maximal classes among proper subclasses of `c` */
+    for(class **subp = subs; subp < subs + subs_sz; ++subp) {
+      class *sub = *subp;
+      int flag = 1;
+      for(class **sub2p = subs; sub2p < subs + subs_sz; ++sub2p) {
+        class *sub2 = *sub2p;
+        if(sub2->cidx == sub->cidx) continue;
+        if(clone_subset(&sub2->clone, &sub->clone)) { flag = 0; break; }
+      }
+      if(flag) {
+        class_add_subclass(c, sub->cidx);
+      }
+    }
+  }
+}
+
+
+/******************************************************************************/
+/** Functions to deal with lattices initialized from a closure table
+ * "clone + predicate"*/
+
 void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt) {
   /* copy clones from ccplt */
   assert(lt->num_classes == 0);  /* We suppose that the lattice is empty. */
@@ -142,6 +184,7 @@ static int class_idx_eq(const void *cidx1, const void *cidx2) {
 }
   
 void lattice_construct_layers_ccplt(lattice *lt, const ccplt *ccplt) {
+  assert(lt->num_layers == 0);
   /* We will construct layers iteratively. On each step, `ht` is the bunch of
    * clones where to select maximal clones from.
    *
@@ -240,9 +283,8 @@ void lattice_construct_maximal_subclones_ccplt(lattice *lt, const ccplt *ccplt) 
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;
 
-    /* If some maximal proper subclones were added to `c` previously, just skip
-     * them. We will recompute all them. */
-    c->num_maxsubs = 0;
+    /* We assume that the list of subclasses for `c` is empty. */
+    assert(c->num_maxsubs == 0);
     
     /* Get a list of all direct proper subclones of `c`. */
     ccpnode *dirsubs[ccplt->pred_num->uniq_sz];

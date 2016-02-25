@@ -127,6 +127,17 @@ void lattice_add_class(lattice *lt, class *c);
 void lattice_add_layer(lattice *lt, layer *lr);
 
 
+/** `lattice_construct_maximal_clones` for each clone computes all maximal
+ * proper subclones.
+ *
+ * This algorithms is not efficient: for all clone it first searches all
+ * proper subclones (all, not only direct), and then searches for maximal
+ * clones among proper subclones.
+ * If the lattice was constructed from `ccplt`, one can use a more efficient
+ * implementation: `lattice_construct_maximal_subclones_ccplt`.
+ */
+void lattice_construct_maximal_subclones(lattice *lt);
+
 /******************************************************************************/
 /** Functions to deal with lattices initialized from a closure table
  * "clone + predicate"*/
