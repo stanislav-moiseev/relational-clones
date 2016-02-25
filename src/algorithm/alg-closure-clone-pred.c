@@ -106,7 +106,9 @@ ccpnode *ccplt_lookup(const ccplt *lt, const clone *cl) {
 
 ccpnode *ccplt_get_node(const ccplt *lt, class_idx idx) {
   assert(idx < lt->num_nodes && "class_idx too large");
-  return lt->nodes[idx];
+  ccpnode *nd = lt->nodes[idx];
+  assert(nd->cidx == idx);
+  return nd;
 }
 
 predicate_numerator *predicate_numerator_construct() {

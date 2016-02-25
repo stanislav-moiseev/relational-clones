@@ -10,12 +10,12 @@
 #include "lattice.h"
 #include "hashtable.h"
 
-class *class_alloc(const ccpnode *nd) {
+class *class_alloc(const clone *cl) {
   class *c = aligned_alloc(32, sizeof(class));
-  c->cidx        = nd->cidx;
+  c->cidx        = -1;
   c->lidx        = -1;
   c->cpos        = -1;
-  clone_copy(&nd->clone, &c->clone);
+  clone_copy(cl, &c->clone);
   c->num_maxsubs = 0;
   c->cap_maxsubs = 64;
   c->maxsubs     = malloc(c->cap_maxsubs * sizeof(class_idx));
@@ -73,7 +73,8 @@ lattice *lattice_alloc() {
   lt->cap_layers  = 64;
   lt->layers      = malloc(lt->cap_layers * sizeof(layer *));
   lt->num_classes = 0;
-  lt->classes     = NULL;
+  lt->cap_classes = 1024;
+  lt->classes     = aligned_alloc(32, lt->cap_classes * sizeof(class *));
   return lt;
 }
 
@@ -87,6 +88,19 @@ void lattice_free(lattice *lt) {
   }
   free(lt->classes);
   free(lt);
+}
+
+void lattice_add_class(lattice *lt, class *c) {
+  if(lt->num_classes == lt->cap_classes) {
+    lt->cap_classes *= 2;
+    lt->classes = realloc(lt->classes, lt->cap_classes * sizeof(class *));
+  }
+  assert(lt->num_classes < lt->cap_classes);
+  lt->classes[lt->num_classes] = c;
+
+  c->cidx = lt->num_classes;
+  
+  ++lt->num_classes;
 }
 
 void lattice_add_layer(lattice *lt, layer *lr) {
@@ -104,23 +118,30 @@ void lattice_add_layer(lattice *lt, layer *lr) {
 
 void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt) {
   /* copy clones from ccplt */
-  assert(lt->classes == NULL);  /* We suppose that the lattice is empty. */
-  lt->num_classes = ccplt->num_nodes;
-  lt->classes = aligned_alloc(32, lt->num_classes * sizeof(class *));
-  for(size_t i = 0; i < lt->num_classes; ++i) {
-    lt->classes[i] = class_alloc(ccplt->nodes[i]);
+  assert(lt->num_classes == 0);  /* We suppose that the lattice is empty. */
+  for(class_idx cidx = 0; cidx < lt->num_classes; ++cidx) {
+    ccpnode *nd = ccplt_get_node(ccplt, cidx);
+    class *c    = class_alloc(&nd->clone);
+    lattice_add_class(lt, c);
+    assert(c->cidx == nd->cidx);
   }
+  assert(lt->num_classes = ccplt->num_nodes);
 }
 
+/* Hash function that computes hashes for class indices.
+ * In current implementation the functions uses `cidx` itself as its hash value.
+ * The hashing function is used in a hash table at `lattice_construct_layers`
+ */
 static uint32_t class_idx_hash(const void *cidx) {
   return *(class_idx *)cidx;
 }
-
+/* Comparison function used in a hash table at `lattice_construct_layers`
+ */
 static int class_idx_eq(const void *cidx1, const void *cidx2) {
   return *(class_idx *)cidx1 == *(class_idx *)cidx2;
 }
   
-void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
+void lattice_construct_layers_ccplt(lattice *lt, const ccplt *ccplt) {
   /* We will construct layers iteratively. On each step, `ht` is the bunch of
    * clones where to select maximal clones from.
    *
@@ -214,7 +235,7 @@ void lattice_construct_layers(lattice *lt, const ccplt *ccplt) {
   hashtable_free(ht);
 }
 
-void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt) {
+void lattice_construct_maximal_subclones_ccplt(lattice *lt, const ccplt *ccplt) {
   printf("constructing maximal proper subclones"); fflush(stdout);
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
     class *c = *cp;

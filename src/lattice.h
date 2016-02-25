@@ -46,8 +46,8 @@ struct class {
 }  __attribute__ ((aligned (32)));
 typedef struct class class;
 
-/** Allocate a new class and copy the class index and clone from `nd`. */
-class *class_alloc(const ccpnode *nd);
+/** Allocate a new class and copy clone `cl` to class. */
+class *class_alloc(const clone *cl);
 
 void class_free(class *c);
 
@@ -72,6 +72,9 @@ layer *layer_alloc();
 
 void layer_free(layer *lr);
 
+/** `layer_add_class` insert a given class to a given layer and assigns class
+ * `lidx` and `cpos`.
+ */
 void layer_add_class(layer *lr, class *c);
 
 struct lattice {
@@ -90,42 +93,68 @@ struct lattice {
   /** The current capacity of the `layers` vector. */
   size_t cap_layers;
 
-  /* List of all classes. */
+  /* A resizable array of all classes. */
   size_t num_classes;
   class **classes;
+  size_t cap_classes;
 };
 typedef struct lattice lattice;
 
 static inline class *lattice_get_class(const lattice *lt, class_idx cidx) {
   assert(cidx < lt->num_classes);
-  return lt->classes[cidx];
+  class *c = lt->classes[cidx];
+  assert(c->cidx == cidx);
+  return c;
 }
 
 static inline layer *lattice_get_layer(const lattice *lt, layer_idx lidx) {
   assert(lidx < lt->num_layers);
-  return lt->layers[lidx];
+  layer *lr = lt->layers[lidx];
+  assert(lr->lidx == lidx);
+  return lr;
 }
 
 lattice *lattice_alloc();
 
 void lattice_free(lattice *lt);
 
+/** `lattice_add_class` insert a given class layer and assigns a layer index to
+ * it. */
+void lattice_add_class(lattice *lt, class *c);
+
+/** `lattice_add_layers` insert a given layers layer and assigns a layer index
+ * to it. */
 void lattice_add_layer(lattice *lt, layer *lr);
 
+
+/******************************************************************************/
+/** Functions to deal with lattices initialized from a closure table
+ * "clone + predicate"*/
+
+/** `lattice_load_classes_from_ccplt` initializes the lattice as the set of
+ * clones from `ccplt`. */
 void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt);
 
 /** `lattice_construct_layers` constructs all layers.
+ * See comments for `layers` member of `struct lattice`.
+ *
+ * NB. This function is applicable only to lattices having been initialized
+ * previously from `ccplt`!
  */
-void lattice_construct_layers(lattice *lt, const ccplt *ccplt);
+void lattice_construct_layers_ccplt(lattice *lt, const ccplt *ccplt);
 
 /** `lattice_construct_maximal_clones` for each clone computes all maximal
  * proper subclones.
+ *
+ * NB. This function is applicable only to lattices having been initialized
+ * previously from `ccplt`!
  */
-void lattice_construct_maximal_subclones(lattice *lt, const ccplt *ccplt);
+void lattice_construct_maximal_subclones_ccplt(lattice *lt, const ccplt *ccplt);
 
 /** `lattice_sort_maximal_subclones` arranged the maximal subclones of all
  * clones in an order from higher layers (with smaller lidx) to lower layers
- * (with larger lidx). */
+ * (with larger lidx).
+ */
 void lattice_sort_maximal_subclones(lattice *lt);
 
 #endif

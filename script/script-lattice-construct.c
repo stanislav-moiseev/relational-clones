@@ -23,7 +23,7 @@ void script_lattice_construct_layers(const char *ccp_name, const char *fout_name
   lattice *lt = lattice_alloc();
   lattice_load_classes_from_ccplt(lt, ccplt);
   printf("\n");
-  lattice_construct_layers(lt, ccplt);
+  lattice_construct_layers_ccplt(lt, ccplt);
 
   printf("writing \"%s\"...", fout_name); fflush(stdout);
   lattice_write(fout_name, lt);
@@ -42,7 +42,7 @@ void script_lattice_construct_maximal_subclones(const char *ccp_name, const char
   lattice *lt = lattice_read(fin_name);
   printf("\tOk.\n");
 
-  lattice_construct_maximal_subclones(lt, ccplt);
+  lattice_construct_maximal_subclones_ccplt(lt, ccplt);
   lattice_sort_maximal_subclones(lt);
 
 
