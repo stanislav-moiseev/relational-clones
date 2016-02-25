@@ -5,8 +5,7 @@
 #ifndef BINARY_CLOSURE_TWO_PREDS
 #define BINARY_CLOSURE_TWO_PREDS
 
-#include "algorithm/alg-closure-two-preds.h"
-
+#include "closure/closure-two-preds.h"
 
 void closure_two_preds_write(FILE *fd, const closure_table_two_preds *table);
 

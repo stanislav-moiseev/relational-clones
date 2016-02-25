@@ -5,7 +5,7 @@
 #ifndef LATTICE_H
 #define LATTICE_H
 
-#include "algorithm/alg-closure-clone-pred.h"
+#include "closure/closure-clone-pred.h"
 
 typedef uint32_t layer_idx;
 /** class_pos is the index of class withing the layer. */

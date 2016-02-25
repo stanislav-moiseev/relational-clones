@@ -13,7 +13,7 @@
 #include "fun-majority.h"
 #include "closure/closure-straightforward.h"
 #include "closure/closure-two-preds.h"
-#include "algorithm/alg-closure-clone-pred.h"
+#include "closure/closure-clone-pred.h"
 #include "binary/bin-maj-lattice.h"
 #include "binary/bin-closure-two-preds.h"
 #include "binary/bin-closure-clone-pred.h"
@@ -73,7 +73,7 @@ void construct_lattice(const char *table2p_uniq_name, const char *ccp_name) {
   closure_operator *clop = clop_two_preds_read(table2p_uniq_name);
 
   ccplt *lt = ccplt_alloc();
-  latice_construct(clop, lt);
+  ccplt_construct(clop, lt);
   assert(lt->num_nodes == 2079040);
 
   printf("writing \"%s\"...", ccp_name); fflush(stdout);
