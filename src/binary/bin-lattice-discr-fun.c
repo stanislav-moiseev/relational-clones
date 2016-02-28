@@ -38,3 +38,36 @@ void lattice_discr_fun_read(const char *fin, discrfun **dfs, size_t *size) {
 
   fclose(fd);
 }
+
+void lattice_discr_fun_txt_read(const char *fin, fun **funs, size_t *size) {
+  FILE *fd = fopen(fin, "rb");
+  assert(fd && "cannot open file");
+
+  hashtable *ht = hashtable_alloc(4096, fun_hash, (int (*) (const void *, const void *))fun_eq);
+
+  for(;;) {
+    char fun_str[1024];
+    int rc = fscanf(fd, "class %*u (%*u:%*u) subclass %*u (%*u:%*u) %s\n",
+                    fun_str);
+    if(rc == EOF) break;
+
+    fun *f = malloc(sizeof(struct fun));
+    fun_scan(fun_str, f);
+
+    hashtable_insert(ht, f, f);
+  }
+
+  *size = ht->size;
+  *funs  = malloc((*size) * sizeof(struct fun));
+  fun *fp = *funs;
+  for(hashtable_iterator it = hashtable_iterator_begin(ht); !hashtable_iterator_end(&it); hashtable_iterator_next(&it)) {
+    hash_elem *elem = hashtable_iterator_deref(&it);
+    (*fp) = *(fun *)elem->key;
+    free(elem->key);
+    ++fp;
+  }
+  assert(fp == (*funs) + (*size));
+
+  fclose(fd);
+}
+

@@ -28,4 +28,14 @@ void lattice_discr_fun_write(const char *fout, const discrfun *dfs, size_t size)
  */
 void lattice_discr_fun_read(const char *fin, discrfun **dfs, size_t *size);
 
+/** `lattice_discr_fun_log_read` load functions from a text log file.
+ *
+ * The file should have the following format:
+ *
+ * class 7696     (29:128)                 subclass 486261   (30:9695)             fun3_2_210111010
+ * class 7696     (29:128)                 subclass 7699     (36:17)               fun3_3_210111210111210111210111210
+ * class 12330    (29:163)                 subclass 13673    (30:126)              fun3_4_220220000222220000000000000220220200220210000200000200000000000202000000000000000
+ */
+void lattice_discr_fun_txt_read(const char *fin, fun **funs, size_t *size);
+
 #endif
