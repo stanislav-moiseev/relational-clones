@@ -24,6 +24,11 @@ typedef struct fun fun;
  */
 int fun_consistent(const fun *fun);
 
+/** `fun_hash` is a 32-bit hashing function for functions.
+ */
+uint32_t fun_hash(const void *fun);
+
+
 /******************************************************************************/
 /** printing and scanning */
 
@@ -57,6 +62,7 @@ void fun_set_val(fun *fun, uint64_t tuple, uint64_t val);
  */
 uint32_t fun_compute(const fun *fun, uint64_t tuple);
 
+int fun_eq(const fun *f1, const fun *f2);
 
 /******************************************************************************/
 /** Mathematical properties */

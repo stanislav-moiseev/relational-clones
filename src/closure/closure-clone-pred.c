@@ -39,7 +39,7 @@ closure_operator *clop_clone_pred_read(const char *fname) {
 
   clop->ops.closure_clone_ex = clop_clone_pred_closure_clone_ex;
   clop->ops.internals_free   = clop_clone_pred_internals_free;
-  clop->internals            = malloc(sizeof(clop_clone_pred_internals));
+  clop->internals            = aligned_alloc(32, sizeof(clop_clone_pred_internals));
   ((clop_clone_pred_internals *)clop->internals)->ccplt = ccplt;
   closure_uniq_ess_preds(2, &((clop_clone_pred_internals *)clop->internals)->cl_uniq);
 

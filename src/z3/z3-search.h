@@ -35,4 +35,10 @@ Z3_lbool z3_find_discr_function(const clone *clone1_basis,
                                 int max_fun_arity,
                                 fun *fun);
 
+Z3_lbool z3_find_one_discr_function(const clone *clone1_basis,
+                                    const clone *clone1,
+                                    const clone *clone2,
+                                    uint32_t fun_arity,
+                                    fun *fun);
+
 #endif

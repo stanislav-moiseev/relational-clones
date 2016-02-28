@@ -5,8 +5,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include "fun.h"
+#include "fasthash/fasthash.h"
+
 
 static void fun_offset_shift_mask(uint64_t xs, uint64_t *offset, uint64_t *shift, uint64_t *mask) {
   assert((64 % INT_LOG2K) == 0);
@@ -21,6 +24,10 @@ int fun_consistent(const fun *fun) {
   return 1;
 }
 
+uint32_t fun_hash(const void *fun) {
+  return fasthash32(fun, sizeof(struct fun), 0);
+}
+
 uint32_t fun_compute(const fun *fun, uint64_t tuple) {
   uint64_t offset, shift, mask;
   fun_offset_shift_mask(tuple, &offset, &shift, &mask);
@@ -33,6 +40,10 @@ void fun_init(fun *fun, uint32_t arity) {
   for(size_t i = 0; i < FUN_DATA_SIZE; ++i) {
     fun->data[i] = 0;
   }
+}
+
+int fun_eq(const fun *f1, const fun *f2) {
+  return (memcmp(f1, f2, sizeof(struct fun)) == 0);
 }
 
 void fun_set_val(fun *fun, uint64_t xs, uint64_t y) {
