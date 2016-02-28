@@ -69,55 +69,71 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
     size_t majdiscr_funs_sz;
     read_classes_with_one_subclass_discr_fun(fccpnodes, majlt, &majclasss, &majdiscr_funs_sz, &majdiscr_funs);
     fclose(fccpnodes);
-    printf("\tOk.\n");
 
     /* Insert functions to hashtable for further look-up. */
     for(fun *f = majdiscr_funs; f < majdiscr_funs + majdiscr_funs_sz; ++f) {
       hashtable_insert(ht, f, f);
     }
     free(majclasss);
+    printf("\t%lu unique functions loaded.", ht->size);
+    printf("\tOk.\n");
   }
 
   /** Read functions from a text file and add them to hash table. */
+  fun *txt_discrfuns;
   {
     printf("reading \"%s\"...", discr_fun_txt_name); fflush(stdout);
-    fun *funs;
-    size_t funs_sz;
-    lattice_discr_fun_txt_read(discr_fun_txt_name, &funs, &funs_sz);
-    printf("\tOk.\n");
+    size_t txt_discrfuns_sz;
+    lattice_discr_fun_txt_read(discr_fun_txt_name, &txt_discrfuns, &txt_discrfuns_sz);
 
-    for(fun *f = funs; f < funs + funs_sz; ++f) {
+    size_t sz = ht->size;
+    for(fun *f = txt_discrfuns; f < txt_discrfuns + txt_discrfuns_sz; ++f) {
       hashtable_insert(ht, f, f);
     }
+    printf("\t%lu unique functions loaded.", ht->size - sz);
+    printf("\tOk.\n");
   }
-
+  
   printf("opening log file \"%s\"...", log_name); fflush(stdout);
   FILE *log = fopen(log_name, "w");
   assert(log);
   printf("\tOk.\n");
 
-  /* The total number of pairs "clone — maximal proper subclone" */
-  size_t num_pairs = 0;
+  
+  /** Preliminary statistics. */
+  printf("\n");
+  printf("Computing preliminary statistics..."); fflush(stdout);
+  size_t maj_pairs   = 0;         /* Number of pairs where the upper class
+                                   * contains a majority operation. */
+  size_t total_pairs = 0;         /* The total number of pairs "clone — maximal
+                                   * proper subclone" */
   for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++ cp) {
-    num_pairs += (*cp)->num_maxsubs;
+    class *c = *cp;
+    total_pairs += c->num_maxsubs;
+    /* Probably, there is a more effective way to test whether a clone contains
+     * a majority operation. */
+    if(clone_contains_majority(&c->clone)) {
+        maj_pairs += c->num_maxsubs;
+    }
   }
-  printf("\nNumber of pairs \"clone — maximal proper subclone\": %lu\n", num_pairs);
+  assert(maj_pairs == 11419017);
 
-  printf("Number of unique functions loaded: %lu\n", ht->size);
-    
+  printf("\tOk.\n");
+  printf("\n");
+  printf("Number of pairs \"clone — maximal proper subclone\": %lu\n", total_pairs);
+  printf("Number of pairs where the top class contains a majority operation: %lu\n", maj_pairs);
+  size_t num_pairs = total_pairs - maj_pairs;
+  printf("Pairs to deal with: %lu\n", num_pairs);
+  
   /* Statistics */
-  size_t pairs_processed     = 0;   /* Number of pairs having been processed so
-                                       far */
-  size_t maj_pairs           = 0;   /* Number of pairs where the upper class
-                                     * contains a majority operation. */
-  size_t pairs_discr_ar[6]   = {0}; /* Pairs_discr_ar[ar] is the number of pairs
-                                     * discriminated by a function of arity `ar` */
-  size_t pairs_discriminated = 0;   /* Total number of pairs discriminated
-                                     * successfully */
-  clock_t z3_time            = 0.;  /* Total time spent by Z3 solver for current
-                                     * step. */
-  clock_t t0                 = clock(); /* time stamp to measure elapsed
-                                         * time. */
+  size_t pairs_processed     = 0;             /* Number of pairs having been processed so far. */
+  size_t pairs_discr_ar[6]   = {0};           /* Pairs_discr_ar[ar] is the number of pairs
+                                               * discriminated by a function of arity `ar` */
+  size_t pairs_discriminated = 0;             /* Total number of pairs discriminated successfully. */
+  clock_t z3_time            = 0.;            /* Total time spent by Z3 solver for current step. */
+  clock_t t0                 = clock();       /* Time stamp to measure elapsed time. */
+  double progress_step       = 0.001;
+  double progress            = progress_step; /* When to print statistics next. */
 
   printf("\n");
   printf("================================================================================\n");
@@ -139,115 +155,105 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
     for(class_idx *cidx = lr->classes; cidx < lr->classes + lr->num_classes; ++cidx) {
       class *c = lattice_get_class(lt, *cidx);
 
-      /* First, test if the clone contains a majority operation. */
-      int maj_class_flag = 0;
-      if(clone_contains_majority(&c->clone)) {
-        maj_class_flag = 1;
-        maj_pairs += c->num_maxsubs;
-      }
+      /* First, test if the clone contains a majority operation.
+       * If the clone contains a majority operation, we conclude that it is
+       * different from all its maximal proper subclones. */
+      if(clone_contains_majority(&c->clone)) continue;
       
       for(class_idx *sub_idx = c->maxsubs; sub_idx < c->maxsubs + c->num_maxsubs; ++sub_idx) {
         class *sub = lattice_get_class(lt, *sub_idx);
         assert(sub->cidx != c->cidx);
 
-        /* If the clone contains a majority operation, we conclude that it is
-         * different from all its maximal proper subclones. */
-        if(maj_class_flag) {
-          ++pairs_discriminated;
-        }
-
-        if(!maj_class_flag) {
-          /* We want to find a discriminating function of the smallest arity,
-           * that's why we iterate over arity from 0 to 5. */
-          for(int arity = 0; arity <= 5; ++arity) {
-            int flag = 0;
+        /* We want to find a discriminating function of the smallest arity,
+         * that's why we iterate over arity from 0 to 5. */
+        for(int arity = 0; arity <= 5; ++arity) {
+          int flag = 0;
             
-            /* [Stage 1] Search for a discriminating function among those that
-             * discriminate classes with majority operation and those found by
-             * Z3 solve on previous steps. */
-            for(hashtable_iterator it = hashtable_iterator_begin(ht); !hashtable_iterator_end(&it); hashtable_iterator_next(&it)) {
-              hash_elem *elem = hashtable_iterator_deref(&it);
-              fun *f = elem->key;
-              if(f->arity == arity) {
-                if(fun_preserves_clone(f, &c->clone) && !fun_preserves_clone(f, &sub->clone)) {
-                  discr_fun = *f;
-                  ++pairs_discriminated;
-                  flag = 1;
-                  break;
-                }
+          /* [Stage 1] Search for a discriminating function among those that
+           * discriminate classes with majority operation and those found by
+           * Z3 solve on previous steps. */
+          for(hashtable_iterator it = hashtable_iterator_begin(ht); !hashtable_iterator_end(&it); hashtable_iterator_next(&it)) {
+            hash_elem *elem = hashtable_iterator_deref(&it);
+            fun *f = elem->key;
+            if(f->arity == arity) {
+              if(fun_preserves_clone(f, &c->clone) && !fun_preserves_clone(f, &sub->clone)) {
+                discr_fun = *f;
+                ++pairs_discriminated;
+                flag = 1;
+                break;
               }
             }
-            if(flag) break;
+          }
+          if(flag) break;
 
-            /* [Stage 2] If no suitable function of the given arity found,
-             * invoke Z3 solver. */
+          /* [Stage 2] If no suitable function of the given arity found,
+           * invoke Z3 solver. */
 
-            clock_t t1 = clock();            
-            /* Note that we use a clone generator (clone base) here to speed up
-             * Z3 computation. */
-            Z3_lbool rc = z3_find_one_discr_function(&c->generator, &c->clone, &sub->clone, arity, &discr_fun);
+          clock_t t1 = clock();            
+          /* Note that we use a clone generator (clone base) here to speed up
+           * Z3 computation. */
+          Z3_lbool rc = z3_find_one_discr_function(&c->generator, &c->clone, &sub->clone, arity, &discr_fun);
             
-            z3_time += clock() - t1;
+          z3_time += clock() - t1;
 
-            if(rc == Z3_L_TRUE) {
-              /* Save the function so tat we can test it on future steps.
-               *
-               * We must put to hashtable a pointer to a permanent location
-               * (not local variable), that's why we first write the function
-               * to `discrfuns`. */
-              discrfuns[discrfuns_sz].fun = discr_fun;
-              hashtable_insert(ht, &discrfuns[discrfuns_sz].fun, &discrfuns[discrfuns_sz].fun);
+          if(rc == Z3_L_TRUE) {
+            /* Save the function so tat we can test it on future steps.
+             *
+             * We must put to hashtable a pointer to a permanent location
+             * (not local variable), that's why we first write the function
+             * to `discrfuns`. */
+            discrfuns[discrfuns_sz].fun = discr_fun;
+            hashtable_insert(ht, &discrfuns[discrfuns_sz].fun, &discrfuns[discrfuns_sz].fun);
 
-              assert(discr_fun.arity <= 5);
-              ++pairs_discr_ar[discr_fun.arity];
-              ++pairs_discriminated;
-              flag = 1;
-              break;
-            }
+            assert(discr_fun.arity <= 5);
+            ++pairs_discr_ar[discr_fun.arity];
+            ++pairs_discriminated;
+            flag = 1;
+            break;
+          }
             
-            /* If arity == 5 and we haven't found a discriminating function yet,
-             * report an error. */
-            if(arity == 5) {
-              if(rc == Z3_L_FALSE) {
-                fun f_unsat = { .arity = -1, .data = { 0 } };
-                discr_fun   = f_unsat;
-              }
-              if(rc == Z3_L_UNDEF) {
-                fun f_undef = { .arity = -2, .data = { 0 } };
-                discr_fun   = f_undef;
-              }
+          /* If arity == 5 and we haven't found a discriminating function yet,
+           * report an error. */
+          if(arity == 5) {
+            if(rc == Z3_L_FALSE) {
+              fun f_unsat = { .arity = -1, .data = { 0 } };
+              discr_fun   = f_unsat;
             }
-          } /* for(int arity = 0; arity <= 5; ++arity) */
+            if(rc == Z3_L_UNDEF) {
+              fun f_undef = { .arity = -2, .data = { 0 } };
+              discr_fun   = f_undef;
+            }
+          }
+        } /* for(int arity = 0; arity <= 5; ++arity) */
         
           /* Save the discriminating function for a given pair of clones 
            * (or an indicator that the function has not been found). */
-          discrfuns[discrfuns_sz].parent = *cidx;
-          discrfuns[discrfuns_sz].child  = *sub_idx;
-          discrfuns[discrfuns_sz].fun    = discr_fun;
-          ++discrfuns_sz;
+        discrfuns[discrfuns_sz].parent = *cidx;
+        discrfuns[discrfuns_sz].child  = *sub_idx;
+        discrfuns[discrfuns_sz].fun    = discr_fun;
+        ++discrfuns_sz;
           
-          /* Print verbose log */
-          char s1[80], s2[80];
-          sprintf(s1, "class %-8u (%u:%u)", c->cidx, c->lidx, c->cpos);
-          sprintf(s2, "subclass %-8u (%u:%u)", sub->cidx, sub->lidx, sub->cpos);
-          fprintf(log, "%-40s%-40s", s1, s2);
-          assert(discr_fun.arity >= -2 && discr_fun.arity <= 5);
-          switch(discr_fun.arity) {
-          case -1: fprintf(log, "unsat\n"); break;
-          case -2: fprintf(log, "undef\n"); break;
-          default: {
-            char *s = fun_print(&discr_fun);
-            fprintf(log, "%s\n", s);
-            free(s);
-            break;
-          }}
-          fflush(log);
-        } /* if(!maj_class_flag) */
+        /* Print verbose log */
+        char s1[80], s2[80];
+        sprintf(s1, "class %-8u (%u:%u)", c->cidx, c->lidx, c->cpos);
+        sprintf(s2, "subclass %-8u (%u:%u)", sub->cidx, sub->lidx, sub->cpos);
+        fprintf(log, "%-40s%-40s", s1, s2);
+        assert(discr_fun.arity >= -2 && discr_fun.arity <= 5);
+        switch(discr_fun.arity) {
+        case -1: fprintf(log, "unsat\n"); break;
+        case -2: fprintf(log, "undef\n"); break;
+        default: {
+          char *s = fun_print(&discr_fun);
+          fprintf(log, "%s\n", s);
+          free(s);
+          break;
+        }}
+        fflush(log);
               
         ++pairs_processed;
         
         /* Print statistics */
-        if(pairs_processed % (num_pairs / 1000) == 0) {
+        if(pairs_processed == (size_t)(progress * num_pairs)) {
           double z3_mins_dbl    = z3_time / CLOCKS_PER_SEC;
           unsigned z3_mins      = z3_mins_dbl / 60.;
           unsigned z3_secs      = (z3_mins_dbl - 60.*z3_mins) + 0.5;
@@ -255,7 +261,7 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
           unsigned other_mins   = other_mins_dbl / 60.;
           unsigned other_secs   = (other_mins_dbl - 60.*other_mins) + 0.5;
           printf("%4.1f%%   %2u   | %1lu %5lu %5lu %5lu %5lu %5lu |  %3lu          %+6d:%02u %+4d:%02u\n",
-                 (100. * pairs_processed / num_pairs),
+                 100. * progress,
                  lidx,
                  pairs_discr_ar[0],
                  pairs_discr_ar[1],
@@ -268,6 +274,7 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
                  other_mins, other_secs);
           t0      = clock();
           z3_time = 0;
+          progress += progress_step;
         }
       }
     }
@@ -289,6 +296,7 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
   free(discrfuns);
   hashtable_free(ht);
   free(majdiscr_funs);
+  free(txt_discrfuns);
   lattice_free(lt);
   fclose(log);
 }
