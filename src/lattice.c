@@ -16,6 +16,7 @@ class *class_alloc(const clone *cl) {
   c->lidx        = -1;
   c->cpos        = -1;
   clone_copy(cl, &c->clone);
+  clone_init(&c->generator);
   c->num_maxsubs = 0;
   c->cap_maxsubs = 64;
   c->maxsubs     = malloc(c->cap_maxsubs * sizeof(class_idx));

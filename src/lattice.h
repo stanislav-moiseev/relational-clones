@@ -26,6 +26,9 @@ struct class {
   /** A closed set of predicates. */
   clone clone;
 
+  /** Some generator for `clone`. */
+  clone generator;
+
   /** Number of maximal proper subclasses for this class. */
   size_t num_maxsubs;
 

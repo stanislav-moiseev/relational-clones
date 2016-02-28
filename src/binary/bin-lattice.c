@@ -16,6 +16,7 @@ void class_write(FILE *fd, const class *c) {
   uint32_write(fd, c->lidx);
   uint32_write(fd, c->cpos);
   clone_write(fd, &c->clone);
+  clone_write(fd, &c->generator);
   uint64_write(fd, c->num_maxsubs);
   for(class_idx *sub = c->maxsubs; sub < c->maxsubs + c->num_maxsubs; ++sub) {
     uint32_write(fd, *sub);
@@ -42,6 +43,7 @@ void class_read(FILE *fd, class *c) {
   c->lidx        = uint32_read(fd);
   c->cpos        = uint32_read(fd);
   clone_read(fd, &c->clone);
+  clone_read(fd, &c->generator);
   c->num_maxsubs = uint64_read(fd);
   c->cap_maxsubs = c->num_maxsubs;
   c->maxsubs     = malloc(c->cap_maxsubs * sizeof(class_idx));

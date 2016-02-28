@@ -41,7 +41,7 @@
  * If we haven't found a discriminating function of arity <= 5, we stop the
  * search for this pair of classes.
  */
-void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const char *fccpnodes_name, const char *log_name, const char *ldf_name) {
+void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const char *fccpnodes_name, const char *discr_fun_txt_name, const char *log_name, const char *ldf_name) {
   printf("reading \"%s\"...", lt_name); fflush(stdout);
   lattice *lt = lattice_read(lt_name);
   printf("\tOk.\n");
@@ -78,6 +78,19 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
     free(majclasss);
   }
 
+  /** Read functions from a text file and add them to hash table. */
+  {
+    printf("reading \"%s\"...", discr_fun_txt_name); fflush(stdout);
+    fun *funs;
+    size_t funs_sz;
+    lattice_discr_fun_txt_read(discr_fun_txt_name, &funs, &funs_sz);
+    printf("\tOk.\n");
+
+    for(fun *f = funs; f < funs + funs_sz; ++f) {
+      hashtable_insert(ht, f, f);
+    }
+  }
+
   printf("opening log file \"%s\"...", log_name); fflush(stdout);
   FILE *log = fopen(log_name, "w");
   assert(log);
@@ -89,6 +102,8 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
     num_pairs += (*cp)->num_maxsubs;
   }
   printf("\nNumber of pairs \"clone — maximal proper subclone\": %lu\n", num_pairs);
+
+  printf("Number of unique functions loaded: %lu\n", ht->size);
     
   /* Statistics */
   size_t pairs_processed     = 0;   /* Number of pairs having been processed so
@@ -165,13 +180,13 @@ void script_lattice_discr_fun(const char *lt_name, const char *maj_name, const c
             if(flag) break;
 
             /* [Stage 2] If no suitable function of the given arity found,
-             * invoke Z3 solver.
-             *
-             * NB. We could have used clone generator (basis) here to (possibly)
-             * speed up Z3 computation, but we do not store clone generator to
-             * binary file currently. */
-            clock_t t1 = clock();
-            Z3_lbool rc = z3_find_one_discr_function(&c->clone, &c->clone, &sub->clone, arity, &discr_fun);
+             * invoke Z3 solver. */
+
+            clock_t t1 = clock();            
+            /* Note that we use a clone generator (clone base) here to speed up
+             * Z3 computation. */
+            Z3_lbool rc = z3_find_one_discr_function(&c->generator, &c->clone, &sub->clone, arity, &discr_fun);
+            
             z3_time += clock() - t1;
 
             if(rc == Z3_L_TRUE) {
@@ -282,7 +297,8 @@ int main() {
   script_lattice_discr_fun("data/lattice.2016",
                            "data/all-maj.2016",
                            "data/maj-classes-with-one-subclass-discr-fun.2016",
-                           "output/lattice-discr-fun.log.2",
-                           "output/lattice-discr-fun.2016.2");
+                           "data/lattice-discr-fun.txt",
+                           "output/lattice-discr-fun.log",
+                           "output/lattice-discr-fun.2016");
   printf("Thank you.\n");
 }
