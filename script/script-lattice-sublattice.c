@@ -1,9 +1,11 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  *
- * This test computes two sublattices of R3(2):
- *   1. The sublattice of clones containing the function x+1.
- *   2. The sublattice of clones containing the function 2x+2y.
+ * This test computes some sublattices of R3(2):
+ *  - The sublattice of clones containing the function x+1.
+ *  - The sublattice of clones containing the function 2x+2y.
+ *  - The submaximal clones.
+ *  - The sublattice of clones containing 0, 1, 2, min, max.
  ******************************************************************************/
 
 #include <assert.h>

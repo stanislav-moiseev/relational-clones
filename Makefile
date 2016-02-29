@@ -65,7 +65,8 @@ SCRIPTS =								\
 									\
 	script/script-lattice-construct.out				\
 	script/script-lattice-discr-fun.out				\
-	script/script-lattice-known.out					\
+	script/script-lattice-sublattice.out				\
+	script/script-lattice-statistics.out				\
 
 all:  $(TESTS) $(SCRIPTS)
 
