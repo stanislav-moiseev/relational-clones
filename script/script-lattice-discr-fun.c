@@ -56,8 +56,8 @@ static void load_previous(const char *discrfun_prev_name,
                           size_t *prev_discrfuns_sz,
                           size_t *prev_discriminated) {
   printf("\n");
-  printf("Loading the result of previous computation...\n");
-  printf("We assume that the results are correct.\n");
+  printf("[Loading the result of previous computation]\n");
+  printf("[We assume that the results are correct]\n");
 
   printf("reading \"%s\"...", discrfun_prev_name); fflush(stdout);
   lattice_discr_fun_txt_read(discrfun_prev_name, prev_discrfuns, prev_discrfuns_sz);
@@ -66,7 +66,7 @@ static void load_previous(const char *discrfun_prev_name,
   /* Count how many pairs of classes was separated previously. */
   *prev_discriminated = 0;
   for(discrfun *df = *prev_discrfuns; df < *prev_discrfuns + *prev_discrfuns_sz; ++df) {
-    if(df->fun.arity > 0) ++(*prev_discriminated);
+    if(df->fun.arity >= 0) ++(*prev_discriminated);
   }
 }
 
@@ -268,7 +268,7 @@ void script_lattice_discr_fun(const char *lt_name,
   size_t discrfuns_sz        = 0;
 
   printf("\n");
-  printf("Starting computation...\n");
+  printf("[Starting computation]\n");
 
   printf("\n");
   printf("================================================================================\n");
@@ -304,7 +304,7 @@ void script_lattice_discr_fun(const char *lt_name,
           if(df->parent == c->cidx && df->child == sub->cidx) {
             discr_fun = df->fun;
             flag = 1;
-            if(df->fun.arity > 0) {
+            if(df->fun.arity >= 0) {
               /* if the function is valid, not `f_unsat`, nor `f_undef` */
               ++pairs_discriminated;
             } else {
@@ -425,7 +425,7 @@ void script_lattice_discr_fun(const char *lt_name,
 
 void verify(const char *lt_name, const char *ldf_name) {
   printf("\n");
-  printf("Verification of the result...");
+  printf("[Verification of the result]\n");
   printf("reading \"%s\"...", lt_name); fflush(stdout);
   lattice *lt = lattice_read(lt_name);
   printf(" Ok.\n");
@@ -436,19 +436,40 @@ void verify(const char *lt_name, const char *ldf_name) {
   lattice_discr_fun_read(ldf_name, &discrfuns, &discrfuns_sz);
   printf(" Ok.\n");
 
+  clock_t t0 = clock();
+  size_t no_discrfuns = 0; /* number of pairs with no discriminating function. */
   printf("verification"); fflush(stdout);
   size_t pair_idx = 0;
   for(discrfun *df = discrfuns; df < discrfuns + discrfuns_sz; ++df) {
     class *parent = lattice_get_class(lt, df->parent);
     class *child  = lattice_get_class(lt, df->child);
-    assert(fun_preserves_clone(&df->fun, &parent->generator) && !fun_preserves_clone(&df->fun, &child->clone));
+    if(df->fun.arity >= 0) {
+      assert(fun_preserves_clone(&df->fun, &parent->generator) && !fun_preserves_clone(&df->fun, &child->clone));
+    } else {
+      ++no_discrfuns;
+    }
 
+    /* print progress */
     ++pair_idx;
     if(pair_idx % (discrfuns_sz/40) == 0) {
       printf("."); fflush(stdout);
     }
   }
-  printf(" Ok.\n");
+  printf(" %.2lf min. Ok.\n", (double)(clock() - t0) / CLOCKS_PER_SEC / 60.);
+
+  printf("Number of pairs with no discriminating function: %lu\n", no_discrfuns);
+  if(no_discrfuns > 0) {
+    printf("List of pairs with no discriminating function:\n");
+    printf("================================================================\n");
+    for(discrfun *df = discrfuns; df < discrfuns + discrfuns_sz; ++df) {
+      class *parent = lattice_get_class(lt, df->parent);
+      class *child  = lattice_get_class(lt, df->child);
+      if(df->fun.arity < 0) {
+        print_verbose_log(stdout, parent, child, &df->fun);
+      }
+    }
+    printf("================================================================\n");
+  }  
   lattice_free(lt);
 }
 
