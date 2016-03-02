@@ -39,34 +39,33 @@ void lattice_discr_fun_read(const char *fin, discrfun **dfs, size_t *size) {
   fclose(fd);
 }
 
-void lattice_discr_fun_txt_read(const char *fin, fun **funs, size_t *size) {
-  FILE *fd = fopen(fin, "rb");
+void lattice_discr_fun_txt_read(const char *fin, discrfun **dfs, size_t *size) {
+  FILE *fd = fopen(fin, "r");
   assert(fd && "cannot open file");
 
-  hashtable *ht = hashtable_alloc(4096, fun_hash, (int (*) (const void *, const void *))fun_eq);
+  size_t capacity = 4096;
+  *dfs = malloc(capacity * sizeof(discrfun));
+  assert(*dfs);
+  *size = 0;
 
   for(;;) {
+    class_idx parent, child;
     char fun_str[1024];
-    int rc = fscanf(fd, "class %*u (%*u:%*u) subclass %*u (%*u:%*u) %s\n",
-                    fun_str);
+    int rc = fscanf(fd, "class %u (%*u:%*u) subclass %u (%*u:%*u) %s\n",
+                    &parent, &child, fun_str);
     if(rc == EOF) break;
+    assert(rc == 3);
 
-    fun *f = malloc(sizeof(struct fun));
-    fun_scan(fun_str, f);
-
-    hashtable_insert(ht, f, f);
+    if(*size == capacity) {
+      capacity *= 2;
+      *dfs = realloc(*dfs, capacity * sizeof(discrfun));
+    }
+    discrfun *df = (*dfs) + *size;
+    df->parent = parent;
+    df->child  = child;
+    fun_scan(fun_str, &df->fun);
+    ++(*size);
   }
-
-  *size = ht->size;
-  *funs  = malloc((*size) * sizeof(struct fun));
-  fun *fp = *funs;
-  for(hashtable_iterator it = hashtable_iterator_begin(ht); !hashtable_iterator_end(&it); hashtable_iterator_next(&it)) {
-    hash_elem *elem = hashtable_iterator_deref(&it);
-    (*fp) = *(fun *)elem->key;
-    free(elem->key);
-    ++fp;
-  }
-  assert(fp == (*funs) + (*size));
 
   fclose(fd);
 }
