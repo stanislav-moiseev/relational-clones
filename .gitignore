@@ -3,6 +3,7 @@ data
 output
 prof
 doc
+verif
 
 # Backup files
 *~
