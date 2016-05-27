@@ -33,7 +33,9 @@ SRCS =									\
 	src/binary/bin-lattice-discr-fun.c				\
 									\
 	src/z3/z3-search.c						\
-#	src/z3/gen-spec.c						\
+									\
+	src/isar/isar-spec.c						\
+
 
 OBJS =	$(SRCS:.c=.o)
 
@@ -68,6 +70,8 @@ SCRIPTS =								\
 	script/script-lattice-classes-with-discriminator.out		\
 	script/script-lattice-sublattice.out				\
 	script/script-lattice-statistics.out				\
+									\
+	script/script-isar-spec.out					\
 
 all:  $(TESTS) $(SCRIPTS)
 
@@ -80,3 +84,11 @@ clean:
 	rm -f $(OBJS) $(TESTS) $(SCRIPTS)
 	find * -name \*~ -delete
 
+
+ISABELLE = ~/dist/Isabelle2016/bin/isabelle
+
+isabelle-build:
+	$(ISABELLE) build -j4 -v -b -D R3_2
+
+isabelle-jedit:
+	$(ISABELLE) jedit -d output/R3_2/ -l R3-2

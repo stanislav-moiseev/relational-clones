@@ -21,7 +21,7 @@ closure_operator *clop_alloc_straightforward();
 
 
 /******************************************************************************/
-/** Elementary operations over predicates */
+/** Elementary operations over essential predicates */
 
 /** Permutation of variables:
  *      resp(x1,x0) = pred(x0,x1)
