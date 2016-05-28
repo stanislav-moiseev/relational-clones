@@ -15,7 +15,7 @@
 
 static const char *isar_pred_name(const pred *p) {
   static char s[128];
-  sprintf(s, "p%lu", p->data);
+  sprintf(s, "P%lu", p->data);
   return s;
 }
 
@@ -61,6 +61,9 @@ static void isar_pred(FILE *fd, const pred *p) {
 void isar_preds(FILE *fd) {
   assert(K == 3);
   
+  fprintf(fd, "(*\n");
+  fprintf(fd, "*)\n");
+  fprintf(fd, "\n");
   fprintf(fd, "theory preds\n");
   fprintf(fd, "imports Main\n");
   fprintf(fd, "begin\n");
@@ -75,5 +78,169 @@ void isar_preds(FILE *fd) {
   }
 
   fprintf(fd, "\nend\n");
+}
+
+
+/******************************************************************************/
+/** Elementary operations over predicates of arity 2 */
+
+static pred op_perm2(const pred *p) {
+  /* resp(x1,x0) = pred(x0,x1) */
+  struct pred resp;
+  pred_init(&resp, 2);        /* set to zero */
+  for(uint32_t x1 = 0; x1 < K; ++x1) {
+    for(uint32_t x0 = 0; x0 < K; ++x0) {
+      uint64_t pred_tuple = x1*K + x0;
+      uint64_t resp_tuple = x0*K + x1;
+      if(pred_compute(p, pred_tuple)) {
+        pred_set(&resp, resp_tuple);
+      }
+    }
+  }
+  return resp;
+}
+
+static pred op_conj2(const pred *p1, const pred *p2) {
+  pred resp;
+  pred_init(&resp, 2);
+  /* resp(x1,x0) = pred1(x1,x0) ∧ pred2(x1,x0) */
+  for(uint64_t tuple = 0; tuple < K*K; ++tuple) {
+    if(pred_compute(p1, tuple) && pred_compute(p2, tuple)) {
+      pred_set(&resp, tuple);
+    }
+  }
+  return resp;
+}
+
+static pred op_comp2(const pred *p1, const pred *p2) {
+  pred resp;
+  pred_init(&resp, 2);
+  /* resp(x1,x0) = ∃y (pred1(x1,y) ∧ pred2(y,x0)) */
+  for(uint32_t x1 = 0; x1 < K; ++x1) {
+    for(uint32_t x0 = 0; x0 < K; ++x0) {
+      uint64_t resp_tuple = x1*K + x0;
+      for(uint32_t y = 0; y < K; ++y) {
+        uint64_t pred1_tuple = x1*K + y;
+        uint64_t pred2_tuple = y*K + x0;
+        if(pred_compute(p1, pred1_tuple) && pred_compute(p2, pred2_tuple)) {
+          pred_set(&resp, resp_tuple);
+          break;
+        }
+      }
+    }
+  }
+  return resp;
+}
+
+
+static void isar_op1_proof(FILE *fd, const char *op_name, const pred *p, const pred *resp) {
+  static char name[128];
+  strcpy(name, isar_pred_name(p));
+  static char resp_name[128];
+  strcpy(resp_name, isar_pred_name(resp));
+  
+  fprintf(fd, "lemma op_perm_%s: \"%s %s = %s\"\n", name, op_name, name, resp_name);
+  fprintf(fd, "proof (simp add: fun_eq_iff; intro allI)\n");
+  fprintf(fd, "  show \"\\<And>x1 x2. (%s %s) x1 x2 = %s x1 x2\"\n", op_name, name, resp_name);
+  fprintf(fd, "  by (induct_tac x1 rule: dom3.induct;\n");
+  fprintf(fd, "      induct_tac x2 rule: dom3.induct;\n");
+  fprintf(fd, "      simp add: %s_def)\n", op_name);
+  fprintf(fd, "qed\n");
+}
+
+static void isar_op2_proof(FILE *fd, const char *op_name, const pred *p1, const pred *p2, const pred *resp) {
+  static char name1[128];
+  strcpy(name1, isar_pred_name(p1));
+  static char name2[128];
+  strcpy(name2, isar_pred_name(p2));
+  static char resp_name[128];
+  strcpy(resp_name, isar_pred_name(resp));
+  
+  fprintf(fd, "lemma %s_%s_%s: \"%s %s %s = %s\"\n", op_name, name1, name2, op_name, name1, name2, resp_name);
+  fprintf(fd, "proof (simp add: fun_eq_iff; intro allI)\n");
+  fprintf(fd, "  show \"\\<And>x1 x2. (%s %s %s) x1 x2 = %s x1 x2\"\n", op_name, name1, name2, resp_name);
+  fprintf(fd, "  by (induct_tac x1 rule: dom3.induct;\n");
+  fprintf(fd, "      induct_tac x2 rule: dom3.induct;\n");
+  fprintf(fd, "      simp add: %s_def)\n", op_name);
+  fprintf(fd, "qed\n");
+}
+
+void isar_pred_ops_perm(FILE *fd) {
+  assert(K == 3);
+  
+  fprintf(fd, "theory ops_perm\n");
+  fprintf(fd, "imports preds\n");
+  fprintf(fd, "begin\n");
+  fprintf(fd, "\n");
+
+  fprintf(fd, "(* permutation, \\<leftrightarrow>p *)\n");
+  fprintf(fd, "definition op_perm :: \"pred2 \\<Rightarrow> pred2\" where\n");
+  fprintf(fd, "  \"(op_perm p) x1 x2 \\<equiv> p x2 x1\"\n");
+  fprintf(fd, "\n");
+
+  pred p = { .arity = 2 };
+  for(p.data = 0; p.data < (1 << K*K); ++p.data) {
+    pred resp = op_perm2(&p);
+    isar_op1_proof(fd, "op_perm", &p, &resp);
+    fprintf(fd, "\n");
+  }
+
+  fprintf(fd, "end\n");
+}
+
+
+void isar_pred_ops_conj(FILE *fd) {
+  assert(K == 3);
+  
+  fprintf(fd, "theory ops_conj\n");
+  fprintf(fd, "imports preds\n");
+  fprintf(fd, "begin\n");
+  fprintf(fd, "\n");
+
+  fprintf(fd, "(* conjunction (a.k.a. intersection), p1 \\<inter> p2 *)\n");
+  fprintf(fd, "definition op_conj :: \"pred2 \\<Rightarrow> pred2 \\<Rightarrow> pred2\" where\n");
+  fprintf(fd, "  \"(op_conj p1 p2) x1 x2 \\<equiv> (p1 x1 x2 \\<and> p2 x1 x2)\"\n");
+  fprintf(fd, "\n");
+
+  pred p1 = { .arity = 2 };
+  pred p2 = { .arity = 2 };
+  for(p1.data = 0; p1.data < (1 << K*K); ++p1.data) {
+    for(p2.data = 0; p2.data < (1 << K*K); ++p2.data) {
+      pred resp = op_conj2(&p1, &p2);
+      isar_op2_proof(fd, "op_conj", &p1, &p2, &resp);
+      fprintf(fd, "\n");
+    }
+  }
+
+  fprintf(fd, "end\n");
+}
+
+void isar_pred_ops_comp(FILE *fd) {
+  assert(K == 3);
+  
+  fprintf(fd, "theory ops_comp\n");
+  fprintf(fd, "imports preds\n");
+  fprintf(fd, "begin\n");
+  fprintf(fd, "\n");
+
+  fprintf(fd, "(* composition, (p1 \\<circ> p2) x1 x2 \\<equiv> (\\<exists>y. p1 x1 y \\<and> p2 y x2)\"\n");
+  fprintf(fd, "definition op_comp :: \"pred2 \\<Rightarrow> pred2 \\<Rightarrow> pred2\" where\n");
+  fprintf(fd, "  \"(op_comp p1 p2) x1 x2 \\<equiv> (p1 x1 V0 \\<and> p2 V0 x2)\n");
+  fprintf(fd, "                         \\<or> (p1 x1 V1 \\<and> p2 V1 x2)\n");
+  fprintf(fd, "                         \\<or> (p1 x1 V2 \\<and> p2 V2 x2)\"\n");
+  fprintf(fd, "\n");
+
+  pred p1 = { .arity = 2 };
+  pred p2 = { .arity = 2 };
+  fprintf(fd, "\n");
+  for(p1.data = 0; p1.data < (1 << K*K); ++p1.data) {
+    for(p2.data = 0; p2.data < (1 << K*K); ++p2.data) {
+      pred resp = op_comp2(&p1, &p2);
+      isar_op2_proof(fd, "op_comp", &p1, &p2, &resp);
+      fprintf(fd, "\n");
+    }
+  }
+
+  fprintf(fd, "end\n");
 }
 

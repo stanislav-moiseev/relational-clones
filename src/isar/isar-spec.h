@@ -44,6 +44,8 @@ void isar_preds(FILE *fd);
  *      op_conj(p1, p2) == p3
  *      op_comp(p1, p2) == p3
  */
-void isar_pred_operations(FILE *fd);
+void isar_pred_ops_perm(FILE *fd);
+void isar_pred_ops_conj(FILE *fd);
+void isar_pred_ops_comp(FILE *fd);
 
 #endif

@@ -85,10 +85,12 @@ clean:
 	find * -name \*~ -delete
 
 
+## ~/.isabelle/Isabelle2016/etc/settings:
+##	ML_OPTIONS="-H 1G --maxheap 4G --debug threads"
 ISABELLE = ~/dist/Isabelle2016/bin/isabelle
 
 isabelle-build:
-	$(ISABELLE) build -j4 -v -b -D R3_2
+	$(ISABELLE) build -j4 -v -b -D output/R3_2/
 
 isabelle-jedit:
-	$(ISABELLE) jedit -d output/R3_2/ -l R3-2
+	$(ISABELLE) jedit -d output/R3_2/ -l R3_2 -n
