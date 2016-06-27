@@ -8,6 +8,12 @@
 #include "pred.h"
 #include "clone.h"
 
+/**
+ * `isar_clones` writes specification of all 2079040 relational clones of
+ * degree <= 2 of in 3-valued logic.
+ */
+void isar_clones(const char *ccplt_fname, FILE *fd, const char *theory_name);
+
 
 /**
  * `isar_preds` writes specification of all 512 predicates of arity 2 in
@@ -90,5 +96,6 @@ void isar_pred_ops_conj2(FILE *fd, const char *theory_name);
  * operation to all 512*512 pairs of predicates.
  */
 void isar_pred_ops_comp(FILE *fd, const char *theory_name);
+
 
 #endif

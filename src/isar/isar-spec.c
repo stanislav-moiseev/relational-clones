@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "isar/isar-spec.h"
 #include "closure/closure-straightforward.h"
+#include "binary/bin-closure-clone-pred.h"
 
 
 static const char *isar_pred_name(const pred *p) {
@@ -262,3 +263,72 @@ void isar_pred_ops_comp(FILE *fd, const char *theory_name) {
   fprintf(fd, "end\n");
 }
 
+
+
+static const char *isar_clone_name(const clone *clone) {
+  static char s[128];
+
+  /** We skip predicates of arity 0 and 1. */
+  /* assert(clone->data0 == 0 && "isar_clone_name: all predicates should be of arity 2"); */
+  /* assert(clone->data1 == 0 && "isar_clone_name: all predicates should be of arity 2"); */
+  
+  char *str = s;
+  str += sprintf(str, "clone_");
+  int flag = 1; /* 1 means not to print preceding zeros */
+  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
+    if(flag) {
+      if(clone->data2[offset] == 0) continue;
+      flag = 0;
+      str += sprintf(str, "%lx", clone->data2[offset]);
+    } else {
+      /* print `pred->data[offset]` with all preceding zeros (up to 8 zeors) */
+      str += sprintf(str, "%.8lx", clone->data2[offset]);
+    }
+  }
+
+  /* if the clone contains no predicates of arity 2 */
+  if(flag) {
+    sprintf(str, "0");
+  }
+
+  return s;
+}
+
+void isar_clones(const char *ccplt_fname, FILE *fd, const char *theory_name) {
+  assert(K == 3);
+  
+  fprintf(fd, "theory %s\n", theory_name);
+  fprintf(fd, "imports common preds\n");
+  fprintf(fd, "begin\n");
+  fprintf(fd, "\n");
+
+  printf("reading \"%s\"...", ccplt_fname); fflush(stdout);
+  ccplt *ccplt = ccplt_read(ccplt_fname);
+  printf("\tOk.\n");
+
+  printf("writing specs for clones...");  fflush(stdout);
+  for(ccpnode **ndp = ccplt->nodes; ndp < ccplt->nodes + ccplt->num_nodes; ++ndp) {
+    ccpnode  *nd = *ndp;
+    clone *cl    = &nd->clone;
+
+    const char *name = isar_clone_name(cl);
+    fprintf(fd, "definition \"%s \\<equiv> {", name);
+    int flag = 1;
+    for(clone_iterator it = clone_iterator_begin(cl); !clone_iterator_end(cl, &it); clone_iterator_next(&it)) {
+      pred p = clone_iterator_deref(&it);
+      /** We skip predicates of arity 0 and 1 */
+      if(p.arity == 0 || p.arity == 1) continue;
+      assert(p.arity == 2);
+      if(flag) {
+        fprintf(fd, "%s", isar_pred_name(&p));
+        flag = 0;
+      } else {
+        fprintf(fd, ", %s", isar_pred_name(&p));
+      }
+    }
+    fprintf(fd, "}\"\n");
+  }
+  
+  fprintf(fd, "end\n");
+  printf("\tOk.\n");
+}
