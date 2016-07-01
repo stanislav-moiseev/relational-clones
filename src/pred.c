@@ -181,22 +181,27 @@ typedef struct named_pred_info named_pred_info;
 
 static named_pred_info named_pred_infos[] = {
   /* Predicates of arity 0 */
-  { .arity = 0, .ext = "{}",     .name = "false" },
-  { .arity = 0, .ext = "{<>}",   .name = "true" },
+  { .arity = 0, .ext = "{}",     .name = "false(0)" },
+  { .arity = 0, .ext = "{<>}",   .name = "true(0)"  },
 
+  
   /* Predicates of arity 1 */
   /* central of arity 1 */
-  { .arity = 1, .ext = "{0}",    .name = "set {0}" },
-  { .arity = 1, .ext = "{1}",    .name = "set {1}" },
-  { .arity = 1, .ext = "{2}",    .name = "set {2}" },
-  { .arity = 1, .ext = "{0, 1}", .name = "set {0, 1}" },
-  { .arity = 1, .ext = "{0, 2}", .name = "set {0, 2}" },
-  { .arity = 1, .ext = "{1, 2}", .name = "set {1, 2}" },
+  { .arity = 1, .ext = "{}",        .name = "false(1)"   },
+  { .arity = 1, .ext = "{0}",       .name = "set {0}"    },
+  { .arity = 1, .ext = "{1}",       .name = "set {1}"    },
+  { .arity = 1, .ext = "{2}",       .name = "set {2}"    },
+  { .arity = 1, .ext = "{0, 1}",    .name = "set {0, 1}" },
+  { .arity = 1, .ext = "{0, 2}",    .name = "set {0, 2}" },
+  { .arity = 1, .ext = "{1, 2}",    .name = "set {1, 2}" },
+  { .arity = 1, .ext = "{0, 1, 2}", .name = "true(1)"    },
 
     
   /* Predicates of arity 2 */
-  /* equality */
-  { .arity = 2, .ext = "{00, 11, 22}",                     .name = "equality" },
+  /* false, true, equality */
+  { .arity = 2, .ext = "{}",                                   .name = "false(2)" },
+  { .arity = 2, .ext = "{00, 01, 02, 10, 11, 12, 20, 21, 22}", .name = "true(2)"  },
+  { .arity = 2, .ext = "{00, 11, 22}",                         .name = "equality" },
     
   /* partial orders */
   { .arity = 2, .ext = "{22, 11, 00, 01}",                 .name = "partial order 0 < 1" },

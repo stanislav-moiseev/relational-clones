@@ -85,7 +85,7 @@ void construct_lattice(const char *table2p_uniq_name, const char *ccp_name) {
 }
 
 int main() {
-  printf("script-construct-lattice:\n"); fflush(stdout);
+  printf("script-closure-clone-pred-construct:\n"); fflush(stdout);
   time_t t0 = time(NULL);
   construct_lattice("data/closure-two-uniq-preds.2016",
                     "output/closure-clone-pred.2016");
