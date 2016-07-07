@@ -54,6 +54,12 @@ static inline void closure_clone_ex(const closure_operator *clop, const clone *b
  */
 const clone *top_clone();
 
+/** `top_clone` returns a clone equal to {false(2), true(2), eq(2)}.
+ *
+ * This is useful for the closure operator that operates on predicates of arity
+ * exactly 2.
+ */
+const clone *top_clone2();
 
 void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure);
 

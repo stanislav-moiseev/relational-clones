@@ -26,6 +26,19 @@ const clone *top_clone() {
   return &cl;
 }
 
+const clone *top_clone2() {
+  static int flag = 0;
+  static clone cl;
+  if(!flag) {
+    flag = 1;
+    clone_init(&cl);
+    clone_insert_pred(&cl, pred_get("false(2)"));
+    clone_insert_pred(&cl, pred_get("true(2)"));
+    clone_insert_pred(&cl, pred_get("equality"));
+  }
+  return &cl;
+}
+
 void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure) {
   clone_init(closure);
   

@@ -36,6 +36,9 @@ SRCS =									\
 									\
 	src/isar/isar-spec.c						\
 
+SRC2 =									\
+	src/closure/closure2-straightforward.c				\
+
 
 OBJS =	$(SRCS:.c=.o)
 
