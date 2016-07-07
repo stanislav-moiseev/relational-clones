@@ -48,42 +48,27 @@ struct closure_operator {
 typedef struct closure_operator closure_operator;
 
 
-void clop_free(closure_operator *clop);
+static inline void clop_free(closure_operator *clop) {
+  clop->ops.internals_free(clop->internals);
+  free(clop);
+}
+
+static inline void closure_clone_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
+  clop->ops.closure_clone_ex(clop->internals, base, suppl, closure);
+}
+
 
 
 /******************************************************************************/
 /** Common usages of closure operator */
 
-/** `clone_insert_dummy_preds` inserts predicates false(0), true(0), eq(2)
- * to the clone.
+/** `clone_insert_dummy_preds` inserts predicates
+ * false(0), true(0), eq(2) to the clone.
  */
 void clone_insert_dummy_preds(clone *cl);
 
-/** `closure_zero_preds` computes the closure of
- *      { false(0), true(0), eq(2) }
- * and write the result to `closure`.
- */
-void closure_dummy_clone(const closure_operator *clop, clone *closure);
 
-/** `closure_one_pred` computes the closure of
- *      { false(0), true(0), eq(2), p }
- * and write the result to `closure`.
- */
-void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure);
-
-static inline void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure) {
-  clone_init(closure);
-  
-  struct clone empty;
-  clone_init(&empty);
-  clop->ops.closure_clone_ex(clop->internals, &empty, clone, closure);
-}
-
-void clop_two_preds_closure_clone_ex(void *internals, const clone *base, const clone *suppl, clone *closure);
-
-static inline void closure_clone_ex(const closure_operator *clop, const clone *base, const clone *suppl, clone *closure) {
-  clop->ops.closure_clone_ex(clop->internals, base, suppl, closure);
-}
+void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure);
 
 
 #endif

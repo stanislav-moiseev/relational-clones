@@ -12,9 +12,12 @@
 #include "binary/bin-common.h"
 #include "binary/bin-closure-two-preds.h"
 
-void construct_closure_two_preds(const char *fout_name) {
+void construct_closure_two_uniq_preds(const char *fout_name) {
+  time_t t0 = time(NULL);
+  printf("construct-closure-two-uniq-preds: "); fflush(stdout);
   closure_table_two_preds *table = closure_table_two_preds_alloc();
   closure_table_two_preds_construct(table);
+  printf("%.2f min. Ok.\n", difftime(time(NULL), t0) / 60.);
 
   printf("writing \"%s\"...", fout_name); fflush(stdout);
   FILE *fout = fopen(fout_name, "wb");
@@ -26,7 +29,7 @@ void construct_closure_two_preds(const char *fout_name) {
   fclose(fout);
 }
 
-void read_closure_two_preds(const char *fname) {
+void read_closure_two_uniq_preds(const char *fname) {
   FILE *fd = fopen(fname, "rb");
   assert(fd);
 
@@ -38,11 +41,10 @@ void read_closure_two_preds(const char *fname) {
 }
 
 int main() {
-  printf("construct-closure-two-preds: "); fflush(stdout);
-  construct_closure_two_preds("output/closure-two-uniq-preds.2016");
-  printf("Ok.\n");
+  construct_closure_two_uniq_preds("output/closure-two-uniq-preds.2016");
 
-  printf("read-closure-two-preds: "); fflush(stdout);
-  read_closure_two_preds("output/closure-two-uniq-preds.2016");
-  printf("Ok.\n");
+  time_t t1 = time(NULL);
+  printf("read-closure-two-uniq-preds: "); fflush(stdout);
+  read_closure_two_uniq_preds("output/closure-two-uniq-preds.2016");
+  printf("%.2f min. Ok.\n", difftime(time(NULL), t1) / 60.);
 }

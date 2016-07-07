@@ -39,6 +39,7 @@ closure_operator *clop_clone_pred_read(const char *fname) {
 
   clop->ops.closure_clone_ex = clop_clone_pred_closure_clone_ex;
   clop->ops.internals_free   = clop_clone_pred_internals_free;
+  
   clop->internals            = aligned_alloc(32, sizeof(clop_clone_pred_internals));
   ((clop_clone_pred_internals *)clop->internals)->ccplt = ccplt;
   closure_uniq_ess_preds(2, &((clop_clone_pred_internals *)clop->internals)->cl_uniq);
@@ -281,7 +282,11 @@ void ccplt_construct(const closure_operator *clop, ccplt *lt) {
 
   /* start from a ccplt containing just one clone */
   ccpnode *top = ccpnode_alloc(lt);
-  closure_dummy_clone(clop, &top->clone);
+  clone_init(&top->clone);
+  /* We do not insert p_true and p_eq because we do not consider them to be *
+   * closure-unique. */
+  assert(pred_idx(lt->pred_num, pred_get("false(0)")) >= 0);
+  clone_insert_pred(&top->clone, pred_get("false(0)"));
   ccplt_insert_node(lt, top, 0);
   
   /* iteratively construct new ccpnodes */

@@ -9,6 +9,8 @@
 
 #include "pred.h"
 #include "clone.h"
+#include "closure.h"
+
 
 /******************************************************************************/
 /** Essential predicates */
@@ -23,8 +25,16 @@ int pred_is_essential(const pred *pred);
  */
 void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size);
 
+
 /******************************************************************************/
 /** Closure-unique essential predicates */
+
+
+/** `closure_one_pred` computes the closure of
+ *      { false(0), true(0), eq(2), p }
+ * and write the result to `closure`.
+ */
+void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure);
 
 /** `closure_uniq_ess_preds` returns a clone contain all 251 closure-unique
  * essential predicates of arity <= max_arity.

@@ -94,6 +94,7 @@ closure_operator *clop_two_preds_read(const char *fname) {
 
   clop->ops.closure_clone_ex = clop_two_preds_closure_clone_ex;
   clop->ops.internals_free   = clop_two_preds_internals_free;
+
   clop->internals            = aligned_alloc(32, sizeof(struct clop_two_preds_internals));
   ((struct clop_two_preds_internals *)clop->internals)->table2p = table2p;
   closure_uniq_ess_preds(2, &((struct clop_two_preds_internals *)clop->internals)->cl_uniq);

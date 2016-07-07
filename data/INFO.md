@@ -9,12 +9,6 @@
 
 # Precomputed closure
 
-`closure-two-preds.2016`
-
-Contains a precomputed closure $<{p1, p2}> ∩ EssentialPreds$ for all pairs
-$(p1, p2)$ of _essential_ predicates. The resulting predicate set contains
-_essential_ predicates only.
-
 `closure-two-uniq-preds.2016`
 
 Contains a precomputed closure $<{p1, p2}> ∩ ClosureUniquePreds$ for all pairs

@@ -62,7 +62,7 @@ SCRIPTS =								\
 	script/script-maj-classes-with-one-subclass-discr-fun.out	\
 									\
 	script/script-pred-equivalence-classes.out			\
-	script/script-closure-two-preds.out				\
+	script/script-closure-two-uniq-preds.out			\
 	script/script-closure-clone-pred-construct.out			\
 									\
 	script/script-lattice-construct.out				\
