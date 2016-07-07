@@ -1,7 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  *
- * Closure operator for predicates of arity <= 2.
+ * Closure operator for closure-unique essential predicates of arity <= 2.
  ******************************************************************************/
 
 #ifndef CLOSURE_TWO_PREDS_H
@@ -17,8 +17,9 @@
 /** Closure operator that uses a precomputed table of closure of pairs of
  * predicates to efficiently compute the closure of the given clone.
  *
- * For a pair of predicates p1, p2 it returns the closure of the set
+ * For a pair of predicates p1, p2 it first computes the the closure of the set
  *      { false(0), true(0), eq(2), p1, p2 }
+ * and then keeps closure-unique essential predicates only.
  */
 closure_operator *clop_two_preds_read(const char *fname);
 

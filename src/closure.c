@@ -13,10 +13,17 @@
 
 
 /******************************************************************************/
-void clone_insert_dummy_preds(clone *cl) {
-  clone_insert_pred(cl, pred_get("false(0)"));
-  clone_insert_pred(cl, pred_get("true(0)"));
-  clone_insert_pred(cl, pred_get("equality"));
+const clone *top_clone() {
+  static int flag = 0;
+  static clone cl;
+  if(!flag) {
+    flag = 1;
+    clone_init(&cl);
+    clone_insert_pred(&cl, pred_get("false(0)"));
+    clone_insert_pred(&cl, pred_get("true(0)"));
+    clone_insert_pred(&cl, pred_get("equality"));
+  }
+  return &cl;
 }
 
 void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure) {

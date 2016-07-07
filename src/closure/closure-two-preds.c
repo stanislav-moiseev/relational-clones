@@ -151,9 +151,7 @@ void closure_table_two_preds_construct(closure_table_two_preds *table) {
           /* skip if p2 is not a closure-unique essential predicate */
           if(!clone_test_pred(&cl_uniq, &p2)) continue;
           
-          clone cl;
-          clone_init(&cl);
-          clone_insert_dummy_preds(&cl);
+          clone cl = *top_clone();
           clone_insert_pred(&cl, &p1);
           clone_insert_pred(&cl, &p2);
 

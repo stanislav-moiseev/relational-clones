@@ -1,7 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  *
- * Closure operator for predicates of arity <= 2.
+ * Closure operator on essential predicates of arity <= 2.
  ******************************************************************************/
 
 #ifndef CLOSURE_STRAIGTFORWARD_H
@@ -13,10 +13,22 @@
 #include "closure.h"
 #include "pred-essential.h"
 
-/** Closure operator that computes elementary operation directly:
+/** An implementation of a closure operator that computes elementary operations
+ *  directly:
+ *
  *     - op_permut(1), op_proj(1), op_ident(1);
  *     - op_conj(2), op6(2), op_trans(2).
+ *
+ * The closure operator, when applied to clone `c`,first computes the closure of
+ * the given clone `c` under the above operation, and then keeps essential
+ * predicates only.
+ * 
+ * Assumptions over clone `c`:
+ * 1) the clone `c` contains the following predicates:
+ *      false(0), true(0), eq(2);
+ * 2) the clone `c` consists of essential predicates only.
  */
+
 closure_operator *clop_alloc_straightforward();
 
 

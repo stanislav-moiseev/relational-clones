@@ -14,8 +14,11 @@ void clone_prepare_for_maj2013(const clone *cl, clone *cl2013) {
   
   /* In current implementation we store only closure-unique predicates,
    * so we have to expand the clone to all essential predicates */
+  clone cl2;
+  clone_copy(cl, &cl2);
+  clone_union(top_clone(), &cl2, &cl2);
   clone full_closure;
-  closure_clone(clop, cl, &full_closure);
+  closure_clone(clop, &cl2, &full_closure);
     
   /* In the previous lattice (maj'2013) we did not store predicates false(0)
    * and true(0), that's why we remove them. */

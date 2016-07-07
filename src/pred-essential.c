@@ -142,10 +142,7 @@ void closure_uniq_ess_preds(uint32_t max_arity, clone *cl) {
 void closure_one_pred(const closure_operator *clop, const pred *p, clone *closure) {
   clone_init(closure);
 
-  clone cl;
-  clone_init(&cl);
-  
-  clone_insert_dummy_preds(&cl);
+  clone cl = *top_clone();
   clone_insert_pred(&cl, p);
 
   closure_clone(clop, &cl, closure);

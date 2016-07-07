@@ -1,7 +1,7 @@
 /*******************************************************************************
  * (C) 2016 Stanislav Moiseev. All rights reserved.
  *
- * Closure operator for predicates of arity <= 2.
+ * Closure operator for closure-unique essential predicates of arity <= 2.
  ******************************************************************************/
 
 #ifndef CLOSURE_CLONE_PRED_H
@@ -21,6 +21,7 @@ struct ccplt;
 /** Closure operator that uses a precomputed table of closure of a clone plus a
  * closure-unique essential predicate to efficiently compute the closure of the
  * given clone.
+ * All clones must contain closure-unique essential predicates only.
  */
 closure_operator *clop_clone_pred_read(const char *fname);
 

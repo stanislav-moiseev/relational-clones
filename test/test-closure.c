@@ -132,14 +132,13 @@ void test_clone_closure2() {
   pred_construct(2, "000001011", &p3_2_b);
   pred_construct(2, "000010001", &p3_2_11);
   
-  struct clone cl, closure, expected_closure;
-  clone_init(&cl);
-  clone_insert_dummy_preds(&cl);
+  struct clone cl = *top_clone();
   clone_insert_pred(&cl, &p3_2_b);
+  
+  struct clone closure;
   closure_clone(clop, &cl, &closure);
 
-  clone_init(&expected_closure);
-  clone_insert_dummy_preds(&expected_closure);
+  struct clone expected_closure = *top_clone();
   clone_insert_pred(&expected_closure, &p3_1_1);
   clone_insert_pred(&expected_closure, &p3_1_3);
   clone_insert_pred(&expected_closure, &p3_2_b);
@@ -165,10 +164,11 @@ void test_closure_clone_pred(const char *fname) {
      * implementations of closure operator. */
     clone cl;
     random_clone(&cl);
+    clone_union(top_clone(), &cl, &cl);
     clone_intersection(&cl, &uniq_ess, &cl);
         
     clone closure_sf, closure_cp;
-    clone_insert_dummy_preds(&cl);
+    clone_union(top_clone(), &cl, &cl);
     closure_clone(clop_sf, &cl, &closure_sf);
 
     /* remove dummy true(0) and eq(2) that are not closure-uniq;
@@ -180,8 +180,6 @@ void test_closure_clone_pred(const char *fname) {
     * only, but `closure_sf` contains all essential predicates, we need to
     * filter `closure_sf`. */
     clone_intersection(&closure_sf, &uniq_ess, &closure_sf);
-    /* But we need to include dummy predicates :) */
-    clone_insert_dummy_preds(&closure_sf);
 
     if(!clone_eq(&closure_sf, &closure_cp)) {
       printf("Error\n");

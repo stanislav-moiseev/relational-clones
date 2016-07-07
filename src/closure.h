@@ -19,18 +19,6 @@
 /** Abstract closure operator */
 
 struct closure_operator_ops {
-  /** `clone_closure` computes the closure of the given clone under the above
-   * operation, selects all essential predicates, and writes the result to
-   * `closure`.
-   * 
-   * Assumptions over `clone`:
-   * 1) the clone contains the following predicates:
-   *      false(0), true(0), eq(2);
-   * 2) the clone consists of essential predicates only.
-   *
-   * The current implementation supports predicates of arity <= 2 only.
-   */
-
   /** `clone_closure_ex` computes the closure of the union <base ∪ suppl>
    * under an assumption that `base` is a closed set.
    */
@@ -62,10 +50,9 @@ static inline void closure_clone_ex(const closure_operator *clop, const clone *b
 /******************************************************************************/
 /** Common usages of closure operator */
 
-/** `clone_insert_dummy_preds` inserts predicates
- * false(0), true(0), eq(2) to the clone.
+/** `top_clone` returns a clone equal to {false(0), true(0), eq(2)}.
  */
-void clone_insert_dummy_preds(clone *cl);
+const clone *top_clone();
 
 
 void closure_clone(const closure_operator *clop, const clone *clone, struct clone *closure);
