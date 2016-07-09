@@ -16,6 +16,7 @@ SRCS =									\
 	src/closure/closure-straightforward.c				\
 	src/closure/closure-two-preds.c					\
 	src/closure/closure-clone-pred.c				\
+	src/closure/closure2-straightforward.c				\
 									\
 	src/maj-lattice.c						\
 	src/lattice.c							\
@@ -35,9 +36,6 @@ SRCS =									\
 	src/z3/z3-search.c						\
 									\
 	src/isar/isar-spec.c						\
-
-SRC2 =									\
-	src/closure/closure2-straightforward.c				\
 
 
 OBJS =	$(SRCS:.c=.o)
@@ -67,6 +65,7 @@ SCRIPTS =								\
 	script/script-pred-equivalence-classes.out			\
 	script/script-closure-two-uniq-preds.out			\
 	script/script-closure-clone-pred-construct.out			\
+	script/script-closure2-clone-pred-construct.out			\
 									\
 	script/script-lattice-construct.out				\
 	script/script-lattice-discr-fun.out				\

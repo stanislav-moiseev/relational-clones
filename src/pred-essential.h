@@ -25,6 +25,10 @@ int pred_is_essential(const pred *pred);
  */
 void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size);
 
+/** `essential_predicates` writes all essential predicates of arity <= max_arity
+ * to `cl`.
+ */
+void essential_predicates(uint32_t max_arity, clone *cl);
 
 /******************************************************************************/
 /** Closure-unique essential predicates */

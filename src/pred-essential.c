@@ -102,6 +102,20 @@ void get_essential_predicates(uint32_t max_arity, pred **ess_preds, size_t *size
   }
 }
 
+void essential_predicates(uint32_t max_arity, clone *cl) {
+  clone_init(cl);
+  
+  pred *ess_preds;
+  size_t size;
+  get_essential_predicates(max_arity, &ess_preds, &size);
+  
+  for(pred *p = ess_preds; p < ess_preds + size; ++p) {
+    clone_insert_pred(cl, p);
+  }
+  
+  free(ess_preds);
+}
+
 
 /******************************************************************************/
 /** Closure-unique essential predicates */

@@ -191,15 +191,47 @@ predicate_numerator *predicate_numerator_construct() {
   return pred_num;
 }
 
+predicate_numerator *predicate_numerator_construct2() {
+  predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
+  assert(pred_num);
+
+  pred_num->uniq_sz = int_pow2(K*K);
+
+  pred_num->uniq_preds = malloc(pred_num->uniq_sz * sizeof(pred));
+  assert(pred_num->uniq_preds);
+  for(uint64_t data = 0; data < int_pow2(K*K); ++data) {
+    pred p = { .arity = 2, .data = data };
+    pred_num->uniq_preds[data] = p;
+  }
+  
+  /* construct reverse index */
+  for(uint32_t ar = 0; ar <= 2; ++ar) {
+    uint64_t num = int_pow2(int_pow(K, ar));
+    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(ccpnode *)); 
+    assert(pred_num->uniq_pred_idx[ar] != NULL);
+    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(ccpnode *));
+  }
+  for(pred *p = pred_num->uniq_preds; p < pred_num->uniq_preds + pred_num->uniq_sz; ++p) {
+    size_t idx = 0;
+    for(; idx < pred_num->uniq_sz; ++idx) {
+      if(pred_eq(&pred_num->uniq_preds[idx], p)) break;
+    }
+    assert(idx < pred_num->uniq_sz);
+    pred_num->uniq_pred_idx[p->arity][p->data] = idx;
+  }
+  
+  return pred_num;
+}
+
 void predicate_numerator_free(predicate_numerator *pred_num) {
   free(pred_num->uniq_preds);
-  for(int ar = 0; ar <=2; ++ar) {
+  for(int ar = 0; ar <= 2; ++ar) {
     free(pred_num->uniq_pred_idx[ar]);
   }
   free(pred_num);
 }
 
-static void ccplt_construct_step(const closure_operator *clop, ccplt *lt, pred_idx_t pidx) {
+void ccplt_construct_step(const closure_operator *clop, ccplt *lt, pred_idx_t pidx) {
   const pred *p = idx_pred(lt->pred_num, pidx);
   size_t cur_step_num_nodes = lt->num_nodes;
   for(ccpnode **cp = lt->nodes; cp < lt->nodes + cur_step_num_nodes; ++cp) {
@@ -282,11 +314,7 @@ void ccplt_construct(const closure_operator *clop, ccplt *lt) {
 
   /* start from a ccplt containing just one clone */
   ccpnode *top = ccpnode_alloc(lt);
-  clone_init(&top->clone);
-  /* We do not insert p_true and p_eq because we do not consider them to be *
-   * closure-unique. */
-  assert(pred_idx(lt->pred_num, pred_get("false(0)")) >= 0);
-  clone_insert_pred(&top->clone, pred_get("false(0)"));
+  top->clone = *top_clone();
   ccplt_insert_node(lt, top, 0);
   
   /* iteratively construct new ccpnodes */

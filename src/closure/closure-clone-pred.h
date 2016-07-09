@@ -149,7 +149,7 @@ struct ccplt {
   size_t capacity;
 
   /** A hash table to support efficient clone membership test.
-   * See `lattice_lookup` */
+   * See `ccplt_lookup` */
   hashtable *ht;
 
   /** A structure that enumerates all closure-unique predicates with natural
@@ -187,6 +187,9 @@ ccpnode *ccplt_get_node(const ccplt *lt, class_idx idx);
  */
 void ccplt_construct(const closure_operator *clop, ccplt *lt);
 
+void ccplt_construct_step(const closure_operator *clop, ccplt *lt, pred_idx_t pidx);
+
+
 /** `ccplt_closure_clone` uses CCPLT to efficiently compute the closure of the
  * given clone.
  *
@@ -213,7 +216,13 @@ struct predicate_numerator {
 };
 typedef struct predicate_numerator predicate_numerator;
 
+/** A predicate numerator for all 251 closure-unique predicates of arity <= 2.
+ */
 predicate_numerator *predicate_numerator_construct();
+
+/** A predicate numerator for all 512 predicates of arity = 2 (exactly).
+ */
+predicate_numerator *predicate_numerator_construct2();
 
 void predicate_numerator_free(predicate_numerator *pred_num);
 
