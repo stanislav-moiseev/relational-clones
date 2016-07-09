@@ -216,13 +216,8 @@ struct predicate_numerator {
 };
 typedef struct predicate_numerator predicate_numerator;
 
-/** A predicate numerator for all 251 closure-unique predicates of arity <= 2.
- */
-predicate_numerator *predicate_numerator_construct();
 
-/** A predicate numerator for all 512 predicates of arity = 2 (exactly).
- */
-predicate_numerator *predicate_numerator_construct2();
+predicate_numerator *predicate_numerator_alloc(pred *preds, size_t sz);
 
 void predicate_numerator_free(predicate_numerator *pred_num);
 

@@ -165,59 +165,27 @@ ccpnode *ccplt_get_node(const ccplt *lt, class_idx idx) {
   return nd;
 }
 
-predicate_numerator *predicate_numerator_construct() {
-  predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
-  assert(pred_num);
-  
-  /* construct index for closure-unique predicates */
-  construct_closure_uniq_ess_preds(2, &pred_num->uniq_preds, &pred_num->uniq_sz);
-  
-  /* construct reverse index */
-  for(uint32_t ar = 0; ar <= 2; ++ar) {
-    uint64_t num = int_pow2(int_pow(K, ar));
-    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(ccpnode *)); 
-    assert(pred_num->uniq_pred_idx[ar] != NULL);
-    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(ccpnode *));
-  }
-  for(pred *p = pred_num->uniq_preds; p < pred_num->uniq_preds + pred_num->uniq_sz; ++p) {
-    size_t idx = 0;
-    for(; idx < pred_num->uniq_sz; ++idx) {
-      if(pred_eq(&pred_num->uniq_preds[idx], p)) break;
-    }
-    assert(idx < pred_num->uniq_sz);
-    pred_num->uniq_pred_idx[p->arity][p->data] = idx;
-  }
-  
-  return pred_num;
-}
-
-predicate_numerator *predicate_numerator_construct2() {
+predicate_numerator *predicate_numerator_alloc(pred *preds, size_t sz) {
   predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
   assert(pred_num);
 
-  pred_num->uniq_sz = int_pow2(K*K);
-
-  pred_num->uniq_preds = malloc(pred_num->uniq_sz * sizeof(pred));
-  assert(pred_num->uniq_preds);
-  for(uint64_t data = 0; data < int_pow2(K*K); ++data) {
-    pred p = { .arity = 2, .data = data };
-    pred_num->uniq_preds[data] = p;
-  }
+  pred_num->uniq_sz    = sz;
+  pred_num->uniq_preds = preds;
   
-  /* construct reverse index */
+  /* alloc mem for reverse index */
   for(uint32_t ar = 0; ar <= 2; ++ar) {
     uint64_t num = int_pow2(int_pow(K, ar));
-    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(ccpnode *)); 
+    pred_num->uniq_pred_idx[ar] = malloc(num * sizeof(pred_idx_t)); 
     assert(pred_num->uniq_pred_idx[ar] != NULL);
-    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(ccpnode *));
+    memset(pred_num->uniq_pred_idx[ar], 0xFF, num * sizeof(pred_idx_t));
   }
-  for(pred *p = pred_num->uniq_preds; p < pred_num->uniq_preds + pred_num->uniq_sz; ++p) {
-    size_t idx = 0;
-    for(; idx < pred_num->uniq_sz; ++idx) {
-      if(pred_eq(&pred_num->uniq_preds[idx], p)) break;
-    }
-    assert(idx < pred_num->uniq_sz);
-    pred_num->uniq_pred_idx[p->arity][p->data] = idx;
+  
+  /* construct reverse index */  
+  for(size_t pidx = 0; pidx < pred_num->uniq_sz; ++pidx) {
+    pred *p = pred_num->uniq_preds + pidx;
+    assert(p->arity <= 2 && "predicate numerator supports predicates of arity <= 2 only");
+    assert(p->data <= int_pow2(int_pow(K, p->arity)) && "predicate_numerator: broken predicate");
+    pred_num->uniq_pred_idx[p->arity][p->data] = pidx;
   }
   
   return pred_num;
@@ -310,7 +278,10 @@ void ccplt_construct_step(const closure_operator *clop, ccplt *lt, pred_idx_t pi
 void ccplt_construct(const closure_operator *clop, ccplt *lt) {
   /* factorize all essential predicates by their closure
    * and select predicates with unique closure */
-  lt->pred_num = predicate_numerator_construct();
+  size_t sz;
+  pred *preds;
+  construct_closure_uniq_ess_preds(2, &preds, &sz);
+  lt->pred_num = predicate_numerator_alloc(preds, sz);
 
   /* start from a ccplt containing just one clone */
   ccpnode *top = ccpnode_alloc(lt);

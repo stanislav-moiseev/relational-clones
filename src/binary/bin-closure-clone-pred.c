@@ -34,6 +34,7 @@ void ccplt_write(const char *fname, const ccplt *lt) {
 
   uint64_write(fd, lt->num_nodes);
   predicate_numerator_write(fd, lt->pred_num);
+  
   for(ccpnode **ccpnodep = lt->nodes; ccpnodep < lt->nodes + lt->num_nodes; ++ccpnodep) {
     ccpnode *c = *ccpnodep;
     ccpnode_write(fd, c);
@@ -54,6 +55,21 @@ static void ccpnode_read(FILE *fd, const ccplt *lt, ccpnode *c) {
   for(class_idx *child_idx = c->children; child_idx < c->children + c->num_children; ++child_idx) {
     *child_idx = uint32_read(fd);
   }
+  hashtable_insert(lt->ht, &c->clone, c);
+}
+
+predicate_numerator *predicate_numerator_read(FILE *fd) {
+  predicate_numerator *pred_num = malloc(sizeof(struct predicate_numerator));
+  assert(pred_num);
+  
+  size_t sz = uint64_read(fd);
+  pred *preds = malloc(sz * sizeof(struct pred));
+  assert(preds);
+  for(pred *p = preds; p < preds + sz; ++p) {
+    pred_read(fd, p);
+  }
+
+  return predicate_numerator_alloc(preds, sz);
 }
 
 ccplt *ccplt_read(const char *fname) {
@@ -66,18 +82,8 @@ ccplt *ccplt_read(const char *fname) {
   lt->capacity  = lt->num_nodes;
   lt->nodes     = malloc(lt->capacity * sizeof(ccpnode *));
   assert(lt->nodes);
-  lt->ht        = NULL;
-  lt->pred_num  = predicate_numerator_construct();
-
-  /* verify that the generated predicate numerator and that in the file are
-   * identical */
-  size_t uniq_sz2 = uint64_read(fd);
-  assert(lt->pred_num->uniq_sz == uniq_sz2);
-  for(pred *p = lt->pred_num->uniq_preds; p < lt->pred_num->uniq_preds + lt->pred_num->uniq_sz; ++p) {
-    pred p2;
-    pred_read(fd, &p2);
-    assert(pred_eq(p, &p2));
-  }
+  lt->ht        = hashtable_alloc(2*lt->capacity, clone_hash, (int (*)(const void *, const void *))clone_eq);
+  lt->pred_num  = predicate_numerator_read(fd);
 
   /* Alloc memory for ccpnodes. We need the pointers to ccpnodes be ready before
    * calling `ccpnode_read`. */

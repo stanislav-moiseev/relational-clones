@@ -64,10 +64,18 @@ void construct(const char *ccp_name) {
   closure_operator *clop2 = clop2_alloc_straightforward();
 
   ccplt *lt = ccplt_alloc();
-  
-  /* factorize all essential predicates by their closure
-   * and select predicates with unique closure */
-  lt->pred_num = predicate_numerator_construct2();
+
+  /* define a universe of predicates */
+  size_t sz = int_pow2(K*K);
+  pred *preds = malloc(sz * sizeof(struct pred));
+  assert(preds);
+  for(uint64_t data = 0; data < int_pow2(K*K); ++data) {
+    pred p = { .arity = 2, .data = data };
+    preds[data] = p;
+  }
+
+  lt->pred_num = predicate_numerator_alloc(preds, sz);
+
 
   /* start from a ccplt containing just one clone */
   ccpnode *top = ccpnode_alloc(lt);
