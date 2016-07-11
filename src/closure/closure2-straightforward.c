@@ -22,20 +22,27 @@ void clop2_straightforward_closure_clone_ex(void *internals, const clone *base, 
     pred p1 = clone_iterator_deref(&it1);
     
     /* apply ops of arity 1 for supplement predicates */
-    op_perm(&p1, &recruit);
+    pred q = op_perm2(&p1);
+    clone_insert_pred(&recruit, &q);
 
     /* apply ops of arity 2:
      * the first predicate is taken from  the supplement,
      * while the second — from the supplement set and from the base set */
     for(clone_iterator it2 = clone_iterator_begin(suppl); !clone_iterator_end(suppl, &it2); clone_iterator_next(&it2)) {
       pred p2 = clone_iterator_deref(&it2);
-      op_conj(&p1, &p2, &recruit);
-      op_comp(&p1, &p2, &recruit);
+      pred q;
+      q = op_conj2(&p1, &p2);
+      clone_insert_pred(&recruit, &q);
+      q = op_comp2(&p1, &p2);
+      clone_insert_pred(&recruit, &q);
     }
     for(clone_iterator it3 = clone_iterator_begin(base); !clone_iterator_end(base, &it3); clone_iterator_next(&it3)) {
       pred p3 = clone_iterator_deref(&it3);
-      op_conj(&p1, &p3, &recruit);
-      op_comp(&p1, &p3, &recruit);
+      pred q;
+      q = op_conj2(&p1, &p3);
+      clone_insert_pred(&recruit, &q);
+      q = op_comp2(&p1, &p3);
+      clone_insert_pred(&recruit, &q);
     }
   }
 
@@ -70,7 +77,7 @@ closure_operator *clop2_alloc_straightforward() {
 /******************************************************************************/
 /** Elementary operations over predicates */
 
-static void op_perm(const pred *pred, clone *clone) {
+pred op_perm2(const pred *pred) {
   assert(pred->arity == 2 && "predicate operations have been implemented for pred->arity == 2 only");
 
   struct pred resp;
@@ -87,10 +94,10 @@ static void op_perm(const pred *pred, clone *clone) {
     }
   }
   
-  clone_insert_pred(clone, &resp);
+  return resp;
 }
 
-static void op_conj(const pred *pred1, const pred *pred2, clone *clone) {
+pred op_conj2(const pred *pred1, const pred *pred2) {
   assert(pred1->arity == 2 && "predicate operations have been implemented for pred->arity == 2 only");
   assert(pred2->arity == 2 && "predicate operations have been implemented for pred->arity == 2 only");
       
@@ -104,10 +111,10 @@ static void op_conj(const pred *pred1, const pred *pred2, clone *clone) {
     }
   }
 
-  clone_insert_pred(clone, &resp);  
+  return resp;
 }
 
-static void op_comp(const pred *pred1, const pred *pred2, clone *clone) {
+pred op_comp2(const pred *pred1, const pred *pred2) {
   assert(pred1->arity == 2 && "predicate operations have been implemented for pred->arity == 2 only");
   assert(pred2->arity == 2 && "predicate operations have been implemented for pred->arity == 2 only");
 
@@ -129,7 +136,7 @@ static void op_comp(const pred *pred1, const pred *pred2, clone *clone) {
     }
   }
 
-  clone_insert_pred(clone, &resp);
+  return resp;
 }
 
 

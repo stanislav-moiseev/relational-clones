@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "isar/isar-spec.h"
 #include "closure/closure-straightforward.h"
+#include "closure/closure2-straightforward.h"
 #include "binary/bin-closure-clone-pred.h"
 
 
@@ -78,57 +79,6 @@ void isar_preds(FILE *fd, const char *theory_name) {
 
 
 /******************************************************************************/
-/** Elementary operations over predicates of arity 2 */
-
-static pred op_perm2(const pred *p) {
-  /* resp(x1,x0) = pred(x0,x1) */
-  struct pred resp;
-  pred_init(&resp, 2);        /* set to zero */
-  for(uint32_t x1 = 0; x1 < K; ++x1) {
-    for(uint32_t x0 = 0; x0 < K; ++x0) {
-      uint64_t pred_tuple = x1*K + x0;
-      uint64_t resp_tuple = x0*K + x1;
-      if(pred_compute(p, pred_tuple)) {
-        pred_set(&resp, resp_tuple);
-      }
-    }
-  }
-  return resp;
-}
-
-static pred op_conj2(const pred *p1, const pred *p2) {
-  pred resp;
-  pred_init(&resp, 2);
-  /* resp(x1,x0) = pred1(x1,x0) ∧ pred2(x1,x0) */
-  for(uint64_t tuple = 0; tuple < K*K; ++tuple) {
-    if(pred_compute(p1, tuple) && pred_compute(p2, tuple)) {
-      pred_set(&resp, tuple);
-    }
-  }
-  return resp;
-}
-
-static pred op_comp2(const pred *p1, const pred *p2) {
-  pred resp;
-  pred_init(&resp, 2);
-  /* resp(x1,x0) = ∃y (pred1(x1,y) ∧ pred2(y,x0)) */
-  for(uint32_t x1 = 0; x1 < K; ++x1) {
-    for(uint32_t x0 = 0; x0 < K; ++x0) {
-      uint64_t resp_tuple = x1*K + x0;
-      for(uint32_t y = 0; y < K; ++y) {
-        uint64_t pred1_tuple = x1*K + y;
-        uint64_t pred2_tuple = y*K + x0;
-        if(pred_compute(p1, pred1_tuple) && pred_compute(p2, pred2_tuple)) {
-          pred_set(&resp, resp_tuple);
-          break;
-        }
-      }
-    }
-  }
-  return resp;
-}
-
-
 static void isar_op1_proof(FILE *fd, const char *op_name, const pred *p, const pred *resp) {
   static char name[128];
   strcpy(name, isar_pred_name(p));
@@ -265,32 +215,9 @@ void isar_pred_ops_comp(FILE *fd, const char *theory_name) {
 
 
 
-static const char *isar_clone_name(const clone *clone) {
+static const char *isar_clone_name(class_idx cidx) {
   static char s[128];
-
-  /** We skip predicates of arity 0 and 1. */
-  /* assert(clone->data0 == 0 && "isar_clone_name: all predicates should be of arity 2"); */
-  /* assert(clone->data1 == 0 && "isar_clone_name: all predicates should be of arity 2"); */
-  
-  char *str = s;
-  str += sprintf(str, "clone_");
-  int flag = 1; /* 1 means not to print preceding zeros */
-  for(int64_t offset = CLONE_DATA2_SIZE-1; offset >= 0; --offset) {
-    if(flag) {
-      if(clone->data2[offset] == 0) continue;
-      flag = 0;
-      str += sprintf(str, "%lx", clone->data2[offset]);
-    } else {
-      /* print `pred->data[offset]` with all preceding zeros (up to 8 zeors) */
-      str += sprintf(str, "%.8lx", clone->data2[offset]);
-    }
-  }
-
-  /* if the clone contains no predicates of arity 2 */
-  if(flag) {
-    sprintf(str, "0");
-  }
-
+  sprintf(s, "C%07u", cidx);
   return s;
 }
 
@@ -311,13 +238,11 @@ void isar_clones(const char *ccplt_fname, FILE *fd, const char *theory_name) {
     ccpnode  *nd = *ndp;
     clone *cl    = &nd->clone;
 
-    const char *name = isar_clone_name(cl);
+    const char *name = isar_clone_name(nd->cidx);
     fprintf(fd, "definition \"%s \\<equiv> {", name);
     int flag = 1;
     for(clone_iterator it = clone_iterator_begin(cl); !clone_iterator_end(cl, &it); clone_iterator_next(&it)) {
       pred p = clone_iterator_deref(&it);
-      /** We skip predicates of arity 0 and 1 */
-      if(p.arity == 0 || p.arity == 1) continue;
       assert(p.arity == 2);
       if(flag) {
         fprintf(fd, "%s", isar_pred_name(&p));

@@ -23,17 +23,17 @@
 /** Permutation of variables:
  *  (op_perm p) x1 x2 ≡ p x2 x1
  */
-static void op_perm(const pred *p, clone *clone);
+pred op_perm2(const pred *p);
 
 /** Conjunction of two predicates:
  *  (op_conj p1 p2) x1 x2 ≡ (p1 x1 x2 ∧ p2 x1 x2)
  */
-static void op_conj(const pred *p1, const pred *p2, clone *clone);
+pred op_conj2(const pred *p1, const pred *p2);
 
 /** General composition:
  *  (op_comp p1 p2) x1 x2 ≡ (∃y. p1 x1 y ∧ p2 y x2)
  */
-static void op_comp(const pred *p1, const pred *p2, clone *clone);
+pred op_comp2(const pred *p1, const pred *p2);
 
 
 /******************************************************************************/
@@ -43,3 +43,4 @@ static void op_comp(const pred *p1, const pred *p2, clone *clone);
 closure_operator *clop2_alloc_straightforward();
 
 #endif
+

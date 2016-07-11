@@ -38,7 +38,7 @@ int main() {
   assert(preds_fd);
   assert(clones_fd);
   
-  test_isar("data/closure-clone-pred.2016", isabelle_root_fd, preds_fd, clones_fd);
+  test_isar("data/closure2-clone-pred.2016", isabelle_root_fd, preds_fd, clones_fd);
 
   fclose(isabelle_root_fd);
   fclose(preds_fd);
