@@ -120,6 +120,13 @@ static inline void pred_set(pred *pred, uint64_t tuple) {
   pred->data |= ((uint64_t)1 << tuple);
 }
 
+/** `pred_clear` sets the value of predicate on the tuple to be false.
+ */
+static inline void pred_clear(pred *pred, uint64_t tuple) {
+  pred->data &= ~((uint64_t)1 << tuple);
+}
+
+
 /** `pre_compute` returns non-zero if the predicate return true on the given
  *  tuple.
  */

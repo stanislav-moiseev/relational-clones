@@ -12,9 +12,9 @@
 
 /** K-valued logic. Global constant
  */
-static const uint32_t K = 3;
+#define K 3
 
 /** log2(K) rounded to ceiling */
-static const uint32_t INT_LOG2K = 2;
+#define INT_LOG2K 2
 
 #endif

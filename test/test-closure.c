@@ -149,6 +149,7 @@ void test_clone_closure2() {
   clop_free(clop);
 }
 
+
 /** Test that the implementation of the closure operator based on the precomputed
  * closure of clone plus a predicate gives the same result as the
  * straightforward implementation. */

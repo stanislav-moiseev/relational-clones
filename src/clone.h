@@ -9,7 +9,7 @@
 
 #include "pred.h"
 
-#define CLONE_DATA2_SIZE 8
+#define CLONE_DATA2_SIZE 8      /* for K==3 */
 
 struct clone {
   /* predicates of arity 2

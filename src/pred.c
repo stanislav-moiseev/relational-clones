@@ -74,7 +74,7 @@ void pred_print_extensional(char *str, const pred *pred) {
 const char *pred_print_extensional_ex(const pred *p) {
   assert(K <= 9 && "Only one-digit Ek elems are suppored");
   assert(p->arity <= 2);
-  static char _str[64];
+  static char _str[1 + 4*K*K];
   char *str = _str;
   
   /* treat predicates of zero arity specially */
@@ -274,6 +274,8 @@ static named_pred_info named_pred_infos[] = {
 
 
 static void named_preds_init() {
+  assert(K == 3 && "named preds are supported for K=3 only");
+
   num_named_preds = sizeof(named_pred_infos) / sizeof(named_pred_info);
   named_preds     = malloc(num_named_preds * sizeof(named_pred));
   for(size_t i = 0; i < num_named_preds; ++i) {
@@ -284,6 +286,7 @@ static void named_preds_init() {
 }
 
 const char *pred_name(const pred *p) {
+  if(K != 3) return NULL;
   if(named_preds == NULL) named_preds_init();
   
   for(named_pred *np = named_preds; np < named_preds + num_named_preds; ++np) {
