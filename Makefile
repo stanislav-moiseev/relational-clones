@@ -74,6 +74,7 @@ SCRIPTS =								\
 	script/script-lattice-statistics.out				\
 									\
 	script/script-isar-spec.out					\
+	script/script-sublattice-0-1-2-min-max.out			\
 
 all:  $(TESTS) $(SCRIPTS)
 
