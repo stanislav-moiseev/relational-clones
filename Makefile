@@ -17,6 +17,7 @@ SRCS =									\
 	src/closure/closure-two-preds.c					\
 	src/closure/closure-clone-pred.c				\
 	src/closure/closure2-straightforward.c				\
+	src/closure/closure2-trace.c					\
 									\
 	src/maj-lattice.c						\
 	src/lattice.c							\
@@ -53,7 +54,8 @@ TESTS =									\
 	test/test-closure.out						\
 	test/test-maj-lattice.out					\
 	test/test-lattice.out						\
-	#test/test-high-arity.c
+	test/test-closure2.out						\
+	#test/test-high-arity.c						\
 
 SCRIPTS =								\
 	script/binary/script-recode-binary.out				\
@@ -82,6 +84,7 @@ test: $(TESTS)
 	@./test/test0.out
 	@./test/test-closure.out
 	@./test/test-lattice.out
+	@./test/test-closure2.out
 
 clean:
 	rm -f $(OBJS) $(TESTS) $(SCRIPTS)

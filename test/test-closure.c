@@ -201,7 +201,7 @@ void test_closure_clone_pred(const char *fname) {
       clone_print_verbosely(stdout, &diff2);
       
       printf("================================================================\n");
-      printf("Intercession closure_cp ∩ closure_sf:\n");
+      printf("Intersection closure_cp ∩ closure_sf:\n");
       clone inter;
       clone_intersection(&closure_sf, &closure_cp, &inter);
       clone_print_verbosely(stdout, &inter);
