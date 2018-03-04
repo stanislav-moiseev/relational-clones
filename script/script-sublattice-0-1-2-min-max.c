@@ -13,6 +13,7 @@
 
 #include "utils.h"
 #include "closure/closure-straightforward.h"
+#include "closure/closure2-trace.h"
 #include "pred-essential.h"
 #include "lattice.h"
 #include "binary/bin-lattice.h"
@@ -97,14 +98,10 @@ lattice *get_sublattice(const lattice *lt) {
 }
 
 
-/** This function
- *
- * 1. Computes all predicates of arity 2 that preserve 0, 1, 2, min, max.
- *
- * 2. For all 13 predicates that we do not use in the description of
- *    the sublattice lattice, this function find the smallest class
- *    containing this predicate ("smallest" means here that the class
- *    contains the smallest number of predicates).
+/** For all 13 predicates that we do not use in the description of the
+ * sublattice lattice, this function find the smallest class of our
+ * lattice containing this predicate ("smallest" means here that the
+ * class contains the smallest number of predicates).
  */
 void test_irrelevant_preds(const lattice *sublt) {
   pred irrpreds[] = {
@@ -209,7 +206,6 @@ void test_irrelevant_preds(const lattice *sublt) {
 }
 
 
-
 /* void test_lattice_0_1_2_min_max(const lattice *lt) { */
 /*   printf("\ncomputing the list of maximal proper subclasses for every class...\n"); */
 /*   lattice_construct_maximal_subclones(sublt); */
@@ -228,20 +224,128 @@ void test_irrelevant_preds(const lattice *sublt) {
 /* } */
 
 
+void construct_formulas(pred *preds, size_t num_preds, pred p) {
+  pred_descr_t descrs[num_preds];
+  for(size_t k = 0; k < num_preds; ++k) {
+    assert(preds[k].arity == 2);
+    descrs[k].pred = preds[k];
+    asprintf(&descrs[k].name, "p_{%lu}", preds[k].data);
+  }
+
+  closure_trace_t *trace = closure2_trace(descrs, num_preds, NULL);
+  trace_entry_t *entry;
+  for(entry = trace->entries; entry < trace->entries + trace->num_entries; ++entry) {
+    if(pred_eq(&entry->pred, &p)) {
+      /* Test correctness of `closure2_trace()`. */
+      pred q = formula_eval(&entry->formula);
+      assert(pred_eq(&p, &q) && "The formula does not define the predicate that it is expected to define. Most likely, this is a bug in the closure2_trace() function.");
+      
+      char *phi = print_formula_func_form(&entry->formula);
+      printf("p_{%lu} = %s\n", p.data, phi);
+      free(phi);
+      break;
+    }
+  }
+
+  if(entry == trace->entries + trace->num_entries) {
+    printf("ERROR: predicate p_{%lu} has not been found in the trace.\n", p.data);
+  }
+
+  for(size_t k = 0; k < num_preds; ++k) {
+    free(descrs[k].name);
+  }
+
+  closure_trace_free(trace);
+}
+
+
+const pred p_false = { .arity = 2,
+                       .data  = 0 };
+const pred p_true  = { .arity = 2,
+                       .data  = 0xFF };
+const pred p_eq    = { .arity = 2,
+                       .data  = 0x111 };
+
+static inline pred PRED(uint64_t data) {
+  pred p = { .arity = 2,
+             .data  = data
+  };
+  return p;
+}
+
+void find_formula_307() {
+  printf("\n======================================================================\n");
+  pred preds[] = {
+    PRED(311),
+    PRED(447)
+  };
+  size_t num_preds = sizeof(preds) / sizeof(preds[0]);
+  construct_formulas(preds, num_preds, PRED(307));
+
+  pred preds0[] = {
+    PRED(307)
+  };
+  construct_formulas(preds0, 1 /*num*/, PRED(311));
+  construct_formulas(preds0, 1 /*num*/, PRED(447));
+}
+
+
+void find_formula_315() {
+  printf("\n======================================================================\n");
+
+  pred preds[] = {
+    PRED(319),
+    PRED(447)
+  };
+  size_t num_preds = sizeof(preds) / sizeof(preds[0]);
+  construct_formulas(preds, num_preds, PRED(315));
+
+  pred preds0[] = {
+    PRED(315)
+  };
+  construct_formulas(preds0, 1 /*num*/, PRED(319));
+  construct_formulas(preds0, 1 /*num*/, PRED(447));
+}
+
+
+void find_formula_435() {
+  printf("\n======================================================================\n");
+
+  pred preds[] = {
+    PRED(439),
+    PRED(447)
+  };
+  size_t num_preds = sizeof(preds) / sizeof(preds[0]);
+  construct_formulas(preds, num_preds, PRED(435));
+
+  pred preds0[] = {
+    PRED(435)
+  };
+  construct_formulas(preds0, 1 /*num*/, PRED(439));
+  construct_formulas(preds0, 1 /*num*/, PRED(447));
+}
+
+
 int main() {
-  test_predicates();
+/*   test_predicates(); */
 
-  const char *lt_name = "data/lattice.2016";
-  printf("reading \"%s\"...", lt_name); fflush(stdout);
-  time_t t0 = time(NULL);
-  lattice *lt = lattice_read(lt_name);
-  printf("\t%.1f sec. Ok.\n", difftime(time(NULL), t0));
 
-  lattice *sublt = get_sublattice(lt);
-  test_irrelevant_preds(sublt);
-  
-  lattice_free(sublt);
-  lattice_free(lt);
+/*   const char *lt_name = "data/lattice.2016"; */
+/*   printf("reading \"%s\"...", lt_name); fflush(stdout); */
+/*   time_t t0 = time(NULL); */
+/*   lattice *lt = lattice_read(lt_name); */
+/*   printf("\t%.1f sec. Ok.\n", difftime(time(NULL), t0)); */
+/*  */
+/*   lattice *sublt = get_sublattice(lt); */
+/*   test_irrelevant_preds(sublt); */
+/*  */
+/*   lattice_free(sublt); */
+/*   lattice_free(lt); */
+
+
+  find_formula_307();
+  find_formula_315();
+  find_formula_435();
 
 /*   printf("\n"); */
 /*   printf("computing the sublattice containing the functions 0, 1, 2, min(x,y), max(x,y)...\n"); */

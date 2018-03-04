@@ -18,7 +18,7 @@
 /* A predicates descriptor used for formula atoms. */
 typedef struct {
   pred pred;
-  const char *name;
+  char *name;
 } pred_descr_t;
 
 
@@ -55,6 +55,10 @@ struct formula {
 
 typedef struct formula formula_t;
 
+/** `formula_eval` returns the predicate defined by the formula `phi`.
+ */
+pred formula_eval(const formula_t *phi);
+
 
 /** Traces of predicates and formulas that they define. */
 typedef struct {
@@ -89,6 +93,19 @@ void closure_trace_insert(closure_trace_t *trace, const trace_entry_t *entry);
  * of predicates to `closure`.
  */
 closure_trace_t *closure2_trace(const pred_descr_t *preds, size_t sz, struct clone *closure);
+
+
+/** `print_formula_func_form` returns a pointer to a string
+ * representation of the formula in the functional form, e.g.
+ *
+ *      conj(comp(p1, p2), perm(p3)),
+ *
+ * where `p1`, `p2`, `p3` are predicate names.
+ *
+ * The pointer should be freed to release memory when it is no longer
+ * needed.
+ */
+char *print_formula_func_form(const formula_t *phi);
 
 
 #endif

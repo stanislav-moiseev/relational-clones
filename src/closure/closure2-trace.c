@@ -9,6 +9,35 @@
 
 #include "closure/closure2-trace.h"
 
+pred formula_eval(const formula_t *phi) {
+  switch(phi->head_type) {
+  case FN_ATOM: {
+    return phi->head_data.atom.descr.pred;
+  }
+    
+  case FN_PERM: {
+    pred p1 = formula_eval(phi->head_data.perm.arg1);
+    return op_perm2(&p1);
+  }
+    
+  case FN_CONJ: {
+    pred p1 = formula_eval(phi->head_data.conj.arg1);
+    pred p2 = formula_eval(phi->head_data.conj.arg2);
+    return op_conj2(&p1, &p2);
+  }
+    
+  case FN_COMP: {
+    pred p1 = formula_eval(phi->head_data.comp.arg1);
+    pred p2 = formula_eval(phi->head_data.comp.arg2);
+    return op_comp2(&p1, &p2);
+  }}
+
+  /* unreachable */
+  pred p;
+  return p;
+}
+
+
 closure_trace_t *closure_trace_alloc() {
   closure_trace_t *trace = malloc(sizeof(closure_trace_t));
   assert(trace);
@@ -172,3 +201,40 @@ closure_trace_t *closure2_trace(const pred_descr_t *preds, size_t sz, struct clo
   return trace;
 }
 
+
+char *print_formula_func_form(const formula_t *phi) {
+  char *str;
+  
+  switch(phi->head_type) {
+  case FN_ATOM: {
+    asprintf(&str, "%s", phi->head_data.atom.descr.name);
+    break;
+  }
+    
+  case FN_PERM: {
+    char *substr = print_formula_func_form(phi->head_data.perm.arg1);
+    asprintf(&str, "perm(%s)", substr);
+    free(substr);
+    break;
+  }
+    
+  case FN_CONJ: {
+    char *substr1 = print_formula_func_form(phi->head_data.conj.arg1);
+    char *substr2 = print_formula_func_form(phi->head_data.conj.arg2);
+    asprintf(&str, "conj(%s, %s)", substr1, substr2);
+    free(substr1);
+    free(substr2);
+    break;
+  }
+    
+  case FN_COMP: {
+    char *substr1 = print_formula_func_form(phi->head_data.comp.arg1);
+    char *substr2 = print_formula_func_form(phi->head_data.comp.arg2);
+    asprintf(&str, "comp(%s, %s)", substr1, substr2);
+    free(substr1);
+    free(substr2);
+    break;
+  }}
+  
+  return str;
+}
