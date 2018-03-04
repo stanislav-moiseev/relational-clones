@@ -46,14 +46,14 @@ int pred_consistent(const pred *pred) {
   (7             /* for "pred__" string */       \
    + 2           /* for K */                     \
    + 3           /* for pred->arity */           \
-   + 16          /* for pred->data */            \
+   + 20          /* for pred->data */            \
    + 1)          /* for terminating null byte */ \
 
 const char *pred_print_fingerprint(const pred *pred) {
   assert(K < 100);
   assert(pred->arity < 1000);
   static char str[PRED_FINGERPRINT_SIZE];
-  sprintf(str, "pred%u_%lu_%lx", K, pred->arity, pred->data);
+  sprintf(str, "pred%u_%lu_%lu", K, pred->arity, pred->data);
   return str;
 }
 

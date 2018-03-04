@@ -37,12 +37,13 @@ int pred_consistent(const pred *pred);
  */
 int pred_construct(uint32_t arity, const char *str, pred *pred);
 
-/** `pred_print` prints the short name of the predicate.
- * The short name contains `k`, `pred->arity` and a string representation
- * of `pred->data` (in hexadecimal format, without preceding zeros).
+/** `pred_print` prints the short name of the predicate. The short
+ * name contains `k`, `pred->arity` and a string representation of
+ * `pred->data`.
  *
- * The function returns a pointer to a statically allocated memory region.
- * The contents of the string will be updated on next function call.
+ * The function returns a pointer to a statically allocated memory
+ * region. The contents of the string will be updated on next function
+ * call.
  */
 const char *pred_print_fingerprint(const pred *pred);
 
