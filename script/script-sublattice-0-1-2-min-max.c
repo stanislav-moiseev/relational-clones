@@ -206,123 +206,336 @@ void test_irrelevant_preds(const lattice *sublt) {
 }
 
 
-/* void test_lattice_0_1_2_min_max(const lattice *lt) { */
-/*   printf("\ncomputing the list of maximal proper subclasses for every class...\n"); */
-/*   lattice_construct_maximal_subclones(sublt); */
-/*   for(class **cp = sublt->classes; cp < sublt->classes + sublt->num_classes; ++cp) { */
-/*     class *c = *cp; */
-/*     printf("====== class %u (%u:%u) ======\n", c->cidx, c->lidx, c->cpos); */
-/*     for(class_idx *sub_idx = c->maxsubs; sub_idx < c->maxsubs + c->num_maxsubs; ++sub_idx) { */
-/*       class *sub = lattice_get_class(lt, *sub_idx); */
-/*       printf("%u (%u:%u)\n", sub->cidx, sub->lidx, sub->cpos); */
-/*     } */
-/*     printf("\n"); */
-/*   } */
-/*  */
-/*   printf("================\n"); */
-/*   printf("sublattice size: %lu\n", sublt->num_classes); */
-/* } */
+static const pred p_false = { .arity = 2,
+                              .data  = 0x000 };
+static const pred p_true  = { .arity = 2,
+                              .data  = 0x1FF };
+static const pred p_eq    = { .arity = 2,
+                              .data  = 0x111 };
 
+static inline const pred *PRED(uint64_t data) {
+  static pred p;
+  p.arity = 2;
+  p.data  = data;
+  return &p;
+}
 
-void construct_formulas(pred *preds, size_t num_preds, pred p) {
-  pred_descr_t descrs[num_preds];
-  for(size_t k = 0; k < num_preds; ++k) {
-    assert(preds[k].arity == 2);
-    descrs[k].pred = preds[k];
-    asprintf(&descrs[k].name, "p_{%lu}", preds[k].data);
+static const char *pred_naming_fn(pred p) {
+  assert(p.arity == 2);
+  
+  static char *str = NULL;
+  if(str != NULL) {
+    free(str);
   }
 
-  closure_trace_t *trace = closure2_trace(descrs, num_preds, NULL);
+  if(p.data == 0) {
+    asprintf(&str, "false^{(2)}");
+  } else if(p.data == 0x1FF) {
+    asprintf(&str, "true^{(2)}");
+  } else if(p.data == 0x111) {
+    asprintf(&str, "eq^{(2)}");
+  } else {
+    asprintf(&str, "p_{%lu}", p.data);
+  }
+  return str;
+}
+
+
+static inline void strappend(char **str1, const char *str2) {
+  char *str;
+  asprintf(&str, "%s%s", *str1, str2);
+  free(*str1);
+  *str1 = str;
+}
+
+static const char *clone_naming_fn(const struct clone *clone) {
+  static char *str = NULL;
+  if(str != NULL) {
+    free(str);
+  }
+
+  if(clone_is_empty(clone)) {
+    asprintf(&str, "\\varnothing");
+    return str;
+  }
+  
+  asprintf(&str, "\\{");
+
+  unsigned nprinted = 0;
+
+  if(clone_test_pred(clone, &p_false)) {
+    strappend(&str, pred_naming_fn(p_false));
+    ++nprinted;
+  }
+  if(clone_test_pred(clone, &p_true)) {
+    if(nprinted > 0) {
+      strappend(&str, ", ");
+    }
+    strappend(&str, pred_naming_fn(p_true));
+    ++nprinted;
+  }
+  if(clone_test_pred(clone, &p_eq)) {
+    if(nprinted > 0) {
+      strappend(&str, ", ");
+    }
+    strappend(&str, pred_naming_fn(p_eq));
+    ++nprinted;
+  }
+
+  unsigned card = clone_cardinality(clone);
+  
+  for(clone_iterator it = clone_iterator_begin(clone); !clone_iterator_end(clone, &it); clone_iterator_next(&it)) {
+    pred p = clone_iterator_deref(&it);
+
+    if(pred_eq(&p, &p_false) || pred_eq(&p, &p_true) || pred_eq(&p, &p_eq)) {
+      continue;
+    }
+
+    if(nprinted > 0) {
+      strappend(&str, ", \\, ");
+    }
+
+    if(nprinted >= 2 && nprinted <= card - 2) {
+      strappend(&str, "\\allowbreak ");
+    }
+
+    strappend(&str, pred_naming_fn(p));
+        
+    ++nprinted;
+  }
+
+  strappend(&str, "\\}");
+
+  return str;
+}
+
+
+static void construct_formulas(const struct clone *clone, const pred *p) {
+  closure_trace_t *trace = closure2_clone_traced(clone, NULL);
   trace_entry_t *entry;
   for(entry = trace->entries; entry < trace->entries + trace->num_entries; ++entry) {
-    if(pred_eq(&entry->pred, &p)) {
+    if(pred_eq(&entry->pred, p)) {
       /* Test correctness of `closure2_trace()`. */
-      pred q = formula_eval(&entry->formula);
-      assert(pred_eq(&p, &q) && "The formula does not define the predicate that it is expected to define. Most likely, this is a bug in the closure2_trace() function.");
+      pred p_ = formula_eval(&entry->formula);
+      assert(pred_eq(p, &p_) && "The formula does not define the predicate that it is expected to define. "
+                                "Most likely, this is a bug in the closure2_trace() function.");
       
-      char *phi = print_formula_func_form(&entry->formula);
-      printf("p_{%lu} = %s\n", p.data, phi);
+      char *phi = print_formula_func_form(&entry->formula, pred_naming_fn);
+      printf("p_{%lu} = %s\n", p->data, phi);
       free(phi);
       break;
     }
   }
 
   if(entry == trace->entries + trace->num_entries) {
-    printf("ERROR: predicate p_{%lu} has not been found in the trace.\n", p.data);
+    printf("ERROR: predicate p_{%lu} has not been found in the trace.\n", p->data);
   }
-
-  for(size_t k = 0; k < num_preds; ++k) {
-    free(descrs[k].name);
-  }
-
+  
   closure_trace_free(trace);
 }
 
 
-const pred p_false = { .arity = 2,
-                       .data  = 0 };
-const pred p_true  = { .arity = 2,
-                       .data  = 0xFF };
-const pred p_eq    = { .arity = 2,
-                       .data  = 0x111 };
-
-static inline pred PRED(uint64_t data) {
-  pred p = { .arity = 2,
-             .data  = data
-  };
-  return p;
-}
-
 void find_formula_307() {
   printf("\n======================================================================\n");
-  pred preds[] = {
-    PRED(311),
-    PRED(447)
-  };
-  size_t num_preds = sizeof(preds) / sizeof(preds[0]);
-  construct_formulas(preds, num_preds, PRED(307));
+  struct clone clone;
+  
+  clone_copy(top_clone2(), &clone);
+  clone_insert_pred(&clone, PRED(311));
+  clone_insert_pred(&clone, PRED(447));
+  construct_formulas(&clone, PRED(307));
 
-  pred preds0[] = {
-    PRED(307)
-  };
-  construct_formulas(preds0, 1 /*num*/, PRED(311));
-  construct_formulas(preds0, 1 /*num*/, PRED(447));
+  clone_copy(top_clone2(), &clone);
+  clone_insert_pred(&clone, PRED(307));
+  construct_formulas(&clone, PRED(311));
+  construct_formulas(&clone, PRED(447));
 }
 
 
 void find_formula_315() {
   printf("\n======================================================================\n");
+  struct clone clone;
+  
+  clone_copy(top_clone2(), &clone);
+  clone_insert_pred(&clone, PRED(319));
+  clone_insert_pred(&clone, PRED(447));
+  construct_formulas(&clone, PRED(315));
 
-  pred preds[] = {
-    PRED(319),
-    PRED(447)
-  };
-  size_t num_preds = sizeof(preds) / sizeof(preds[0]);
-  construct_formulas(preds, num_preds, PRED(315));
-
-  pred preds0[] = {
-    PRED(315)
-  };
-  construct_formulas(preds0, 1 /*num*/, PRED(319));
-  construct_formulas(preds0, 1 /*num*/, PRED(447));
+  clone_copy(top_clone2(), &clone);
+  clone_insert_pred(&clone, PRED(315));
+  construct_formulas(&clone, PRED(319));
+  construct_formulas(&clone, PRED(447));
 }
 
 
 void find_formula_435() {
   printf("\n======================================================================\n");
 
+  struct clone clone;
+  
+  clone_copy(top_clone2(), &clone);
+  clone_insert_pred(&clone, PRED(319));
+  clone_insert_pred(&clone, PRED(439));
+  clone_insert_pred(&clone, PRED(447));
+  construct_formulas(&clone, PRED(435));
+
+  clone_copy(top_clone2(), &clone);
+  clone_insert_pred(&clone, PRED(435));
+  construct_formulas(&clone, PRED(439));
+  construct_formulas(&clone, PRED(447));
+}
+
+
+void script_build_sublattice_with_latex_formualas() {
+  closure_operator *clop2 = clop2_alloc_straightforward();
+  ccplt *ccplt = ccplt_alloc();
+
+  /* define a universe of predicates */
   pred preds[] = {
-    PRED(439),
-    PRED(447)
+    /* false, true, eq */
+/*     { .arity = 2, .data = 0   }, */
+/*     { .arity = 2, .data = 511 }, */
+/*     { .arity = 2, .data = 273 }, */
+    /* left part */
+    { .arity = 2, .data = 283 },
+    { .arity = 2, .data = 275 },
+    { .arity = 2, .data = 319 },
+    /* central part */
+    { .arity = 2, .data = 443 },
+    { .arity = 2, .data = 311 },
+    { .arity = 2, .data = 313 },
+    { .arity = 2, .data = 447 },
+    /* right part */    
+    { .arity = 2, .data = 433 },
+    { .arity = 2, .data = 305 },
+    { .arity = 2, .data = 439 },
   };
   size_t num_preds = sizeof(preds) / sizeof(preds[0]);
-  construct_formulas(preds, num_preds, PRED(435));
 
-  pred preds0[] = {
-    PRED(435)
-  };
-  construct_formulas(preds0, 1 /*num*/, PRED(439));
-  construct_formulas(preds0, 1 /*num*/, PRED(447));
+  /* Collect all predicates in a "base set". */
+  struct clone base;
+  //clone_copy(top_clone2(), &base);
+  clone_init(&base);
+  for(pred *p = preds; p < preds + num_preds; ++p) {
+    clone_insert_pred(&base, p);
+  }
+
+  ccplt->pred_num = predicate_numerator_alloc(preds, num_preds);
+
+  /* start from a ccplt containing just one clone */
+  ccpnode *top = ccpnode_alloc(ccplt);
+  top->clone = *top_clone2();
+  ccplt_insert_node(ccplt, top, 0 /*pidx_begin*/);
+  
+  /* iteratively construct new ccpnodes */
+  for(pred_idx_t pidx = 0; pidx < ccplt->pred_num->uniq_sz; ++pidx) {
+    ccplt_construct_step(clop2, ccplt, pidx);
+  }
+
+  //  printf("Total nodes: %lu\n", ccplt->num_nodes);
+
+
+  for(pred_idx_t pidx = 0; pidx < ccplt->pred_num->uniq_sz; ++pidx) {
+    pred p = *idx_pred(ccplt->pred_num, pidx);
+    printf("\n%%%%====== +%s ====================================================\n", pred_naming_fn(p));
+    printf("\\subsubsection{Добавление предиката $%s$}\n", pred_naming_fn(p));
+    printf("\n");
+    printf("\\begin{enumerate}\n");
+
+    
+    for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
+      ccpnode *parent_node = *nodep;
+
+      if(parent_node->pidx_begin > pidx) continue;
+      
+      clone parent;
+      clone_intersection(&parent_node->clone, &base, &parent);
+
+      /* child_node = <{p} ∪ parent_node> */
+      pred p = *idx_pred(ccplt->pred_num, pidx);
+      if(clone_test_pred(&parent, &p)) continue;
+      
+      ccpnode *child_node = ccplt_get_node(ccplt, parent_node->children[pidx - parent_node->pidx_begin]);
+      clone child;
+      clone_intersection(&child_node->clone, &base, &child);
+
+      clone diff;
+      clone_diff(&child, &parent, &diff);
+
+      size_t diff_cardinality = clone_cardinality(&diff);
+      printf("\\item $[C_{%u} \\cup \\{%s\\}] = [[%s] \\cup \\{%s\\}]",
+             parent_node->cidx, pred_naming_fn(p),
+             clone_naming_fn(&parent), pred_naming_fn(p));
+
+      /* We use a user-defined LaTeX command that, when used in math
+       * formulas, allows a line break before the symbol defined in
+       * instruction's argument and, in case a line break happens, the
+       * symbol is dubbed.
+       *
+       * The instruction should be defined as follows:
+       *
+       * \newcommand*{\dubonbreak}[1]{#1\nobreak\discretionary{}{\hbox{$\mathsurround=0pt #1$}}{}}
+       */
+      printf(" \\dubonbreak= [%s] = C_{%u}$", clone_naming_fn(&child), child_node->cidx);
+
+      if(diff_cardinality == 1) {
+        printf(".\n");
+        
+      } else {
+        /* If the difference contains more than the predicate `p`,
+         * then we will need to construct some proofs.
+         * Thus, we print the child fully. */
+        printf(", так как\n");
+        
+        /* For every predicate `q \in (child_node \ parent_node)`, construct a
+         * formula that builds `q` from `{p} ∪ parent_node`. */
+        clone generator;
+        clone_copy(&parent, &generator);
+        clone_insert_pred(&generator, &p);
+
+        closure_trace_t *trace = closure2_clone_traced(&generator, NULL);
+        
+        printf("  \\begin{align*}\n");
+
+        unsigned num_facts = 0;
+        for(clone_iterator it = clone_iterator_begin(&diff); !clone_iterator_end(&diff, &it); clone_iterator_next(&it)) {
+          pred q = clone_iterator_deref(&it);
+          if(pred_eq(&q, &p)) continue;
+
+          trace_entry_t *entry;
+          for(entry = trace->entries; entry < trace->entries + trace->num_entries; ++entry) {
+            if(pred_eq(&entry->pred, &q)) {
+              /* Test correctness of `closure2_trace()`. */
+              pred q_ = formula_eval(&entry->formula);
+              assert(pred_eq(&q, &q_) && "The formula does not define the predicate that it is expected to define. "
+                                         "Most likely, this is a bug in the closure2_trace() function.");
+      
+              char *phi = print_formula_func_form(&entry->formula, pred_naming_fn);
+
+              ++num_facts;
+              if(num_facts < diff_cardinality - 1) {
+                printf("  %s &= %s;    \\\\\n", pred_naming_fn(q), phi);
+              } else {
+                printf("  %s &= %s.\n", pred_naming_fn(q), phi);
+              }
+              
+              free(phi);
+              break;
+            }
+          }
+          
+          if(entry == trace->entries + trace->num_entries) {
+            fprintf(stderr, "ERROR: predicate %s has not been found in the trace.\n", pred_naming_fn(q));
+          }
+        }
+        
+        printf("  \\end{align*}\n");
+      }
+    }
+    printf("\\end{enumerate}\n");
+  }
+  
+  //ccplt_free(ccplt);
+  clop_free(clop2);
 }
 
 
@@ -343,15 +556,9 @@ int main() {
 /*   lattice_free(lt); */
 
 
-  find_formula_307();
-  find_formula_315();
-  find_formula_435();
+/*   find_formula_307(); */
+/*   find_formula_315(); */
+/*   find_formula_435(); */
 
-/*   printf("\n"); */
-/*   printf("computing the sublattice containing the functions 0, 1, 2, min(x,y), max(x,y)...\n"); */
-/*   time_t t3 = time(NULL); */
-/*   test_lattice_0_1_2_min_max(lt); */
-/*   printf("%.2f min. Ok.\n", difftime(time(NULL), t3) / 60.); */
-
-/*   lattice_free(lt); */
+  script_build_sublattice_with_latex_formualas();
 }

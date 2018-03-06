@@ -12,7 +12,7 @@
 pred formula_eval(const formula_t *phi) {
   switch(phi->head_type) {
   case FN_ATOM: {
-    return phi->head_data.atom.descr.pred;
+    return phi->head_data.atom.pred;
   }
     
   case FN_PERM: {
@@ -67,7 +67,7 @@ void closure_trace_insert(closure_trace_t *trace, const trace_entry_t *entry) {
 }
 
 
-closure_trace_t *closure2_trace(const pred_descr_t *preds, size_t sz, struct clone *closure) {
+closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *closure) {
   /* To speed-up set-membership queries when constructing new
    * predicates, we keep track of all predicates constructed so far in
    * `working_set`.
@@ -80,14 +80,16 @@ closure_trace_t *closure2_trace(const pred_descr_t *preds, size_t sz, struct clo
   
   /* First, insert the base predicates to the working set and to the
    * trace. */
-  for(const pred_descr_t *descr = preds; descr < preds + sz; ++descr) {
-    clone_insert_pred(&working_set, &descr->pred);
+  for(clone_iterator it = clone_iterator_begin(clone); !clone_iterator_end(clone, &it); clone_iterator_next(&it)) {
+    pred p = clone_iterator_deref(&it);
+    
+    clone_insert_pred(&working_set, &p);
 
     trace_entry_t new_entry = {
-      .pred    = descr->pred,
+      .pred    = p,
       .formula = {
-        .head_type            = FN_ATOM,
-        .head_data.atom.descr = *descr
+        .head_type           = FN_ATOM,
+        .head_data.atom.pred = p
       }
     };
     
@@ -202,25 +204,25 @@ closure_trace_t *closure2_trace(const pred_descr_t *preds, size_t sz, struct clo
 }
 
 
-char *print_formula_func_form(const formula_t *phi) {
+char *print_formula_func_form(const formula_t *phi, pred_naming_fn_t pred_naming_fn) {
   char *str;
   
   switch(phi->head_type) {
   case FN_ATOM: {
-    asprintf(&str, "%s", phi->head_data.atom.descr.name);
+    asprintf(&str, "%s", pred_naming_fn(phi->head_data.atom.pred));
     break;
   }
     
   case FN_PERM: {
-    char *substr = print_formula_func_form(phi->head_data.perm.arg1);
+    char *substr = print_formula_func_form(phi->head_data.perm.arg1, pred_naming_fn);
     asprintf(&str, "perm(%s)", substr);
     free(substr);
     break;
   }
     
   case FN_CONJ: {
-    char *substr1 = print_formula_func_form(phi->head_data.conj.arg1);
-    char *substr2 = print_formula_func_form(phi->head_data.conj.arg2);
+    char *substr1 = print_formula_func_form(phi->head_data.conj.arg1, pred_naming_fn);
+    char *substr2 = print_formula_func_form(phi->head_data.conj.arg2, pred_naming_fn);
     asprintf(&str, "conj(%s, %s)", substr1, substr2);
     free(substr1);
     free(substr2);
@@ -228,8 +230,8 @@ char *print_formula_func_form(const formula_t *phi) {
   }
     
   case FN_COMP: {
-    char *substr1 = print_formula_func_form(phi->head_data.comp.arg1);
-    char *substr2 = print_formula_func_form(phi->head_data.comp.arg2);
+    char *substr1 = print_formula_func_form(phi->head_data.comp.arg1, pred_naming_fn);
+    char *substr2 = print_formula_func_form(phi->head_data.comp.arg2, pred_naming_fn);
     asprintf(&str, "comp(%s, %s)", substr1, substr2);
     free(substr1);
     free(substr2);

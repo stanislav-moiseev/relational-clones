@@ -15,13 +15,6 @@
 
 #include "closure2-straightforward.h"
 
-/* A predicates descriptor used for formula atoms. */
-typedef struct {
-  pred pred;
-  char *name;
-} pred_descr_t;
-
-
 typedef enum {
   FN_ATOM, FN_PERM, FN_CONJ, FN_COMP
 } formula_node_type_t;
@@ -34,7 +27,7 @@ struct formula {
   /* Depending on the `head_type`, we will use different arguments. */
   union {
     struct {
-      pred_descr_t descr;
+      struct pred pred;
     } atom;
     
     struct {
@@ -62,7 +55,9 @@ pred formula_eval(const formula_t *phi);
 
 /** Traces of predicates and formulas that they define. */
 typedef struct {
+  /* The predicate represented by the `formula`. */
   pred pred;
+  /* A formula representing the predicate `pred`. */
   formula_t formula;
 } trace_entry_t;
 
@@ -92,20 +87,28 @@ void closure_trace_insert(closure_trace_t *trace, const trace_entry_t *entry);
  * If `closure` is non-NULL, the function will copy the resulting set
  * of predicates to `closure`.
  */
-closure_trace_t *closure2_trace(const pred_descr_t *preds, size_t sz, struct clone *closure);
+closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *closure);
 
+
+/** A naming function for predicates used when printing formulas.
+ *
+ * Note that the pointer return by the `pred_naming_fn_t(p)` will
+ * /not/ be freed, so the function should return a pointer to a
+ * statically allocated memory region.
+ */
+typedef const char *(*pred_naming_fn_t) (struct pred);
 
 /** `print_formula_func_form` returns a pointer to a string
  * representation of the formula in the functional form, e.g.
  *
- *      conj(comp(p1, p2), perm(p3)),
+ *      conj(comp(p1, p2), perm(p3))
  *
  * where `p1`, `p2`, `p3` are predicate names.
  *
  * The pointer should be freed to release memory when it is no longer
  * needed.
  */
-char *print_formula_func_form(const formula_t *phi);
+char *print_formula_func_form(const formula_t *phi, pred_naming_fn_t pred_naming_fn);
 
 
 #endif

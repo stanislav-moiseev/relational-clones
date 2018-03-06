@@ -25,8 +25,6 @@ void test_formula_constructor() {
     struct clone clone;
     clone_init(&clone);
     
-    pred_descr_t preds[SET_SIZE_LIMIT];
-    
     unsigned num_preds = rand() % SET_SIZE_LIMIT;
     
     for(unsigned j = 0; j < num_preds; ++j) {
@@ -36,19 +34,13 @@ void test_formula_constructor() {
       };
 
       clone_insert_pred(&clone, &p);
-
-      pred_descr_t descr = {
-        .pred = p,
-        .name = NULL
-      };
-      preds[j] = descr;
     }
   
     struct clone closure_sf;
     closure_clone(clop2, &clone, &closure_sf);
 
     struct clone closure_gt;
-    closure_trace_t *trace = closure2_trace(preds, num_preds, &closure_gt);
+    closure_trace_t *trace = closure2_clone_traced(&clone, &closure_gt);
     
     closure_trace_free(trace);
 
