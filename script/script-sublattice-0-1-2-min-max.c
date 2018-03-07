@@ -3,6 +3,7 @@
  *
  * This test computes some properties of the sublattices of R3(2),
  * containing 0, 1, 2, min, max.
+ *
  ******************************************************************************/
 
 #include <assert.h>
@@ -19,7 +20,11 @@
 #include "binary/bin-lattice.h"
 
 
-void test_predicates() {
+/********************************************************************/
+/** This function prints the list of all predicates in P3, preserving
+ *  0, 1, 2, min, max.
+ */
+void script_filter_predicates() {
   printf("list of all predicates in P3, preserving 0, 1, 2, min, max:\n");
 
   fun f_0, f_1, f_2;
@@ -59,7 +64,13 @@ void test_predicates() {
   }
 }
 
-lattice *get_sublattice(const lattice *lt) {
+
+/********************************************************************/
+/** This auxiliary functions reads the full lattice of clones in P3,
+ * defined by predicates of arity <= 2, and filters it, selecting
+ * the clones, that preserve the functions 0, 1, 2, min, max.
+ */
+static lattice *get_sublattice(const lattice *lt) {
   fun f_0, f_1, f_2;
   fun_scan("fun3_0_0", &f_0);
   fun_scan("fun3_0_1", &f_1);
@@ -103,7 +114,15 @@ lattice *get_sublattice(const lattice *lt) {
  * lattice containing this predicate ("smallest" means here that the
  * class contains the smallest number of predicates).
  */
-void test_irrelevant_preds(const lattice *sublt) {
+void script_irrelevant_predicates() {
+  const char *lt_name = "data/lattice.2016";
+  printf("reading \"%s\"...", lt_name); fflush(stdout);
+  time_t t0 = time(NULL);
+  lattice *lt = lattice_read(lt_name);
+  printf("\t%.1f sec. Ok.\n", difftime(time(NULL), t0));
+
+  lattice *sublt = get_sublattice(lt);
+
   pred irrpreds[] = {
     { .arity = 2, .data = 281 },
     { .arity = 2, .data = 307 },
@@ -203,110 +222,18 @@ void test_irrelevant_preds(const lattice *sublt) {
 
     clone_print_verbosely(stdout, smallest_cl);
   }
+
+  lattice_free(sublt);
+  lattice_free(lt);
 }
 
 
-static const pred p_false = { .arity = 2,
-                              .data  = 0x000 };
-static const pred p_true  = { .arity = 2,
-                              .data  = 0x1FF };
-static const pred p_eq    = { .arity = 2,
-                              .data  = 0x111 };
-
+/********************************************************************/
 static inline const pred *PRED(uint64_t data) {
   static pred p;
   p.arity = 2;
   p.data  = data;
   return &p;
-}
-
-static const char *pred_naming_fn(pred p) {
-  assert(p.arity == 2);
-  
-  static char *str = NULL;
-  if(str != NULL) {
-    free(str);
-  }
-
-  if(p.data == 0) {
-    asprintf(&str, "false^{(2)}");
-  } else if(p.data == 0x1FF) {
-    asprintf(&str, "true^{(2)}");
-  } else if(p.data == 0x111) {
-    asprintf(&str, "eq^{(2)}");
-  } else {
-    asprintf(&str, "p_{%lu}", p.data);
-  }
-  return str;
-}
-
-
-static inline void strappend(char **str1, const char *str2) {
-  char *str;
-  asprintf(&str, "%s%s", *str1, str2);
-  free(*str1);
-  *str1 = str;
-}
-
-static const char *clone_naming_fn(const struct clone *clone) {
-  static char *str = NULL;
-  if(str != NULL) {
-    free(str);
-  }
-
-  if(clone_is_empty(clone)) {
-    asprintf(&str, "\\varnothing");
-    return str;
-  }
-  
-  asprintf(&str, "\\{");
-
-  unsigned nprinted = 0;
-
-  if(clone_test_pred(clone, &p_false)) {
-    strappend(&str, pred_naming_fn(p_false));
-    ++nprinted;
-  }
-  if(clone_test_pred(clone, &p_true)) {
-    if(nprinted > 0) {
-      strappend(&str, ", ");
-    }
-    strappend(&str, pred_naming_fn(p_true));
-    ++nprinted;
-  }
-  if(clone_test_pred(clone, &p_eq)) {
-    if(nprinted > 0) {
-      strappend(&str, ", ");
-    }
-    strappend(&str, pred_naming_fn(p_eq));
-    ++nprinted;
-  }
-
-  unsigned card = clone_cardinality(clone);
-  
-  for(clone_iterator it = clone_iterator_begin(clone); !clone_iterator_end(clone, &it); clone_iterator_next(&it)) {
-    pred p = clone_iterator_deref(&it);
-
-    if(pred_eq(&p, &p_false) || pred_eq(&p, &p_true) || pred_eq(&p, &p_eq)) {
-      continue;
-    }
-
-    if(nprinted > 0) {
-      strappend(&str, ", \\, ");
-    }
-
-    if(nprinted >= 2 && nprinted <= card - 2) {
-      strappend(&str, "\\allowbreak ");
-    }
-
-    strappend(&str, pred_naming_fn(p));
-        
-    ++nprinted;
-  }
-
-  strappend(&str, "\\}");
-
-  return str;
 }
 
 
@@ -335,7 +262,7 @@ static void construct_formulas(const struct clone *clone, const pred *p) {
 }
 
 
-void find_formula_307() {
+void script_formulas_for_pred_307() {
   printf("\n======================================================================\n");
   struct clone clone;
   
@@ -351,7 +278,7 @@ void find_formula_307() {
 }
 
 
-void find_formula_315() {
+void script_formulas_for_pred_315() {
   printf("\n======================================================================\n");
   struct clone clone;
   
@@ -367,7 +294,7 @@ void find_formula_315() {
 }
 
 
-void find_formula_435() {
+void script_formulas_for_pred_435() {
   printf("\n======================================================================\n");
 
   struct clone clone;
@@ -385,6 +312,7 @@ void find_formula_435() {
 }
 
 
+/********************************************************************/
 void script_build_sublattice_with_latex_formualas() {
   closure_operator *clop2 = clop2_alloc_straightforward();
   ccplt *ccplt = ccplt_alloc();
@@ -436,10 +364,10 @@ void script_build_sublattice_with_latex_formualas() {
 
   for(pred_idx_t pidx = 0; pidx < ccplt->pred_num->uniq_sz; ++pidx) {
     pred p = *idx_pred(ccplt->pred_num, pidx);
-    printf("\n%%%%====== +%s ====================================================\n", pred_naming_fn(p));
+    printf("\n\n%%%%====== +%s ==============================================================\n", pred_naming_fn(p));
     printf("\\subsubsection{Добавление предиката $%s$}\n", pred_naming_fn(p));
     printf("\n");
-    printf("\\begin{enumerate}\n");
+    printf("\\begin{enumerate}");
 
     
     for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
@@ -458,24 +386,27 @@ void script_build_sublattice_with_latex_formualas() {
       clone child;
       clone_intersection(&child_node->clone, &base, &child);
 
-      clone diff;
-      clone_diff(&child, &parent, &diff);
-
-      size_t diff_cardinality = clone_cardinality(&diff);
-      printf("\\item $[C_{%u} \\cup \\{%s\\}] = [[%s] \\cup \\{%s\\}]",
-             parent_node->cidx, pred_naming_fn(p),
-             clone_naming_fn(&parent), pred_naming_fn(p));
-
       /* We use a user-defined LaTeX command that, when used in math
        * formulas, allows a line break before the symbol defined in
        * instruction's argument and, in case a line break happens, the
        * symbol is dubbed.
        *
-       * The instruction should be defined as follows:
+       * The instruction should have been defined as follows:
        *
        * \newcommand*{\dubonbreak}[1]{#1\nobreak\discretionary{}{\hbox{$\mathsurround=0pt #1$}}{}}
        */
-      printf(" \\dubonbreak= [%s] = C_{%u}$", clone_naming_fn(&child), child_node->cidx);
+      char *parent_name = strdup(clone_naming_fn(&parent));
+      char *child_name  = strdup(clone_naming_fn(&child));
+      printf("\n\\item $[C_{%u} \\cup \\{%s\\}] = [[%s] \\cup \\{%s\\}] \\dubonbreak= [%s] \\dubonbreak= C_{%u}$",
+             parent_node->cidx, pred_naming_fn(p),
+             parent_name, pred_naming_fn(p),
+             child_name, child_node->cidx);
+      free(parent_name);
+      free(child_name);
+
+      clone diff;
+      clone_diff(&child, &parent, &diff);
+      size_t diff_cardinality = clone_cardinality(&diff);
 
       if(diff_cardinality == 1) {
         printf(".\n");
@@ -508,16 +439,26 @@ void script_build_sublattice_with_latex_formualas() {
               pred q_ = formula_eval(&entry->formula);
               assert(pred_eq(&q, &q_) && "The formula does not define the predicate that it is expected to define. "
                                          "Most likely, this is a bug in the closure2_trace() function.");
-      
-              char *phi = print_formula_func_form(&entry->formula, pred_naming_fn);
 
               ++num_facts;
-              if(num_facts < diff_cardinality - 1) {
-                printf("  %s &= %s;    \\\\\n", pred_naming_fn(q), phi);
-              } else {
-                printf("  %s &= %s.\n", pred_naming_fn(q), phi);
-              }
               
+/*               char *phi = print_formula_func_form(&entry->formula, pred_naming_fn); */
+/*               if(num_facts < diff_cardinality - 1) {                                */
+/*                 printf("  %s &= %s;    \\\\\n", pred_naming_fn(q), phi);            */
+/*               } else {                                                              */
+/*                 printf("  %s &= %s.\n", pred_naming_fn(q), phi);                    */
+/*               }                                                                     */
+              
+              char *phi = print_formula_quantified_form(&entry->formula, pred_naming_fn, var_naming_fn);
+              char *var1 = strdup(var_naming_fn(1));
+              char *var2 = strdup(var_naming_fn(2));
+              if(num_facts < diff_cardinality - 1) {
+                printf("  %s(%s,%s) &= %s;    \\\\\n", pred_naming_fn(q), var1, var2, phi);
+              } else {
+                printf("  %s(%s,%s) &= %s.\n", pred_naming_fn(q), var1, var2, phi);
+              }
+              free(var1);
+              free(var2);
               free(phi);
               break;
             }
@@ -540,25 +481,13 @@ void script_build_sublattice_with_latex_formualas() {
 
 
 int main() {
-/*   test_predicates(); */
+/*   script_filter_predicates(); */
 
+/*   script_irrelevant_predicates(); */
 
-/*   const char *lt_name = "data/lattice.2016"; */
-/*   printf("reading \"%s\"...", lt_name); fflush(stdout); */
-/*   time_t t0 = time(NULL); */
-/*   lattice *lt = lattice_read(lt_name); */
-/*   printf("\t%.1f sec. Ok.\n", difftime(time(NULL), t0)); */
-/*  */
-/*   lattice *sublt = get_sublattice(lt); */
-/*   test_irrelevant_preds(sublt); */
-/*  */
-/*   lattice_free(sublt); */
-/*   lattice_free(lt); */
-
-
-/*   find_formula_307(); */
-/*   find_formula_315(); */
-/*   find_formula_435(); */
+/*   script_formulas_for_pred_307(); */
+/*   script_formulas_for_pred_315(); */
+/*   script_formulas_for_pred_435(); */
 
   script_build_sublattice_with_latex_formualas();
 }
