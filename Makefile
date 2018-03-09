@@ -1,7 +1,7 @@
 CC = gcc -O3 -g -march=native						\
 	-std=c99 -pedantic -D_GNU_SOURCE				\
 	-Wall -Werror -Wno-unused-function				\
-	-Wno-error=maybe-uninitialized					\
+	-Wno-maybe-uninitialized					\
 	-Isrc -I/usr/local/inlcude					\
 	-lz3
 
@@ -38,6 +38,9 @@ SRCS =									\
 	src/z3/z3-search.c						\
 									\
 	src/isar/isar-spec.c						\
+									\
+	script/sublattice-0-1-2-min-max/sublattice33.c			\
+
 
 
 OBJS =	$(SRCS:.c=.o)
