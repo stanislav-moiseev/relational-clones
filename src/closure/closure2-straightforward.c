@@ -121,12 +121,12 @@ pred op_comp2(const pred *pred1, const pred *pred2) {
   pred resp;
   pred_init(&resp, 2);
   
-  /* resp(x1,x0) = ∃x (pred1(x,x1) ∧ pred2(x,x0)) */
+  /* resp(x1,x0) = ∃x (pred1(x1,x) ∧ pred2(x,x0)) */
   for(uint32_t x1 = 0; x1 < K; ++x1) {
     for(uint32_t x0 = 0; x0 < K; ++x0) {
       uint64_t resp_tuple = x1*K + x0;
       for(uint32_t x = 0; x < K; ++x) {
-        uint64_t pred1_tuple = x*K + x1;
+        uint64_t pred1_tuple = x1*K + x;
         uint64_t pred2_tuple = x*K + x0;
         if(pred_compute(pred1, pred1_tuple) && pred_compute(pred2, pred2_tuple)) {
           pred_set(&resp, resp_tuple);
