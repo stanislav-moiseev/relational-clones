@@ -45,7 +45,7 @@ void clone_print_fingerprint(char *str, const clone *clone) {
       flag = 0;
       str += sprintf(str, "%lx", clone->data2[offset]);
     } else {
-      /* print `pred->data[offset]` with all preceding zeros (up to 8 zeors) */
+      /* print `pred->data[offset]` with all preceding zeros (up to 8 zeros) */
       str += sprintf(str, "%.8lx", clone->data2[offset]);
     }
   }

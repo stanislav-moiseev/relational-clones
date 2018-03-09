@@ -17,12 +17,12 @@
 #include "closure2-formulas.h"
 
 
-/** Traces of predicates and formulas that they define. */
+/** Traces of predicates and terms that they define. */
 typedef struct {
-  /* The predicate represented by the `formula`. */
+  /* The predicate represented by the `term`. */
   pred pred;
-  /* A formula representing the predicate `pred`. */
-  formula_t formula;
+  /* A term representing the predicate `pred`. */
+  term_t term;
 } trace_entry_t;
 
 typedef struct {

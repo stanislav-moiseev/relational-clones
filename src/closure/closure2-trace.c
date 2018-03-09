@@ -58,8 +58,8 @@ closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *
     clone_insert_pred(&working_set, &p);
 
     trace_entry_t new_entry = {
-      .pred    = p,
-      .formula = {
+      .pred = p,
+      .term = {
         .head_type           = FN_ATOM,
         .head_data.atom.pred = p
       }
@@ -82,10 +82,10 @@ closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *
     clone_insert_pred(&working_set, &q);
 
     trace_entry_t new_entry = {
-      .pred    = q,
-      .formula = {
+      .pred = q,
+      .term = {
         .head_type           = FN_PERM,
-        .head_data.perm.arg1 = &entry->formula
+        .head_data.perm.arg1 = &entry->term
       }
     };
     
@@ -118,11 +118,11 @@ closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *
           pred q = op_conj2(&p1, &p2);
           if(!clone_test_pred(&working_set, &q)) {
             trace_entry_t new_entry = {
-              .pred    = q,
-              .formula = {
+              .pred = q,
+              .term = {
                 .head_type           = FN_CONJ,
-                .head_data.conj.arg1 = &entry1->formula,
-                .head_data.conj.arg2 = &entry2->formula
+                .head_data.conj.arg1 = &entry1->term,
+                .head_data.conj.arg2 = &entry2->term
               }
             };
             closure_trace_insert(trace, &new_entry);
@@ -134,11 +134,11 @@ closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *
           pred q = op_comp2(&p1, &p2);
           if(!clone_test_pred(&working_set, &q)) {
             trace_entry_t new_entry = {
-              .pred    = q,
-              .formula = {
+              .pred = q,
+              .term = {
                 .head_type           = FN_COMP,
-                .head_data.comp.arg1 = &entry1->formula,
-                .head_data.comp.arg2 = &entry2->formula
+                .head_data.comp.arg1 = &entry1->term,
+                .head_data.comp.arg2 = &entry2->term
               }
             };
             closure_trace_insert(trace, &new_entry);
@@ -150,11 +150,11 @@ closure_trace_t *closure2_clone_traced(const struct clone *clone, struct clone *
           pred q = op_comp2(&p2, &p1);
           if(!clone_test_pred(&working_set, &q)) {
             trace_entry_t new_entry = {
-              .pred    = q,
-              .formula = {
+              .pred = q,
+              .term = {
                 .head_type           = FN_COMP,
-                .head_data.comp.arg1 = &entry2->formula,
-                .head_data.comp.arg2 = &entry1->formula
+                .head_data.comp.arg1 = &entry2->term,
+                .head_data.comp.arg2 = &entry1->term
               }
             };
             closure_trace_insert(trace, &new_entry);

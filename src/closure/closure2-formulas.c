@@ -3,7 +3,7 @@
  *
  * This module implements an extended version of the closure operator
  * for predicates of arity = 2 that keeps track of the operations
- * applied to predicates and produces beautiful formulas for new
+ * applied to predicates and produces beautiful terms for new
  * predicates in the closure.
  ******************************************************************************/
 
@@ -13,27 +13,28 @@
 #include <string.h>
 
 #include "closure/closure2-formulas.h"
+#include "closure/closure2-straightforward.h" /* op_perm, op_conj, op_comp */
 
-pred formula_eval(const formula_t *phi) {
-  switch(phi->head_type) {
+pred term_eval(const term_t *tau) {
+  switch(tau->head_type) {
   case FN_ATOM: {
-    return phi->head_data.atom.pred;
+    return tau->head_data.atom.pred;
   }
     
   case FN_PERM: {
-    pred p1 = formula_eval(phi->head_data.perm.arg1);
+    pred p1 = term_eval(tau->head_data.perm.arg1);
     return op_perm2(&p1);
   }
     
   case FN_CONJ: {
-    pred p1 = formula_eval(phi->head_data.conj.arg1);
-    pred p2 = formula_eval(phi->head_data.conj.arg2);
+    pred p1 = term_eval(tau->head_data.conj.arg1);
+    pred p2 = term_eval(tau->head_data.conj.arg2);
     return op_conj2(&p1, &p2);
   }
     
   case FN_COMP: {
-    pred p1 = formula_eval(phi->head_data.comp.arg1);
-    pred p2 = formula_eval(phi->head_data.comp.arg2);
+    pred p1 = term_eval(tau->head_data.comp.arg1);
+    pred p2 = term_eval(tau->head_data.comp.arg2);
     return op_comp2(&p1, &p2);
   }}
 
@@ -43,25 +44,162 @@ pred formula_eval(const formula_t *phi) {
 }
 
 
-char *print_formula_func_form(const formula_t *phi, pred_naming_fn_t pred_naming_fn) {
+#define ARG_VAL2(arg)                                                   \
+  ((arg == -1) ? y1 :                                                   \
+   ((arg == -2) ? y2 :                                                  \
+    ((arg == 1) ? x1 :                                                  \
+     ((arg == 2) ? x2 :                                                 \
+      (assert(0 && "formula_eval: invalid atom's argument number (expected: -1, -2, 1, 2)"), 0))))) \
+  
+pred formula_eval(const formula_t *phi) {
+  assert(phi->num_bounded_vars <= 2 && "formula_eval is implemented for formulas with <= 2 bounded variables only.");
+  
+  for(const atom_t *atom = phi->atoms; atom < phi->atoms + phi->num_atoms; ++atom) {
+    assert(atom->pred.arity == 2 && "formula_eval is implemented for predicates of arity == 2 only.");
+  }
+    
+  pred resp;
+  pred_init(&resp, 2 /*arity*/);
+    
+  for(uint32_t x1 = 0; x1 < K; ++x1) {
+    for(uint32_t x2 = 0; x2 < K; ++x2) {
+      uint64_t resp_tuple = x1*K + x2;
+
+      int exists;
+      
+      /* If phi->num_bounded_vars < 2, these loops will exit optimally quickly. */
+      for(uint32_t y2 = 0; y2 < K; ++y2) {
+        for(uint32_t y1 = 0; y1 < K; ++y1) {
+          exists = 1;
+          
+          for(const atom_t *atom = phi->atoms; atom < phi->atoms + phi->num_atoms; ++atom) {
+            uint64_t p_tuple = ARG_VAL2(atom->arg1) * K + ARG_VAL2(atom->arg2);
+            if(!pred_compute(&atom->pred, p_tuple)) {
+              exists = 0;
+              break;
+            }
+          }
+          
+          if(exists) {
+            pred_set(&resp, resp_tuple);
+            break;
+          }
+
+          if(!exists && phi->num_bounded_vars == 0) break;
+        }
+        
+        if(exists) break;
+        if(!exists && phi->num_bounded_vars <= 1) break;
+      }
+    }
+  }
+
+  return resp;
+}
+
+
+/**
+ * `phi` works as a shared state for all recursive executions of this
+ * worker function.
+ *
+ * Some executions may allocate a fresh bounded variable; other
+ * executions should now how many bounded variable have been allocated
+ * so far.
+ */
+static void term_to_formula_worker(formula_t *phi, const term_t *tau, int var1, int var2) {
+  switch(tau->head_type) {
+  case FN_ATOM: {
+    atom_t atom = {
+      .pred = tau->head_data.atom.pred,
+      .arg1 = var1,
+      .arg2 = var2,
+    };
+    formula_insert_atom(phi, &atom);
+    break;
+  }
+
+  case FN_PERM: {
+    term_to_formula_worker(phi, tau->head_data.perm.arg1, var2, var1);
+    break;
+  }
+
+  case FN_CONJ: {
+    term_to_formula_worker(phi, tau->head_data.conj.arg1, var1, var2);
+    term_to_formula_worker(phi, tau->head_data.conj.arg2, var1, var2);
+    break;
+  }
+
+  case FN_COMP: {
+    /* We should fix a bounded variable /before/ a recursive execution
+     * of this worker function, because that execution can allocate
+     * new bounded variables, thus changing the value of `phi->num_bounded_vars`. */
+    int bounded_var = formula_get_fresh_bounded_var(phi);
+    term_to_formula_worker(phi, tau->head_data.comp.arg1, var1, bounded_var);
+    term_to_formula_worker(phi, tau->head_data.comp.arg2, bounded_var, var2);
+    break;
+  }}
+}
+
+
+formula_t *term_to_formula(const term_t *tau) {
+  formula_t *phi = formula_alloc();
+  term_to_formula_worker(phi, tau, 1/*var1*/, 2/*var2*/);
+  return phi;
+}
+
+formula_t *formula_alloc() {
+  formula_t *phi = malloc(sizeof(formula_t));
+  assert(phi);
+  phi->num_bounded_vars = 0;
+  phi->num_atoms   = 0;
+  phi->capacity    = 16;
+  phi->atoms       = malloc(phi->capacity * sizeof(atom_t));
+  assert(phi->atoms);
+  return phi;
+}
+
+void formula_free(formula_t *phi) {
+  free(phi->atoms);
+  free(phi);
+}
+
+void formula_insert_atom(formula_t *phi, const atom_t *atom) {
+  if(phi->num_atoms == phi->capacity) {
+    phi->capacity *= 2;
+    phi->atoms = realloc(phi->atoms, phi->capacity);
+  }
+  assert(phi->num_atoms < phi->capacity);
+  
+  phi->atoms[phi->num_atoms] = *atom;
+  
+  ++phi->num_atoms;
+}
+
+int formula_get_fresh_bounded_var(formula_t *phi) {
+  ++phi->num_bounded_vars;
+  return -(phi->num_bounded_vars);
+}
+
+
+char *term_print(const term_t *tau, pred_naming_fn_t pred_naming_fn) {
   char *str;
   
-  switch(phi->head_type) {
+  switch(tau->head_type) {
   case FN_ATOM: {
-    asprintf(&str, "%s", pred_naming_fn(phi->head_data.atom.pred));
+    asprintf(&str, "%s", pred_naming_fn(tau->head_data.atom.pred));
     break;
   }
     
   case FN_PERM: {
-    char *substr = print_formula_func_form(phi->head_data.perm.arg1, pred_naming_fn);
+    char *substr = term_print(tau->head_data.perm.arg1, pred_naming_fn);
     asprintf(&str, "perm(%s)", substr);
     free(substr);
     break;
   }
     
   case FN_CONJ: {
-    char *substr1 = print_formula_func_form(phi->head_data.conj.arg1, pred_naming_fn);
-    char *substr2 = print_formula_func_form(phi->head_data.conj.arg2, pred_naming_fn);
+    char *substr1 = term_print(tau->head_data.conj.arg1, pred_naming_fn);
+    char *substr2 = term_print(tau->head_data.conj.arg2, pred_naming_fn);
     asprintf(&str, "conj(%s, %s)", substr1, substr2);
     free(substr1);
     free(substr2);
@@ -69,8 +207,8 @@ char *print_formula_func_form(const formula_t *phi, pred_naming_fn_t pred_naming
   }
     
   case FN_COMP: {
-    char *substr1 = print_formula_func_form(phi->head_data.comp.arg1, pred_naming_fn);
-    char *substr2 = print_formula_func_form(phi->head_data.comp.arg2, pred_naming_fn);
+    char *substr1 = term_print(tau->head_data.comp.arg1, pred_naming_fn);
+    char *substr2 = term_print(tau->head_data.comp.arg2, pred_naming_fn);
     asprintf(&str, "comp(%s, %s)", substr1, substr2);
     free(substr1);
     free(substr2);
@@ -81,96 +219,74 @@ char *print_formula_func_form(const formula_t *phi, pred_naming_fn_t pred_naming
 }
 
 
-/**
- * `num_bounded_vars` works as a shared state for all executions of
- * this worker function. Some executions may allocate a fresh bounded
- * variable; other executions should now how many bounded variable
- * have been allocated so far.
- */
-static char *print_formula_quantified_form_worker(int *num_bounded_vars,
-                                                  const formula_t *phi, int var1, int var2,
-                                                  pred_naming_fn_t pred_naming_fn,
-                                                  var_naming_fn_t var_naming_fn) {
-  char *str = NULL;
-  
-  switch(phi->head_type) {
-  case FN_ATOM: {
-    char *var1_name = strdup(var_naming_fn(var1));
-    char *var2_name = strdup(var_naming_fn(var2));
-    asprintf(&str, "%s(%s,%s)", pred_naming_fn(phi->head_data.atom.pred), var1_name, var2_name);
-    free(var1_name);
-    free(var2_name);
-    break;
+char *formula_print_latex(const formula_t *phi, pred_naming_fn_t pred_naming_fn, var_naming_fn_t var_naming_fn) {
+  for(const atom_t *atom = phi->atoms; atom < phi->atoms + phi->num_atoms; ++atom) {
+    assert(atom->pred.arity == 2 && "formula_print_latex is implemented for predicates of arity == 2 only.");
   }
-    
-  case FN_PERM: {
-    str = print_formula_quantified_form_worker(num_bounded_vars, phi->head_data.perm.arg1, var2, var1, pred_naming_fn, var_naming_fn);
-    break;
-  }
-    
-  case FN_CONJ: {
-    char *substr1 = print_formula_quantified_form_worker(num_bounded_vars, phi->head_data.conj.arg1, var1, var2, pred_naming_fn, var_naming_fn);
-    char *substr2 = print_formula_quantified_form_worker(num_bounded_vars, phi->head_data.conj.arg2, var1, var2, pred_naming_fn, var_naming_fn);
-    asprintf(&str, "%s \\wedge %s", substr1, substr2);
-    free(substr1);
-    free(substr2);
-    break;
-  }
-    
-  case FN_COMP: {
-    ++(*num_bounded_vars);
-    /* We should fix a bounded variable /before/ a recursive execution
-     * of the worker function, because that execution can allocate new
-     * bounded variables, thus changing the value of (*num_bounded_vars). */
-    int bounded_var = -(*num_bounded_vars);
-    /* Print the left side, possibly changing the value of (*num_bounded_vars). */
-    char *substr1 = print_formula_quantified_form_worker(num_bounded_vars, phi->head_data.comp.arg1, var1, bounded_var, pred_naming_fn, var_naming_fn);
-    /* Print the right side. */
-    char *substr2 = print_formula_quantified_form_worker(num_bounded_vars, phi->head_data.comp.arg2, bounded_var, var2, pred_naming_fn, var_naming_fn);
-    asprintf(&str, "%s \\wedge %s", substr1, substr2);
-    free(substr1);
-    free(substr2);
-    break;
-  }}
 
+  char *str;
+  size_t sizeloc;
+  FILE *fd = open_memstream(&str, &sizeloc);
+  assert(fd);
+
+  if(phi->num_atoms == 0) {
+    assert(phi->num_bounded_vars == 0 && "formula_print_latex: a formula with no atoms should have no bounded variables.");
+    assert(K == 3);
+    static const pred p_true  = { .arity = 2, .data  = 0x1FF };
+    fprintf(fd, "%s", pred_naming_fn(p_true));
+    fclose(fd);
+    return str;
+  }
+
+  int use_multline = 1;
+
+  for(int k = 1; k <= phi->num_bounded_vars; ++k) {
+    fprintf(fd, "\\exists %s\\, ", var_naming_fn(-k));
+  }
+
+  if(phi->num_bounded_vars > 0) {
+    fprintf(fd, "\\bigl(");
+  }
+
+  assert(phi->num_atoms <= 6);
+  for(int k = 0; k < phi->num_atoms; ++k) {
+    if(k > 0) {
+      fprintf(fd, " \\wedge ");
+    }
+
+    if(use_multline) {
+      if((phi->num_atoms == 4 && k == 2) ||
+         (phi->num_atoms >= 5 && k == 3)) {
+        fprintf(fd, "{} \\\\ && \\hspace{-0.7\\textwidth} {}\\wedge ");
+      }
+    }
+    
+    char *arg1 = strdup(var_naming_fn(phi->atoms[k].arg1));
+    char *arg2 = strdup(var_naming_fn(phi->atoms[k].arg2));
+    fprintf(fd, "%s(%s, %s)", pred_naming_fn(phi->atoms[k].pred), arg1, arg2);
+    free(arg1);
+    free(arg2);
+  }
+  
+  if(phi->num_bounded_vars > 0) {
+    fprintf(fd, "\\bigr)");
+  }
+
+  fclose(fd);
   return str;
 }
 
 
-char *print_formula_quantified_form(const formula_t *phi, pred_naming_fn_t pred_naming_fn, var_naming_fn_t var_naming_fn) {
-  int num_bounded_vars = 0;
-  char *body = print_formula_quantified_form_worker(&num_bounded_vars, phi, 1/*var1*/, 2/*var2*/, pred_naming_fn, var_naming_fn);
-  assert(num_bounded_vars >= 0);
-  
-  if(num_bounded_vars == 0) {
-    return body;
-  }
+/********************************************************************/
+/** Naming functions. **/
 
-  char *head = malloc(1);
-  head[0] = 0;
-  for(int k = 1; k <= num_bounded_vars; ++k) {
-    char *str;
-    asprintf(&str, "%s\\exists %s\\, ", head, var_naming_fn(-k));
-    free(head);
-    head = str;
-  }
-
-  char *str;
-  asprintf(&str, "%s \\bigl( %s \\bigr)", head, body);
-  free(body);
-  return str;
-}
+static const pred p_false = { .arity = 2, .data  = 0x000 };
+static const pred p_true  = { .arity = 2, .data  = 0x1FF };
+static const pred p_eq    = { .arity = 2, .data  = 0x111 };
 
 
-static inline void strappend(char **str1, const char *str2) {
-  char *str;
-  asprintf(&str, "%s%s", *str1, str2);
-  free(*str1);
-  *str1 = str;
-}
-
-
-const char *pred_naming_fn(pred p) {
+const char *pred_naming_fn_latex(pred p) {
+  assert(K == 3);
   assert(p.arity == 2);
   
   static char *str = NULL;
@@ -178,12 +294,15 @@ const char *pred_naming_fn(pred p) {
     free(str);
   }
 
-  if(p.data == 0) {
+  if(pred_eq(&p, &p_false)) {
     asprintf(&str, "false^{(2)}");
-  } else if(p.data == 0x1FF) {
+    
+  } else if(pred_eq(&p, &p_true)) {
     asprintf(&str, "true^{(2)}");
-  } else if(p.data == 0x111) {
+    
+  } else if(pred_eq(&p, &p_eq)) {
     asprintf(&str, "eq^{(2)}");
+    
   } else {
     asprintf(&str, "p_{%lu}", p.data);
   }
@@ -191,54 +310,60 @@ const char *pred_naming_fn(pred p) {
 }
 
 
-const char *var_naming_fn(int var) {
-  static char buf[64];
-  assert(var != 0 && "var_name: var number should be > 0 for unbound variables, and < 0 for bound variables.");
-  if(var > 0) {
-    snprintf(buf, 64, "x_{%d}", var);
-  }
-  if(var < 0) {
-    snprintf(buf, 64, "y_{%d}", -var);
-  }
-  return buf;
-}
-
-
-const char *clone_naming_fn(const struct clone *clone) {
+const char *var_naming_fn_latex(int var) {
   static char *str = NULL;
   if(str != NULL) {
     free(str);
   }
 
+  assert(var != 0 && "var_name: var number should be > 0 for unbound variables, and < 0 for bound variables.");
+  if(var > 0) {
+    asprintf(&str, "x_{%d}", var);
+  }
+  if(var < 0) {
+    asprintf(&str, "y_{%d}", -var);
+  }
+  
+  return str;
+}
+
+
+const char *clone_naming_fn_latex(const struct clone *clone) {
+  static char *str = NULL;
+  if(str != NULL) {
+    free(str);
+  }
+  
+  size_t sizeloc;
+  FILE *fd = open_memstream(&str, &sizeloc);
+  assert(fd);
+
   if(clone_is_empty(clone)) {
-    asprintf(&str, "\\varnothing");
+    fprintf(fd, "\\varnothing");
+    fclose(fd);
     return str;
   }
   
-  asprintf(&str, "\\{");
+  fprintf(fd, "\\{");
 
   unsigned nprinted = 0;
 
-  static const pred p_false = { .arity = 2, .data  = 0x000 };
-  static const pred p_true  = { .arity = 2, .data  = 0x1FF };
-  static const pred p_eq    = { .arity = 2, .data  = 0x111 };
-
   if(clone_test_pred(clone, &p_false)) {
-    strappend(&str, pred_naming_fn(p_false));
+    fprintf(fd, pred_naming_fn_latex(p_false));
     ++nprinted;
   }
   if(clone_test_pred(clone, &p_true)) {
     if(nprinted > 0) {
-      strappend(&str, ", ");
+      fprintf(fd, ", ");
     }
-    strappend(&str, pred_naming_fn(p_true));
+    fprintf(fd, pred_naming_fn_latex(p_true));
     ++nprinted;
   }
   if(clone_test_pred(clone, &p_eq)) {
     if(nprinted > 0) {
-      strappend(&str, ", ");
+      fprintf(fd, ", ");
     }
-    strappend(&str, pred_naming_fn(p_eq));
+    fprintf(fd, pred_naming_fn_latex(p_eq));
     ++nprinted;
   }
 
@@ -252,20 +377,21 @@ const char *clone_naming_fn(const struct clone *clone) {
     }
 
     if(nprinted > 0) {
-      strappend(&str, ", \\, ");
+      fprintf(fd, ", \\> ");
     }
 
     if(nprinted >= 2 && nprinted <= card - 2) {
-      strappend(&str, "\\allowbreak ");
+      fprintf(fd, "\\allowbreak ");
     }
 
-    strappend(&str, pred_naming_fn(p));
+    fprintf(fd, pred_naming_fn_latex(p));
         
     ++nprinted;
   }
 
-  strappend(&str, "\\}");
+  fprintf(fd, "\\}");
 
+  fclose(fd);
   return str;
 }
 
