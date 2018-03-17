@@ -13,6 +13,7 @@
 #include <time.h>
 
 #include "utils.h"
+#include "colors.h"
 #include "closure/closure-straightforward.h"
 #include "closure/closure2-trace.h"
 #include "pred-essential.h"
@@ -21,11 +22,6 @@
 
 #include "../script/sublattice-0-1-2-min-max/sublattice33.h"
 
-
-/** This functions reads the full lattice of clones in P3, defined by
- * predicates of arity <= 2, and filters it, selecting the clones,
- * that preserve the functions 0, 1, 2, min, max.
- */
 lattice *get_sublattice33(const char *lt_name) {
   fprintf(stderr, "reading \"%s\"...", lt_name); fflush(stdout);
   time_t t0 = time(NULL);
@@ -52,9 +48,6 @@ lattice *get_sublattice33(const char *lt_name) {
          fun_preserves_clone(&f_2, &c->clone) &&
          fun_preserves_clone(&f_min, &c->clone) &&
          fun_preserves_clone(&f_max, &c->clone)) {
-        
-        /*         printf("====== class %u (%u:%u) ====================================\n", c->cidx, c->lidx, c->cpos); */
-        /*         clone_print_verbosely(stdout, &c->clone); */
 
         class *sublt_c = class_alloc(&c->clone);
         lattice_add_class(sublt, sublt_c);
@@ -92,3 +85,31 @@ ccplt *get_ccplt33() {
   clop_free(clop2);
   return ccplt;
 }
+
+const char *sublattice33_pred_naming_fn_latex(pred p) {
+  assert(K == 3);
+  assert(p.arity == 2);
+
+  static char *str = NULL;
+  if(str != NULL) {
+    free(str);
+  }
+
+  size_t idx = 0;
+  for(; idx < num_basic_preds; ++idx) {
+    if(pred_eq(&p, &basic_preds[idx])) {
+      asprintf(&str, "q_{%lu}", idx+1);
+      break;
+    }
+  }
+  if(idx == num_basic_preds) {
+    fprintf(stderr, COLOR_YELLOW "WARNING: "
+                    COLOR_BLUE "the predicate %s is not a member of 10 basic predicates; it was printed as p_{%lu}."
+                    COLOR_RESET "\n",
+            pred_print_extensional_ex(&p), p.data);
+    asprintf(&str, "p_{%lu}", p.data);
+  }
+  
+  return str;
+}
+

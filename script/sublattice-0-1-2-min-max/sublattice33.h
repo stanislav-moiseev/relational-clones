@@ -10,27 +10,25 @@
 
 /* A universe of predicates defining the sublattice of R3(2),
  * containing 0, 1, 2, min, max. */
-static pred basic_preds[] = {
+static const pred basic_preds[] = {
   /* false, true, eq */
 /*   { .arity = 2, .data = 0   }, */
 /*   { .arity = 2, .data = 511 }, */
 /*   { .arity = 2, .data = 273 }, */
+
+  { .arity = 2, .data = 275 },  /* q1 */
+  { .arity = 2, .data = 283 },  /* q2 */
+  { .arity = 2, .data = 305 },  /* q3 */
   
-  /* left part */
-  { .arity = 2, .data = 283 },
-  { .arity = 2, .data = 275 },
-  { .arity = 2, .data = 319 },
+  { .arity = 2, .data = 311 },  /* q4 */
+  { .arity = 2, .data = 313 },  /* q5 */
+  { .arity = 2, .data = 319 },  /* q6 */
   
-  /* central part */
-  { .arity = 2, .data = 443 },
-  { .arity = 2, .data = 311 },
-  { .arity = 2, .data = 313 },
-  { .arity = 2, .data = 447 },
+  { .arity = 2, .data = 433 },  /* q7 */
+  { .arity = 2, .data = 439 },  /* q8 */
+  { .arity = 2, .data = 443 },  /* q9 */
+  { .arity = 2, .data = 447 },  /* q10 */
   
-  /* right part */    
-  { .arity = 2, .data = 433 },
-  { .arity = 2, .data = 305 },
-  { .arity = 2, .data = 439 },
 };
 static const size_t num_basic_preds = sizeof(basic_preds) / sizeof(basic_preds[0]);
 
@@ -51,3 +49,11 @@ lattice *get_sublattice33(const char *lt_name);
  * selects classes, preserving the functions 0, 1, 2, min, max.
  */
 ccplt *get_ccplt33();
+
+/** A naming function for predicates that works with
+ * `sublattice33_basic_preds` only.
+ * Every predicate is printed as "q_{j}", where j is the number
+ * of the predicate in the `sublattice33_basic_preds` list.
+ */
+const char *sublattice33_pred_naming_fn_latex(pred p);
+
