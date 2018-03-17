@@ -41,7 +41,11 @@ void clop2_straightforward_closure_clone_ex(void *internals, const clone *base, 
       pred q;
       q = op_conj2(&p1, &p3);
       clone_insert_pred(&recruit, &q);
+      /* Because op_comp2 is not symmetric, we compute it twice with
+       * both orders of arguments. */
       q = op_comp2(&p1, &p3);
+      clone_insert_pred(&recruit, &q);
+      q = op_comp2(&p3, &p1);
       clone_insert_pred(&recruit, &q);
     }
   }
