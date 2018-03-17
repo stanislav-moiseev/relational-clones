@@ -150,6 +150,6 @@ const char *pred_naming_fn_latex(pred p);
 
 const char *var_naming_fn_latex(int var);
 
-const char *clone_naming_fn_latex(const struct clone *clone);
+const char *clone_naming_fn_latex(const struct clone *clone, pred_naming_fn_t pred_naming_fn);
 
 #endif

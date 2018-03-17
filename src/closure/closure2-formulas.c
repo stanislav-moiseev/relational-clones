@@ -249,6 +249,7 @@ char *formula_print_latex(const formula_t *phi, pred_naming_fn_t pred_naming_fn,
   }
 
   assert(phi->num_atoms <= 6);
+  
   for(int k = 0; k < phi->num_atoms; ++k) {
     if(k > 0) {
       fprintf(fd, " \\wedge ");
@@ -328,7 +329,7 @@ const char *var_naming_fn_latex(int var) {
 }
 
 
-const char *clone_naming_fn_latex(const struct clone *clone) {
+const char *clone_naming_fn_latex(const struct clone *clone, pred_naming_fn_t pred_naming_fn) {
   static char *str = NULL;
   if(str != NULL) {
     free(str);
@@ -349,21 +350,21 @@ const char *clone_naming_fn_latex(const struct clone *clone) {
   unsigned nprinted = 0;
 
   if(clone_test_pred(clone, &p_false)) {
-    fprintf(fd, pred_naming_fn_latex(p_false));
+    fprintf(fd, pred_naming_fn(p_false));
     ++nprinted;
   }
   if(clone_test_pred(clone, &p_true)) {
     if(nprinted > 0) {
       fprintf(fd, ", ");
     }
-    fprintf(fd, pred_naming_fn_latex(p_true));
+    fprintf(fd, pred_naming_fn(p_true));
     ++nprinted;
   }
   if(clone_test_pred(clone, &p_eq)) {
     if(nprinted > 0) {
       fprintf(fd, ", ");
     }
-    fprintf(fd, pred_naming_fn_latex(p_eq));
+    fprintf(fd, pred_naming_fn(p_eq));
     ++nprinted;
   }
 
@@ -384,7 +385,7 @@ const char *clone_naming_fn_latex(const struct clone *clone) {
       fprintf(fd, "\\allowbreak ");
     }
 
-    fprintf(fd, pred_naming_fn_latex(p));
+    fprintf(fd, pred_naming_fn(p));
         
     ++nprinted;
   }
