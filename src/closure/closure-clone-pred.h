@@ -217,7 +217,7 @@ struct predicate_numerator {
 typedef struct predicate_numerator predicate_numerator;
 
 
-predicate_numerator *predicate_numerator_alloc(pred *preds, size_t sz);
+predicate_numerator *predicate_numerator_alloc(const pred *preds, size_t sz);
 
 void predicate_numerator_free(predicate_numerator *pred_num);
 

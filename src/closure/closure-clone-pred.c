@@ -165,12 +165,14 @@ ccpnode *ccplt_get_node(const ccplt *lt, class_idx idx) {
   return nd;
 }
 
-predicate_numerator *predicate_numerator_alloc(pred *preds, size_t sz) {
+predicate_numerator *predicate_numerator_alloc(const pred *preds, size_t sz) {
   predicate_numerator *pred_num = malloc(sizeof(predicate_numerator));
   assert(pred_num);
 
   pred_num->uniq_sz    = sz;
-  pred_num->uniq_preds = preds;
+  pred_num->uniq_preds = malloc(sz * sizeof(struct pred));
+  assert(pred_num->uniq_preds);
+  memcpy(pred_num->uniq_preds, preds, sz * sizeof(struct pred));
   
   /* alloc mem for reverse index */
   for(uint32_t ar = 0; ar <= 2; ++ar) {
@@ -282,6 +284,7 @@ void ccplt_construct(const closure_operator *clop, ccplt *lt) {
   pred *preds;
   construct_closure_uniq_ess_preds(2, &preds, &sz);
   lt->pred_num = predicate_numerator_alloc(preds, sz);
+  free(preds);
 
   /* start from a ccplt containing just one clone */
   ccpnode *top = ccpnode_alloc(lt);

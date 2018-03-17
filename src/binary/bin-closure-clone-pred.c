@@ -70,6 +70,7 @@ predicate_numerator *predicate_numerator_read(FILE *fd) {
   }
 
   return predicate_numerator_alloc(preds, sz);
+  free(preds);
 }
 
 ccplt *ccplt_read(const char *fname) {

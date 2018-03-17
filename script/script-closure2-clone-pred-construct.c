@@ -75,6 +75,7 @@ void construct(const char *ccp_name) {
   }
 
   lt->pred_num = predicate_numerator_alloc(preds, sz);
+  free(preds);
 
 
   /* start from a ccplt containing just one clone */
