@@ -81,6 +81,7 @@ SCRIPTS =								\
 									\
 	script/script-isar-spec.out					\
 	script/script-sublattice-0-1-2-min-max.out			\
+	script/script-sublattice-0-1-2-min-max-discr-funs.out		\
 
 all:  $(TESTS) $(SCRIPTS)
 

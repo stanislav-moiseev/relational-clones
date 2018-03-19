@@ -75,17 +75,20 @@ char *fun_print(const fun *fun) {
 }
 
 void fun_print_verbosely(FILE *fd, const fun *fun) {
+  fprintf(fd, "{");
   for(int64_t tuple = int_pow(K, fun->arity) - 1; tuple >= 0; --tuple) {
     uint32_t val = fun_compute(fun, tuple);
-    if(val) {
-      uint32_t digits[fun->arity];
-      get_K_digits(digits, fun->arity, tuple);
-      for(int i = 0; i < fun->arity; ++i) {
-        fprintf(fd, "%d", digits[i]);
-      }
-      fprintf(fd, " :-> %d\n", val);
+    uint32_t digits[fun->arity];
+    get_K_digits(digits, fun->arity, tuple);
+    if(tuple != int_pow(K, fun->arity) - 1) {
+      fprintf(fd, ", ");
     }
+    for(int i = 0; i < fun->arity; ++i) {
+      fprintf(fd, "%d", digits[i]);
+    }
+    fprintf(fd, " :-> %d", val);
   }
+  fprintf(fd, "}\n");
 }
 
 void fun_scan(const char *str, fun *fun) {
