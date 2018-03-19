@@ -21,7 +21,6 @@
 #include "sublattice-0-1-2-min-max/sublattice33.h"
 
 
-
 /********************************************************************/
 /** This function prints the list of all predicates in P3, preserving
  *  0, 1, 2, min, max.
@@ -67,6 +66,35 @@ void script_filter_predicates() {
 }
 
 
+void script_print_sublattice33(const char *lt_name) {
+  printf("computing the sublattice containing the functions 0, 1, 2, min(x,y), max(x,y)...\n");
+  lattice *sublt = get_sublattice33(lt_name);
+
+  for(class **cp = sublt->classes; cp < sublt->classes + sublt->num_classes; ++cp) {
+    class *c = *cp;
+
+    printf("\n" COLOR_BOLD "====== class %u (%u:%u) ====================================" COLOR_RESET "\n", c->cidx, c->lidx, c->cpos);
+    clone_print_verbosely(stdout, &c->clone);
+  }
+
+/*   printf("\ncomputing the list of maximal proper subclasses for every class...\n"); */
+/*   lattice_construct_maximal_subclones(sublt); */
+/*   for(class **cp = sublt->classes; cp < sublt->classes + sublt->num_classes; ++cp) { */
+/*     class *c = *cp; */
+/*     printf("====== class %u (%u:%u) ======\n", c->cidx, c->lidx, c->cpos); */
+/*     for(class_idx *sub_idx = c->maxsubs; sub_idx < c->maxsubs + c->num_maxsubs; ++sub_idx) { */
+/*       class *sub = lattice_get_class(blt, *sub_idx); */
+/*       printf("%u (%u:%u)\n", sub->cidx, sub->lidx, sub->cpos); */
+/*     } */
+/*     printf("\n"); */
+/*   } */
+
+  printf("\n================\n");
+  printf("sublattice size: %lu\n", sublt->num_classes);
+
+  lattice_free(sublt);
+}
+
 
 /********************************************************************/      
 /** For all 13 predicates that we do not use in the description of the
@@ -74,8 +102,7 @@ void script_filter_predicates() {
  * lattice containing this predicate ("smallest" means here that the
  * class contains the smallest number of predicates).
  */
-void script_irrelevant_predicates() {
-  const char *lt_name = "data/lattice.2016";
+void script_irrelevant_predicates(const char *lt_name) {
   lattice *sublt = get_sublattice33(lt_name);
 
   pred irrpreds[] = {
@@ -201,9 +228,16 @@ static void construct_formulas(const struct clone *clone, const pred *p) {
       assert(pred_eq(p, &p_) && "The term does not define the predicate that it is expected to define. "
                                 "Most likely, this is a bug in the closure2_trace() function.");
       
-      char *phi = term_print(&entry->term, pred_naming_fn_latex);
-      printf("p_{%lu} = %s\n", p->data, phi);
+      formula_t *phi = term_to_formula(&entry->term);
+      char *phi_str = formula_print_latex(phi, sublattice33_pred_naming_fn_latex, var_naming_fn_latex);
+      char *var1 = strdup(var_naming_fn_latex(1));
+      char *var2 = strdup(var_naming_fn_latex(2));
+      printf("%s(%s, %s) = %s\n", sublattice33_pred_naming_fn_latex(*p), var1, var2, phi_str);
+      free(var1);
+      free(var2);
+      
       free(phi);
+      free(phi_str);
       break;
     }
   }
@@ -266,6 +300,36 @@ void script_formulas_for_pred_435() {
 }
 
 
+
+/********************************************************************/
+void script_print_generating_sets() {
+  ccplt *ccplt = get_ccplt33();
+
+  struct clone base;
+  clone_init(&base);
+  for(const pred *p = basic_preds; p < basic_preds + num_basic_preds; ++p) {
+    clone_insert_pred(&base, p);
+  }
+
+  printf("\\begin{align*}\n");
+  for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
+    ccpnode *node = *nodep;
+          
+    clone clone_;
+    clone_intersection(&node->clone, &base, &clone_);
+
+    if(nodep < ccplt->nodes + ccplt->num_nodes - 1) {
+      printf("  \\pi(v_{%u}) &= %s; \t\\\\\n", node->cidx+1, clone_naming_fn_latex(&clone_, sublattice33_pred_naming_fn_latex));
+    } else {
+      printf("  \\pi(v_{%u}) &= %s.\n", node->cidx+1, clone_naming_fn_latex(&clone_, sublattice33_pred_naming_fn_latex));
+    }
+  }
+  printf("\\end{align*}\n");
+      
+  ccplt_free(ccplt);
+}
+
+
 /********************************************************************/
 void script_build_sublattice_with_latex_formulas() {
   ccplt *ccplt = get_ccplt33();
@@ -274,28 +338,31 @@ void script_build_sublattice_with_latex_formulas() {
   struct clone base;
   //clone_copy(top_clone2(), &base);
   clone_init(&base);
-  for(pred *p = basic_preds; p < basic_preds + num_basic_preds; ++p) {
+  for(const pred *p = basic_preds; p < basic_preds + num_basic_preds; ++p) {
     clone_insert_pred(&base, p);
   }
 
   for(pred_idx_t pidx = 0; pidx < ccplt->pred_num->uniq_sz; ++pidx) {
     pred p = *idx_pred(ccplt->pred_num, pidx);
-    printf("\n\n%%%%====== +%s ==============================================================\n", pred_naming_fn_latex(p));
-    printf("\\subsubsection{Добавление предиката $%s$}\n", pred_naming_fn_latex(p));
+    printf("\n\n%%%%====== +%s ==============================================================\n", sublattice33_pred_naming_fn_latex(p));
+    printf("\\subsection{Добавление предиката $%s$}\n", sublattice33_pred_naming_fn_latex(p));
     printf("\n");
-    printf("\\begin{enumerate}[wide, labelindent=0pt, label=\\textbf{\\arabic*}.]");
-    
+    printf("\\begin{enumerate} %%[wide, labelindent=0pt, label=\\textbf{\\arabic*}.]");
+
     for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
       ccpnode *parent_node = *nodep;
 
       if(parent_node->pidx_begin > pidx) continue;
-      
+
       clone parent;
       clone_intersection(&parent_node->clone, &base, &parent);
 
       /* child_node = <{p} ∪ parent_node> */
       pred p = *idx_pred(ccplt->pred_num, pidx);
+
+      /* Skip cases when <{p} ∪ parent_node> = <parent_node> */
       if(clone_test_pred(&parent, &p)) continue;
+
       
       ccpnode *child_node = ccplt_get_node(ccplt, parent_node->children[pidx - parent_node->pidx_begin]);
       clone child;
@@ -310,12 +377,12 @@ void script_build_sublattice_with_latex_formulas() {
        *
        * \newcommand*{\duponbreak}[1]{#1\nobreak\discretionary{}{\hbox{$\mathsurround=0pt #1$}}{}}
        */
-      char *parent_name = strdup(clone_naming_fn_latex(&parent));
-      char *child_name  = strdup(clone_naming_fn_latex(&child));
+      char *parent_name = strdup(clone_naming_fn_latex(&parent, sublattice33_pred_naming_fn_latex));
+      char *child_name  = strdup(clone_naming_fn_latex(&child, sublattice33_pred_naming_fn_latex));
       printf("\n\\item $[C_{%u} \\cup \\{%s\\}]_{p.p.} = [[%s]_{p.p.} \\cup \\{%s\\}]_{p.p.} \\duponbreak= [%s]_{p.p.} \\duponbreak= C_{%u}$",
-             parent_node->cidx, pred_naming_fn_latex(p),
-             parent_name, pred_naming_fn_latex(p),
-             child_name, child_node->cidx);
+             parent_node->cidx+1, sublattice33_pred_naming_fn_latex(p),
+             parent_name, sublattice33_pred_naming_fn_latex(p),
+             child_name, child_node->cidx+1);
       free(parent_name);
       free(child_name);
 
@@ -323,7 +390,7 @@ void script_build_sublattice_with_latex_formulas() {
       clone_diff(&child, &parent, &diff);
       size_t diff_cardinality = clone_cardinality(&diff);
 
-      if(diff_cardinality == 1) {
+      if(diff_cardinality <= 1) {
         printf(".\n");
         
       } else {
@@ -365,22 +432,22 @@ void script_build_sublattice_with_latex_formulas() {
                 fprintf(stderr, COLOR_RED);
                 fprintf(stderr, "ERROR: The formula defines a predicate different from the predicated defined by the term.\n");
                 fprintf(stderr, "       Most likely, this is a bug in the term_to_formula() function.\n");
-                fprintf(stderr, COLOR_RED "Term:   " COLOR_YELLOW "  %s\n", term_print(&entry->term, pred_naming_fn_latex));
+                fprintf(stderr, COLOR_RED "Term:   " COLOR_YELLOW "  %s\n", term_print(&entry->term, sublattice33_pred_naming_fn_latex));
                 fprintf(stderr, "\t\t==> %s\n", pred_print_extensional_ex(&q_));
-                fprintf(stderr, COLOR_RED "Formula:" COLOR_YELLOW "  %s\n", formula_print_latex(phi, pred_naming_fn_latex, var_naming_fn_latex));
+                fprintf(stderr, COLOR_RED "Formula:" COLOR_YELLOW "  %s\n", formula_print_latex(phi, sublattice33_pred_naming_fn_latex, var_naming_fn_latex));
                 fprintf(stderr, "\t\t==> %s\n", pred_print_extensional_ex(&q__));
                 fprintf(stderr, COLOR_RESET);
                 assert(pred_eq(&q_, &q__));
               }
               
-              char *phi_str  = formula_print_latex(phi, pred_naming_fn_latex, var_naming_fn_latex);
+              char *phi_str  = formula_print_latex(phi, sublattice33_pred_naming_fn_latex, var_naming_fn_latex);
               char *var1     = strdup(var_naming_fn_latex(1));
               char *var2     = strdup(var_naming_fn_latex(2));
               static const char *indent_str = "\\hspace{1cm}";
               if(num_facts < diff_cardinality - 1) {
-                printf("  %s %s(%s,%s) &= %s; & \t\\\\\n", indent_str, pred_naming_fn_latex(q), var1, var2, phi_str);
+                printf("  %s %s(%s,%s) &= %s; & \t\\\\\n", indent_str, sublattice33_pred_naming_fn_latex(q), var1, var2, phi_str);
               } else {
-                printf("  %s %s(%s,%s) &= %s. &\n", indent_str, pred_naming_fn_latex(q), var1, var2, phi_str);
+                printf("  %s %s(%s,%s) &= %s. &\n", indent_str, sublattice33_pred_naming_fn_latex(q), var1, var2, phi_str);
               }
               free(var1);
               free(var2);
@@ -391,7 +458,7 @@ void script_build_sublattice_with_latex_formulas() {
           }
           
           if(entry == trace->entries + trace->num_entries) {
-            fprintf(stderr, COLOR_RED "ERROR: predicate %s has not been found in the trace." COLOR_RESET "\n", pred_naming_fn_latex(q));
+            fprintf(stderr, COLOR_RED "ERROR: predicate %s has not been found in the trace." COLOR_RESET "\n", sublattice33_pred_naming_fn_latex(q));
           }
         }
        
@@ -400,20 +467,60 @@ void script_build_sublattice_with_latex_formulas() {
     }
     
     printf("\\end{enumerate}\n");
+    
+    printf("Таким образом,\n");
+    printf("$ Classes(%u) = \\{", pidx+1);
+
+    /* Count the number of classes that contain the predicate `p`
+     * (i.e. the classes constructed at the previous steps + the
+     * classes constructed on this step). */
+    unsigned num_classes = 0;
+    for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
+      ccpnode *node = *nodep;
+      if(node->pidx_begin <= pidx + 1) {
+        ++num_classes;
+      }
+    }
+    assert(num_classes >= 1);
+    
+    /** Because we print the list of classes in the form "C_1, C_2, ..., C_n",
+     * we need to check that the list is really continuous
+     * (to justify the usage of ellipsis) */
+    for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
+      ccpnode *node = *nodep;
+      if(node->pidx_begin <= pidx + 1) {
+        assert(node->cidx < num_classes);
+      }
+    }
+    
+    switch(num_classes) {
+    case 1: printf("C_1"); break;
+    case 2: printf("C_1, C_2"); break;
+    case 3: printf("C_1, C_2, C_3"); break;
+    default: printf("C_1, C_2, \\ldots, C_{%u}", num_classes); break;
+    }
+    printf("\\}. $\n");
   }
+
+  ccplt_free(ccplt);
 }
 
 
 int main() {
-/*   script_filter_predicates(); */
+  //  script_print_sublattice33("data/lattice.2016");
 
-/*   script_irrelevant_predicates(); */
+  //  script_filter_predicates();
 
-/*   script_formulas_for_pred_307(); */
-/*   script_formulas_for_pred_315(); */
-/*   script_formulas_for_pred_435(); */
+  //  script_irrelevant_predicates("data/lattice.2016");
 
- script_build_sublattice_with_latex_formulas();
+  //   script_formulas_for_pred_307();
+  //   script_formulas_for_pred_315();
+  //   script_formulas_for_pred_435();
 
+
+  //    script_print_generating_sets();
+  
+  //script_build_sublattice_with_latex_formulas();
+  
 }
 
