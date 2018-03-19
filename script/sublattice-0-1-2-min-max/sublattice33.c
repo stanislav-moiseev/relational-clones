@@ -49,7 +49,7 @@ lattice *get_sublattice33(const char *lt_name) {
          fun_preserves_clone(&f_min, &c->clone) &&
          fun_preserves_clone(&f_max, &c->clone)) {
 
-        class *sublt_c = class_alloc(&c->clone);
+        class *sublt_c = class_alloc(&c->clone, &c->generator);
         lattice_add_class(sublt, sublt_c);
         /* NB. Copy class indices from the main lattice. */
         sublt_c->cidx = c->cidx;
@@ -65,6 +65,9 @@ lattice *get_sublattice33(const char *lt_name) {
 
 
 ccplt *get_ccplt33() {
+  fprintf(stderr, "Constructing the sublattices of R3(2), containing 0, 1, 2, min, max...");
+  fflush(stderr);
+  
   closure_operator *clop2 = clop2_alloc_straightforward();
   ccplt *ccplt = ccplt_alloc();
   
@@ -80,6 +83,7 @@ ccplt *get_ccplt33() {
     ccplt_construct_step(clop2, ccplt, pidx);
   }
 
+  fprintf(stderr, " Ok.\n");
   fprintf(stderr, "Total nodes: %lu\n", ccplt->num_nodes);
 
   clop_free(clop2);

@@ -10,13 +10,13 @@
 #include "lattice.h"
 #include "hashtable.h"
 
-class *class_alloc(const clone *cl) {
+class *class_alloc(const clone *cl, const clone *generator) {
   class *c = aligned_alloc(32, sizeof(class));
   c->cidx        = -1;
   c->lidx        = -1;
   c->cpos        = -1;
   clone_copy(cl, &c->clone);
-  clone_init(&c->generator);
+  clone_copy(generator, &c->generator);
   c->num_maxsubs = 0;
   c->cap_maxsubs = 64;
   c->maxsubs     = malloc(c->cap_maxsubs * sizeof(class_idx));
@@ -162,9 +162,9 @@ void lattice_construct_maximal_subclones(lattice *lt) {
 void lattice_load_classes_from_ccplt(lattice *lt, const ccplt *ccplt) {
   /* copy clones from ccplt */
   assert(lt->num_classes == 0);  /* We suppose that the lattice is empty. */
-  for(class_idx cidx = 0; cidx < lt->num_classes; ++cidx) {
-    ccpnode *nd = ccplt_get_node(ccplt, cidx);
-    class *c    = class_alloc(&nd->clone);
+  for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
+    ccpnode *nd = *nodep;
+    class *c    = class_alloc(&nd->clone, &nd->generator);
     lattice_add_class(lt, c);
     assert(c->cidx == nd->cidx);
   }

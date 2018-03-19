@@ -98,7 +98,7 @@ void print_sublattice(const lattice *lt, const fun *f, const pred *p, int verbos
         printf("====== class %u (%u:%u) ====================================\n", c->cidx, c->lidx, c->cpos);
         if(verbosity == 1) clone_print_verbosely(stdout, &c->clone);
 
-        class *sublt_c = class_alloc(&c->clone);
+        class *sublt_c = class_alloc(&c->clone, &c->generator);
         lattice_add_class(sublt, sublt_c);
         /* NB. Copy class indices from the main lattice. */
         sublt_c->cidx = c->cidx;

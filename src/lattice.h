@@ -49,8 +49,8 @@ struct class {
 }  __attribute__ ((aligned (32)));
 typedef struct class class;
 
-/** Allocate a new class and copy clone `cl` to class. */
-class *class_alloc(const clone *cl);
+/** Allocate a new class and copy clone `cl` and generator to class. */
+class *class_alloc(const clone *cl, const clone *generator);
 
 void class_free(class *c);
 
