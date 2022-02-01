@@ -210,11 +210,11 @@ void lattice_construct_layers_ccplt(lattice *lt, const ccplt *ccplt) {
   ccpnode *top_node = ccplt_top_clone(ccplt);
   hashtable_insert(ht, &top_node->cidx, &top_node->cidx);
 
-  printf("layer\tclones to search\tlayer size\t\tprogress\n");
-  printf("idx\tfor maximal\t\t(num of maximal clones)\n");
+  fprintf(stderr, "layer\tclones to search\tlayer size\t\tprogress\n");
+  fprintf(stderr, "idx\tfor maximal\t\t(num of maximal clones)\n");
   size_t classes_constr = 0;    /* number of classes constructed so far */
   while(ht->size > 0) {
-    printf("%lu\t%lu\t\t\t", lt->num_layers, ht->size); fflush(stdout);
+    fprintf(stderr, "%lu\t%lu\t\t\t", lt->num_layers, ht->size); fflush(stdout);
         
     layer *lr = layer_alloc();    /* next layer, to be constructed */
     lattice_add_layer(lt, lr);
@@ -271,8 +271,8 @@ void lattice_construct_layers_ccplt(lattice *lt, const ccplt *ccplt) {
     }
 
     classes_constr += lr->num_classes;
-    printf("%lu\t\t\t%.0f%%\n", lr->num_classes,
-           100. * classes_constr / lt->num_classes);
+    fprintf(stderr, "%lu\t\t\t%.0f%%\n", lr->num_classes,
+            100. * classes_constr / lt->num_classes);
   }
 
   assert(classes_constr == lt->num_classes);

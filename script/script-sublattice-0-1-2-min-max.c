@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
 #include "utils.h"
 #include "colors.h"
 #include "closure/closure-straightforward.h"
@@ -51,7 +50,7 @@ void script_filter_predicates() {
          fun_preserves_pred(&f_2, &p) &&
          fun_preserves_pred(&f_min, &p) &&
          fun_preserves_pred(&f_max, &p)) {
-        
+
         fprintf(stdout, "p_{%lu} \t &= %-40s & \\text{(%s)} \\\\\n",
                 p.data,
                 pred_print_extensional_ex(&p),
@@ -59,7 +58,7 @@ void script_filter_predicates() {
         ++count;
       }
     }
-    
+
     printf("\\end{flalign*}\n");
     printf("total number of predicates: %lu\n", count);
   }
@@ -96,7 +95,7 @@ void script_print_sublattice33(const char *lt_name) {
 }
 
 
-/********************************************************************/      
+/********************************************************************/
 /** For all 13 predicates that we do not use in the description of the
  * sublattice lattice, this function find the smallest class of our
  * lattice containing this predicate ("smallest" means here that the
@@ -126,14 +125,14 @@ void script_irrelevant_predicates(const char *lt_name) {
 
   clone cl_uniq;
   closure_uniq_ess_preds(2 /* max arity */, &cl_uniq);
-    
+
   for(pred *p = irrpreds; p < irrpreds + num_irrpreds; ++p) {
     printf("\n");
     printf("====== predicate p_{%lu} = %s  (%s) ====================================\n",
            p->data,
            pred_print_extensional_ex(p),
            pred_name(p));
-    
+
     if(!pred_is_essential(p)) {
       printf(":: the predicate is not essential\n");
       continue;
@@ -146,15 +145,15 @@ void script_irrelevant_predicates(const char *lt_name) {
          `cl_uniq` and is closure-equivalent to `p`. */
       int found = 0;
       pred p_uniq;
-      
+
       closure_operator *clop = clop_alloc_straightforward();
-      
+
       clone p_closure;
       closure_one_pred(clop, p, &p_closure);
 
       for(clone_iterator it = clone_iterator_begin(&cl_uniq); !clone_iterator_end(&cl_uniq, &it); clone_iterator_next(&it)) {
         pred p0 = clone_iterator_deref(&it);
-        
+
         clone p0_closure;
         closure_one_pred(clop, &p0, &p0_closure);
 
@@ -168,7 +167,7 @@ void script_irrelevant_predicates(const char *lt_name) {
       if(!found) {
         printf(":: an equivalent predicates that is a member of the standard list of closure-unique predicates has /not/ been found\n");
         printf(":: most likely, this is a BUG.\n");
-        
+
       } else {
         printf(":: this predicates is closure-equivalent to the following predicate:\n");
         fprintf(stdout, "p_{%lu} = %s \t (%s)\n",
@@ -182,10 +181,10 @@ void script_irrelevant_predicates(const char *lt_name) {
       continue;
     }
 
-    
+
     printf(":: the predicate is a member of the following smallest class:\n");
     clone *smallest_cl = NULL;
-    
+
     for(class **cp = sublt->classes; cp < sublt->classes + sublt->num_classes; ++cp) {
       class *c = *cp;
       if(clone_test_pred(&c->clone, p)) {
@@ -199,7 +198,7 @@ void script_irrelevant_predicates(const char *lt_name) {
         }
       }
     }
-    
+
     assert(smallest_cl != NULL);
 
     clone_print_verbosely(stdout, smallest_cl);
@@ -227,7 +226,7 @@ static void construct_formulas(const struct clone *clone, const pred *p) {
       pred p_ = term_eval(&entry->term);
       assert(pred_eq(p, &p_) && "The term does not define the predicate that it is expected to define. "
                                 "Most likely, this is a bug in the closure2_trace() function.");
-      
+
       formula_t *phi = term_to_formula(&entry->term);
       char *phi_str = formula_print_latex(phi, sublattice33_pred_naming_fn_latex, var_naming_fn_latex);
       char *var1 = strdup(var_naming_fn_latex(1));
@@ -235,7 +234,7 @@ static void construct_formulas(const struct clone *clone, const pred *p) {
       printf("%s(%s, %s) = %s\n", sublattice33_pred_naming_fn_latex(*p), var1, var2, phi_str);
       free(var1);
       free(var2);
-      
+
       free(phi);
       free(phi_str);
       break;
@@ -245,7 +244,7 @@ static void construct_formulas(const struct clone *clone, const pred *p) {
   if(entry == trace->entries + trace->num_entries) {
     printf(COLOR_RED "ERROR: predicate p_{%lu} has not been found in the trace." COLOR_RESET "\n", p->data);
   }
-  
+
   closure_trace_free(trace);
 }
 
@@ -253,7 +252,7 @@ static void construct_formulas(const struct clone *clone, const pred *p) {
 void script_formulas_for_pred_307() {
   printf("\n======================================================================\n");
   struct clone clone;
-  
+
   clone_copy(top_clone2(), &clone);
   clone_insert_pred(&clone, PRED(311));
   clone_insert_pred(&clone, PRED(447));
@@ -269,7 +268,7 @@ void script_formulas_for_pred_307() {
 void script_formulas_for_pred_315() {
   printf("\n======================================================================\n");
   struct clone clone;
-  
+
   clone_copy(top_clone2(), &clone);
   clone_insert_pred(&clone, PRED(319));
   clone_insert_pred(&clone, PRED(447));
@@ -286,7 +285,7 @@ void script_formulas_for_pred_435() {
   printf("\n======================================================================\n");
 
   struct clone clone;
-  
+
   clone_copy(top_clone2(), &clone);
   clone_insert_pred(&clone, PRED(319));
   clone_insert_pred(&clone, PRED(439));
@@ -314,7 +313,7 @@ void script_print_generating_sets() {
   printf("\\begin{align*}\n");
   for(ccpnode **nodep = ccplt->nodes; nodep < ccplt->nodes + ccplt->num_nodes; ++nodep) {
     ccpnode *node = *nodep;
-          
+
     clone clone_;
     clone_intersection(&node->clone, &base, &clone_);
 
@@ -325,7 +324,7 @@ void script_print_generating_sets() {
     }
   }
   printf("\\end{align*}\n");
-      
+
   ccplt_free(ccplt);
 }
 
@@ -333,7 +332,7 @@ void script_print_generating_sets() {
 /********************************************************************/
 void script_build_sublattice_with_latex_formulas() {
   ccplt *ccplt = get_ccplt33();
-  
+
   /* Collect all predicates in a "base set". */
   struct clone base;
   //clone_copy(top_clone2(), &base);
@@ -363,7 +362,7 @@ void script_build_sublattice_with_latex_formulas() {
       /* Skip cases when <{p} ∪ parent_node> = <parent_node> */
       if(clone_test_pred(&parent, &p)) continue;
 
-      
+
       ccpnode *child_node = ccplt_get_node(ccplt, parent_node->children[pidx - parent_node->pidx_begin]);
       clone child;
       clone_intersection(&child_node->clone, &base, &child);
@@ -392,13 +391,13 @@ void script_build_sublattice_with_latex_formulas() {
 
       if(diff_cardinality <= 1) {
         printf(".\n");
-        
+
       } else {
         /* If the difference contains more than the predicate `p`,
          * then we will need to construct some proofs.
          * Thus, we print the child fully. */
         printf(", так как\n");
-        
+
         /* For every predicate `q \in (child_node \ parent_node)`, construct a
          * term that builds `q` from `{p} ∪ parent_node`. */
         clone generator;
@@ -408,7 +407,7 @@ void script_build_sublattice_with_latex_formulas() {
         closure_trace_t *trace = closure2_clone_traced(&generator, NULL);
 
         printf("  \\begin{flalign*}\n");
-        
+
         unsigned num_facts = 0;
         for(clone_iterator it = clone_iterator_begin(&diff); !clone_iterator_end(&diff, &it); clone_iterator_next(&it)) {
           pred q = clone_iterator_deref(&it);
@@ -425,7 +424,7 @@ void script_build_sublattice_with_latex_formulas() {
               ++num_facts;
 
               formula_t *phi = term_to_formula(&entry->term);
-              
+
               /* Test correctness of `term_to_formula`. */
               pred q__ = formula_eval(phi);
               if(!pred_eq(&q_, &q__)) {
@@ -439,7 +438,7 @@ void script_build_sublattice_with_latex_formulas() {
                 fprintf(stderr, COLOR_RESET);
                 assert(pred_eq(&q_, &q__));
               }
-              
+
               char *phi_str  = formula_print_latex(phi, sublattice33_pred_naming_fn_latex, var_naming_fn_latex);
               char *var1     = strdup(var_naming_fn_latex(1));
               char *var2     = strdup(var_naming_fn_latex(2));
@@ -456,18 +455,18 @@ void script_build_sublattice_with_latex_formulas() {
               break;
             }
           }
-          
+
           if(entry == trace->entries + trace->num_entries) {
             fprintf(stderr, COLOR_RED "ERROR: predicate %s has not been found in the trace." COLOR_RESET "\n", sublattice33_pred_naming_fn_latex(q));
           }
         }
-       
+
         printf("  \\end{flalign*}\n");
       }
     }
-    
+
     printf("\\end{enumerate}\n");
-    
+
     printf("Таким образом,\n");
     printf("$ Classes(%u) = \\{", pidx+1);
 
@@ -482,7 +481,7 @@ void script_build_sublattice_with_latex_formulas() {
       }
     }
     assert(num_classes >= 1);
-    
+
     /** Because we print the list of classes in the form "C_1, C_2, ..., C_n",
      * we need to check that the list is really continuous
      * (to justify the usage of ellipsis) */
@@ -492,7 +491,7 @@ void script_build_sublattice_with_latex_formulas() {
         assert(node->cidx < num_classes);
       }
     }
-    
+
     switch(num_classes) {
     case 1: printf("C_1"); break;
     case 2: printf("C_1, C_2"); break;
@@ -503,6 +502,39 @@ void script_build_sublattice_with_latex_formulas() {
   }
 
   ccplt_free(ccplt);
+}
+
+#include "binary/bin-lattice.h"
+
+
+void script_print_sublattice33_dot() {
+  ccplt *ccplt = get_ccplt33();
+  lattice *lt = lattice_alloc();
+  lattice_load_classes_from_ccplt(lt, ccplt);
+  lattice_construct_layers_ccplt(lt, ccplt);
+  lattice_construct_maximal_subclones(lt);
+
+
+
+  printf("graph lattice33 {\n");
+  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
+    class *c = *cp;
+    printf("  C%u [shape=point, label=\"\"]\n", c->cidx+1);
+  }
+  printf("\n");
+  for(class **cp = lt->classes; cp < lt->classes + lt->num_classes; ++cp) {
+    class *c = *cp;
+    for(class_idx *sub_idx = c->maxsubs; sub_idx < c->maxsubs + c->num_maxsubs; ++sub_idx) {
+      class *sub = lattice_get_class(lt, *sub_idx);
+
+      printf("  C%u -- C%u;\n", c->cidx+1, sub->cidx+1);
+    }
+  }
+
+  printf("}\n");
+
+  ccplt_free(ccplt);
+  lattice_free(lt);
 }
 
 
@@ -519,8 +551,9 @@ int main() {
 
 
   //    script_print_generating_sets();
-  
-  //script_build_sublattice_with_latex_formulas();
-  
-}
 
+  //script_build_sublattice_with_latex_formulas();
+
+  script_print_sublattice33_dot();
+
+}

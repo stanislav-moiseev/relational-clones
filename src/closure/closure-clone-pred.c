@@ -294,7 +294,7 @@ void ccplt_construct(const closure_operator *clop, ccplt *lt) {
   /* iteratively construct new ccpnodes */
   for(pred_idx_t pidx = 0; pidx < lt->pred_num->uniq_sz; ++pidx) {
     ccplt_construct_step(clop, lt, pidx);
-    printf("%u\t %lu\n", pidx, lt->num_nodes);
+    fprintf(stderr, "%u\t %lu\n", pidx, lt->num_nodes);
   }
 }
 
